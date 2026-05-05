@@ -10,6 +10,19 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
+  --font-display: var(--font-display);
+  /* Petit Salón brand */
+  --color-ps-lila-deep: var(--ps-lila-deep);
+  --color-ps-lila: var(--ps-lila);
+  --color-ps-lila-mid: var(--ps-lila-mid);
+  --color-ps-lila-light: var(--ps-lila-light);
+  --color-ps-lila-pale: var(--ps-lila-pale);
+  --color-ps-lila-base: var(--ps-lila-base);
+  --color-ps-gold: var(--ps-gold);
+  --color-ps-gold-light: var(--ps-gold-light);
+  --color-ps-gold-dark: var(--ps-gold-dark);
+  --color-ps-text: var(--ps-text);
+  --color-ps-text-mid: var(--ps-text-mid);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,6 +62,19 @@
 }
 
 :root {
+  /* Petit Salón brand tokens */
+  --ps-lila-deep: oklch(0.42 0.10 295);
+  --ps-lila: oklch(0.52 0.10 295);
+  --ps-lila-mid: oklch(0.65 0.08 295);
+  --ps-lila-light: oklch(0.80 0.05 295);
+  --ps-lila-pale: oklch(0.94 0.02 295);
+  --ps-lila-base: oklch(0.97 0.01 295);
+  --ps-gold: oklch(0.72 0.12 78);
+  --ps-gold-light: oklch(0.85 0.08 85);
+  --ps-gold-dark: oklch(0.55 0.10 70);
+  --ps-text: oklch(0.22 0.07 295);
+  --ps-text-mid: oklch(0.48 0.07 295);
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -115,6 +141,16 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+@keyframes ps-fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ps-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
 }
 
 @layer base {
