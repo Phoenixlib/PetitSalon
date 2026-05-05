@@ -28,7 +28,7 @@ Los clientes NO tienen cuenta. El login es solo para la administradora.
 | Autenticación | **NextAuth.js v5** — solo `credentials`            |
 | Estilos       | **Tailwind CSS 4** + **shadcn/ui** + Framer Motion |
 | Imágenes      | **Cloudinary** (free tier: 25 GB)                  |
-| Calendario    | **`@fullcalendar/react`** (MIT, gratuito)          |
+| Calendario    | **Cal.com** (embed gratuito) + Webhook Prisma      |
 
 **Costo total: $0/mes.** No introducir servicios de pago sin aprobación explícita.
 
@@ -161,19 +161,19 @@ model AdminUser {
 
 ---
 
-## Agenda (FullCalendar)
+## Agenda (Cal.com Embed + Webhooks)
 
-- Librería: **`@fullcalendar/react`** (MIT, gratuita)
-- Vistas requeridas: semanal, mensual, diaria
-- Drag & drop de citas habilitado
-- Color por estado:
-  - `PENDING` → amarillo
-  - `CONFIRMED` → azul
-  - `DONE` → verde
-  - `CANCELLED` → gris/tachado
-- Click en cita → abre ficha completa del perro
-
-**No usar Cal.com ni servicios externos de agenda** — la integración con fichas de perros e historial es el valor central del producto.
+- La página `/reservar` embebe el widget de Cal.com usando `@calcom/embed-react`.
+- Configurar en Cal.com los Custom Fields obligatorios: `nombre_perro`, `raza_perro`, `telefono`.
+- Cal.com gestiona correos de confirmación, cancelación y recordatorios automáticamente.
+- El webhook `POST /api/webhooks/calcom` recibe los eventos y sincroniza con Prisma:
+  - `BOOKING_CREATED` → upsert Owner + Dog + Appointment (con `calComUid`).
+  - `BOOKING_CANCELLED` → actualiza status a `CANCELLED`.
+  - `BOOKING_RESCHEDULED` → actualiza la fecha de la cita.
+- Variables de entorno requeridas:
+  - `NEXT_PUBLIC_CALCOM_LINK` — formato `"usuario/tipo-de-evento"`, expuesto al cliente.
+  - `CALCOM_WEBHOOK_SECRET` — HMAC secret del webhook en Cal.com settings (obligatorio en producción).
+- El panel `/admin/agenda` sigue operando sobre los datos locales en Neon/Prisma.
 
 ---
 

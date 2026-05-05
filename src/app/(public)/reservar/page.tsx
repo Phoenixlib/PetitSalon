@@ -1,63 +1,34 @@
-import { prisma } from "@/lib/prisma";
-import BookingWizard from "@/components/booking/BookingWizard";
-import type { BookingService } from "@/components/booking/types";
+import CalComEmbed from "@/components/booking/CalComEmbed";
 
-export const metadata = {
-  title: "Reservar cita | Petit Salon",
-  description: "Agenda la sesión de peluquería de tu mascota en Petit Salon.",
-};
+// El link de Cal.com tiene el formato "usuario/tipo-de-evento"
+// Configura NEXT_PUBLIC_CALCOM_LINK en .env.local, ej: petitsalon/cita
+const calLink = process.env.NEXT_PUBLIC_CALCOM_LINK ?? "";
 
-async function getServices(): Promise<BookingService[]> {
-  try {
-    return await prisma.service.findMany({
-      where: { isActive: true },
-      select: {
-        id: true,
-        name: true,
-        price: true,
-        duration: true,
-        description: true,
-      },
-      orderBy: { name: "asc" },
-    });
-  } catch {
-    return [];
-  }
-}
-
-export default async function ReservarPage() {
-  const services = await getServices();
-
+export default function ReservarPage() {
   return (
-    <main
-      className="min-h-screen py-16 px-4"
-      style={{ backgroundColor: "var(--ps-bg)" }}
-    >
-      {services.length === 0 ? (
-        <div className="max-w-md mx-auto text-center py-20">
-          <p
-            className="text-lg font-light"
-            style={{
-              fontFamily: "var(--font-display)",
-              color: "var(--ps-text)",
-            }}
-          >
-            Los servicios no están disponibles en este momento.
+    <section className="container mx-auto py-12 px-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold tracking-tight mb-2">
+            Reserva tu Cita
+          </h1>
+          <p className="text-muted-foreground">
+            Elige el servicio, día y hora que más te acomode. Recibirás una
+            confirmación por correo.
           </p>
-          <p className="mt-2 text-sm" style={{ color: "var(--ps-text-mid)" }}>
-            Escríbenos por WhatsApp y coordinamos directamente.
-          </p>
-          <a
-            href="https://wa.me/56937541863"
-            className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-semibold transition hover:opacity-90"
-            style={{ backgroundColor: "#25d366" }}
-          >
-            Escribir por WhatsApp
-          </a>
         </div>
-      ) : (
-        <BookingWizard services={services} />
-      )}
-    </main>
+
+        {calLink ? (
+          <CalComEmbed calLink={calLink} />
+        ) : (
+          <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
+            <p className="font-medium">Sistema de reservas en configuración.</p>
+            <p className="text-sm mt-1">
+              Mientras tanto, contáctanos por WhatsApp para agendar tu cita.
+            </p>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

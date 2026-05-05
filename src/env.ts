@@ -21,6 +21,12 @@ const envSchema = z.object({
   SMTP_PASS: z.string().optional(),
   NOTIFY_EMAIL: z.string().email().optional(),
 
+  // Cal.com
+  // HMAC secret configurado en Cal.com → Settings → Webhooks para validar el origen
+  CALCOM_WEBHOOK_SECRET: z.string().optional(),
+  // Link de Cal.com: "usuario/tipo-de-evento" — expuesto al cliente (build-time)
+  NEXT_PUBLIC_CALCOM_LINK: z.string().optional(),
+
   // App
   NODE_ENV: z
     .enum(["development", "test", "production"])

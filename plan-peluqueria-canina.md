@@ -78,6 +78,7 @@ model Dog {
 
 model Appointment {
   id        String            @id @default(cuid())
+  calComUid String?           @unique // Referencia al ID único de la reserva en Cal.com
   date      DateTime
   status    AppointmentStatus @default(PENDING)
   serviceId String
@@ -127,27 +128,23 @@ model AdminUser {
 
 ---
 
-## Agenda Integrada vs Terceros
+## Estrategia de Agenda: Cal.com Embed + Webhooks ✅ (Recomendada)
 
-### Opción A: Agenda integrada custom ✅ (recomendada)
+En lugar de construir y mantener un sistema de calendario desde cero (lo cual requiere lidiar con zonas horarias, disponibilidad concurrente, recordatorios por correo y sincronización de Google Calendar), utilizaremos **Cal.com** en su plan gratuito (SaaS cloud).
 
-**¿Por qué?** Control total, sin límites de terceros, mejor UX, integración directa con el modelo de datos.
+### Arquitectura del Flujo de Reservas:
 
-Librería: **`@fullcalendar/react`** (MIT license, gratuita):
+1. **Frontend (Cara Pública):** La página `/reservar` utilizará `@calcom/embed-react` para cargar el widget de reservas incrustado en nuestra UI.
+2. **Configuración de Cal.com:** Se configurarán los tipos de servicio (ej. Baño, Corte) y se agregarán campos personalizados obligatorios (Custom Fields): _Nombre del Perro_, _Raza_ y _Teléfono_.
+3. **Backend & Webhooks:** Next.js expondrá una ruta de API (ej. `POST /api/webhooks/calcom`). Cal.com enviará los datos de la reserva apenas el cliente confirme o cancele una cita.
+4. **Sincronización Local:** El webhook leerá los datos y creará/validará en nuestra BD (**Neon/Prisma**) el `Owner`, el `Dog` y finalmente el `Appointment` (marcado y sincronizado a través de `calComUid`).
 
-- Vista semanal / mensual / día
-- Drag & drop de citas
-- Color por estado (pendiente / confirmado / completado / cancelado)
-- Click para ver o editar ficha completa del perro
+**Beneficios Clave:**
 
-Implementación estimada: **2–3 días** de trabajo. No es compleja para este scope.
-
-### Opción B: Cal.com (gratis, embebido)
-
-- Plan gratuito disponible
-- Se puede embeber en la landing pública
-- **Problema:** no se conecta a la BD de perros, es solo booking genérico
-- Se pierde la integración con fichas e historial del perro
+- **Costo Inteligente:** $0/mes manteniendo un nivel Enterprise.
+- **Correos y Notificaciones:** Cal.com gestiona automáticamente los recordatorios por email e invitaciones para el calendario del cliente y la dueña de la peluquería.
+- **Ahorro de Desarrollo:** Ganamos al menos 40% de tiempo al delegar la compleja interfaz de selección de slots y fechas.
+- **Integridad de Datos:** Gracias al Webhook, el panel de `/admin` local todavía retiene métricas de negocios, perfiles de mascotas y el rico historial veterinario en nuestra propia base de datos Postgres.
 
 **Conclusión: Opción A.** El valor del producto está en la integración entre agenda + fichas de perros + historial de atenciones. Eso no lo ofrece ningún servicio externo gratuito.
 
