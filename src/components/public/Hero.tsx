@@ -225,7 +225,7 @@ export default function Hero() {
               }}
             />
 
-            {/* Paw */}
+            {/* Image instead of Paw */}
             <div className="absolute inset-0 flex items-center justify-center">
               <motion.div
                 animate={{ y: [0, -10, 0] }}
@@ -234,10 +234,12 @@ export default function Hero() {
                   duration: 4,
                   ease: "easeInOut",
                 }}
+                className="relative w-64 h-64 rounded-full overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.15)] border-4 border-white z-20 aspect-square"
               >
-                <PawSVG
-                  className="w-52 h-52"
-                  style={{ color: "var(--ps-lila-mid)" } as React.CSSProperties}
+                <img
+                  src="/images/brand/logo.jpeg"
+                  alt="Petit Salon Logo"
+                  className="w-full h-full object-cover scale-[1.02]"
                 />
               </motion.div>
             </div>
