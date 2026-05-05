@@ -19,6 +19,7 @@ model Dog {
   id           String        @id @default(cuid())
   name         String
   breed        String
+  size         DogSize?
   birthDate    DateTime?
   notes        String?
   photo        String?
@@ -46,6 +47,14 @@ enum AppointmentStatus {
   CONFIRMED
   DONE
   CANCELLED
+}
+
+enum DogSize {
+  XS
+  S
+  M
+  L
+  XL
 }
 
 model Attendance {

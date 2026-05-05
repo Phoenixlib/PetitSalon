@@ -9,10 +9,17 @@ const envSchema = z.object({
   AUTH_SECRET: z.string().min(32),
   NEXTAUTH_URL: z.string().url().optional(),
 
-  // Cloudinary
-  CLOUDINARY_CLOUD_NAME: z.string().min(1),
-  CLOUDINARY_API_KEY: z.string().min(1),
-  CLOUDINARY_API_SECRET: z.string().min(1),
+  // Cloudinary (requerido solo para subida de fotos)
+  CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  CLOUDINARY_API_KEY: z.string().optional(),
+  CLOUDINARY_API_SECRET: z.string().optional(),
+
+  // Email (Nodemailer — opcional; si no está configurado, los emails se omiten)
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  NOTIFY_EMAIL: z.string().email().optional(),
 
   // App
   NODE_ENV: z
