@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Owner {
+  id           String        @id @default(cuid())
+  name         String
+  phone        String
+  email        String?
+  createdAt    DateTime      @default(now())
+  dogs         Dog[]
+}
+
+model Dog {
+  id           String        @id @default(cuid())
+  name         String
+  breed        String
+  birthDate    DateTime?
+  notes        String?
+  photo        String?
+  ownerId      String
+  owner        Owner         @relation(fields: [ownerId], references: [id])
+  appointments Appointment[]
+  attendances  Attendance[]
+  createdAt    DateTime      @default(now())
+}
+
+model Appointment {
+  id        String            @id @default(cuid())
+  date      DateTime
+  status    AppointmentStatus @default(PENDING)
+  serviceId String
+  service   Service           @relation(fields: [serviceId], references: [id])
+  dogId     String
+  dog       Dog               @relation(fields: [dogId], references: [id])
+  notes     String?
+  createdAt DateTime          @default(now())
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  DONE
+  CANCELLED
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  date      DateTime
+  service   String
+  notes     String?
+  photos    String[]
+  dogId     String
+  dog       Dog      @relation(fields: [dogId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Service {
+  id           String        @id @default(cuid())
+  name         String
+  price        Int
+  duration     Int
+  description  String?
+  isActive     Boolean       @default(true)
+  appointments Appointment[]
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+}
