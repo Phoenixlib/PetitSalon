@@ -50,7 +50,10 @@ export default function Galeria() {
             }}
           >
             Antes &{" "}
-            <em className="italic font-medium" style={{ color: "var(--ps-lila)" }}>
+            <em
+              className="italic font-medium"
+              style={{ color: "var(--ps-lila)" }}
+            >
               después
             </em>
           </h2>

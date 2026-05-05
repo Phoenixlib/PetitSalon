@@ -3,6 +3,7 @@ import Hero from "@/components/public/Hero";
 import Servicios from "@/components/public/Servicios";
 import Galeria from "@/components/public/Galeria";
 import Testimonios from "@/components/public/Testimonios";
+import FAQ from "@/components/public/FAQ";
 import ContactoCTA from "@/components/public/ContactoCTA";
 
 export const metadata: Metadata = {
@@ -18,6 +19,7 @@ export default function HomePage() {
       <Servicios />
       <Galeria />
       <Testimonios />
+      <FAQ />
       <ContactoCTA />
     </>
   );

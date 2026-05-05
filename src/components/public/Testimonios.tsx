@@ -40,7 +40,10 @@ export default function Testimonios() {
             }}
           >
             Lo que dicen{" "}
-            <em className="italic font-medium" style={{ color: "var(--ps-lila)" }}>
+            <em
+              className="italic font-medium"
+              style={{ color: "var(--ps-lila)" }}
+            >
               nuestros clientes
             </em>
           </h2>

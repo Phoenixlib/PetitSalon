@@ -68,7 +68,10 @@ export default function Servicios() {
             }}
           >
             Nuestros{" "}
-            <em className="italic font-medium" style={{ color: "var(--ps-lila)" }}>
+            <em
+              className="italic font-medium"
+              style={{ color: "var(--ps-lila)" }}
+            >
               servicios
             </em>
           </h2>

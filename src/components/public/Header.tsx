@@ -29,9 +29,7 @@ export default function Header() {
       style={{
         backgroundColor: scrolled ? "rgba(255,255,255,0.92)" : "transparent",
         backdropFilter: scrolled ? "blur(16px)" : "none",
-        boxShadow: scrolled
-          ? "0 1px 24px oklch(0.52 0.10 295 / 0.08)"
-          : "none",
+        boxShadow: scrolled ? "0 1px 24px oklch(0.52 0.10 295 / 0.08)" : "none",
       }}
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between">

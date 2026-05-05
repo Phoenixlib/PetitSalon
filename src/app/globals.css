@@ -63,15 +63,15 @@
 
 :root {
   /* Petit Salón brand tokens */
-  --ps-lila-deep: oklch(0.42 0.10 295);
-  --ps-lila: oklch(0.52 0.10 295);
+  --ps-lila-deep: oklch(0.42 0.1 295);
+  --ps-lila: oklch(0.52 0.1 295);
   --ps-lila-mid: oklch(0.65 0.08 295);
-  --ps-lila-light: oklch(0.80 0.05 295);
+  --ps-lila-light: oklch(0.8 0.05 295);
   --ps-lila-pale: oklch(0.94 0.02 295);
   --ps-lila-base: oklch(0.97 0.01 295);
   --ps-gold: oklch(0.72 0.12 78);
   --ps-gold-light: oklch(0.85 0.08 85);
-  --ps-gold-dark: oklch(0.55 0.10 70);
+  --ps-gold-dark: oklch(0.55 0.1 70);
   --ps-text: oklch(0.22 0.07 295);
   --ps-text-mid: oklch(0.48 0.07 295);
 
@@ -144,13 +144,24 @@
 }
 
 @keyframes ps-fade-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes ps-float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 @layer base {
