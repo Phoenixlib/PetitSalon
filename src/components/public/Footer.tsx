@@ -108,7 +108,7 @@ export default function Footer() {
             © {year} Petit Salón. Todos los derechos reservados.
           </p>
           <a
-            href="https://wa.me/59675707476"
+            href="https://wa.me/56937541863"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs font-semibold transition-opacity hover:opacity-70"

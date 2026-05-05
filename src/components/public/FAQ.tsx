@@ -141,7 +141,7 @@ export default function FAQ() {
         >
           ¿Tienes otra consulta?{" "}
           <a
-            href="https://wa.me/59675707476"
+            href="https://wa.me/56937541863"
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold underline underline-offset-2"

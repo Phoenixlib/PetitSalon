@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-const WHATSAPP_URL = "https://wa.me/59675707476";
+const WHATSAPP_URL = "https://wa.me/56937541863";
 
 const NAV_LINKS = [
   { href: "/#servicios", label: "Servicios" },

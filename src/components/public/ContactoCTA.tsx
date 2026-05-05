@@ -34,7 +34,7 @@ export default function ContactoCTA() {
         </p>
 
         <a
-          href="https://wa.me/59675707476"
+          href="https://wa.me/56937541863"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-3 font-semibold px-8 py-4 rounded-full transition-all duration-300 hover:scale-[1.04] hover:shadow-2xl"
