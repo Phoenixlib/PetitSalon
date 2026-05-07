@@ -1,7 +1,17 @@
 import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { type DogSize } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/env";
+
+const DOG_SIZE_VALUES: readonly string[] = ["XS", "S", "M", "L", "XL"];
+
+function parseDogSize(value: string | undefined): DogSize | null {
+  if (!value) return null;
+  const upper = value.toUpperCase();
+  if (DOG_SIZE_VALUES.includes(upper)) return upper as DogSize;
+  return null;
+}
 
 // ---------------------------------------------------------------------------
 // Tipos del payload de Cal.com
@@ -24,6 +34,10 @@ interface CalComResponses {
   raza_perro?: { value: string };
   // "Teléfono" con slug "telefono"
   telefono?: { value: string };
+  // "Tamaño" con slug "dog_size" — valores: XS, S, M, L, XL
+  dog_size?: { value: string };
+  // "Notas del perro" con slug "dog_notes" — alergias, temperamento, etc.
+  dog_notes?: { value: string };
   notes?: { value: string };
   [key: string]: { value: string } | undefined;
 }
@@ -86,6 +100,8 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
   const ownerPhone = responses.telefono?.value ?? attendee.phoneNumber ?? "";
   const dogName = responses.nombre_perro?.value ?? "Sin nombre";
   const dogBreed = responses.raza_perro?.value ?? "Sin raza";
+  const dogSize = parseDogSize(responses.dog_size?.value);
+  const dogNotes = responses.dog_notes?.value ?? null;
   const notes = responses.notes?.value ?? null;
 
   // 1. Upsert Service por nombre del tipo de evento
@@ -128,7 +144,23 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
   });
   if (!dog) {
     dog = await prisma.dog.create({
-      data: { name: dogName, breed: dogBreed, ownerId: owner.id },
+      data: {
+        name: dogName,
+        breed: dogBreed,
+        ownerId: owner.id,
+        ...(dogSize !== null && { size: dogSize }),
+        ...(dogNotes !== null && { notes: dogNotes }),
+      },
+    });
+  } else {
+    // Actualizar campos que podrían llegar con más detalle en reservas posteriores
+    dog = await prisma.dog.update({
+      where: { id: dog.id },
+      data: {
+        breed: dogBreed || dog.breed,
+        ...(dogSize !== null && { size: dogSize }),
+        ...(dogNotes !== null && { notes: dogNotes }),
+      },
     });
   }
 

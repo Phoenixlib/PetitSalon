@@ -15,10 +15,12 @@ function createPrismaClient() {
   if (!connectionString) {
     throw new Error("DATABASE_URL is not set");
   }
-  
+
   // En Prisma 6, PrismaNeon recibe el POOL CONFIG directamente, ¡no una instancia de Pool!
-  const adapter = new PrismaNeon({ connectionString: String(connectionString) });
-  
+  const adapter = new PrismaNeon({
+    connectionString: String(connectionString),
+  });
+
   return new PrismaClient({
     adapter,
     log:
