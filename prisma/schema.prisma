@@ -4,15 +4,16 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Owner {
-  id           String        @id @default(cuid())
-  name         String
-  phone        String
-  email        String?
-  createdAt    DateTime      @default(now())
-  dogs         Dog[]
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  email     String?
+  createdAt DateTime @default(now())
+  dogs      Dog[]
 }
 
 model Dog {
@@ -31,16 +32,16 @@ model Dog {
 }
 
 model Appointment {
-  id          String            @id @default(cuid())
-  calComUid   String?           @unique // UID de la reserva en Cal.com
-  date        DateTime
-  status      AppointmentStatus @default(PENDING)
-  serviceId   String
-  service     Service           @relation(fields: [serviceId], references: [id])
-  dogId       String
-  dog         Dog               @relation(fields: [dogId], references: [id])
-  notes       String?
-  createdAt   DateTime          @default(now())
+  id        String            @id @default(cuid())
+  calComUid String?           @unique // UID de la reserva en Cal.com
+  date      DateTime
+  status    AppointmentStatus @default(PENDING)
+  serviceId String
+  service   Service           @relation(fields: [serviceId], references: [id])
+  dogId     String
+  dog       Dog               @relation(fields: [dogId], references: [id])
+  notes     String?
+  createdAt DateTime          @default(now())
 }
 
 enum AppointmentStatus {

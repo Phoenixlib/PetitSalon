@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
-import { neonConfig } from "@neondatabase/serverless";
+import { Pool, neonConfig } from "@neondatabase/serverless";
 import ws from "ws";
 
 // Necesario para entornos Node.js (no edge/browser)
@@ -15,7 +15,10 @@ function createPrismaClient() {
   if (!connectionString) {
     throw new Error("DATABASE_URL is not set");
   }
-  const adapter = new PrismaNeon({ connectionString });
+  
+  // En Prisma 6, PrismaNeon recibe el POOL CONFIG directamente, ¡no una instancia de Pool!
+  const adapter = new PrismaNeon({ connectionString: String(connectionString) });
+  
   return new PrismaClient({
     adapter,
     log:
