@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { prisma } from "@/lib/prisma";
 import Hero from "@/components/public/Hero";
 import AcercaDeNosotros from "@/components/public/AcercaDeNosotros";
 import Servicios from "@/components/public/Servicios";
@@ -14,12 +15,18 @@ export const metadata: Metadata = {
     "Peluquería canina premium. Baño y secado, corte, corte de uñas con amor y profesionalismo. ¡Reserva tu turno hoy!",
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const services = await prisma.service.findMany({
+    where: { isActive: true },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, price: true, duration: true, description: true },
+  });
+
   return (
     <>
       <Hero />
       <AcercaDeNosotros />
-      <Servicios />
+      <Servicios services={services} />
       <Galeria />
       <Testimonios />
       <FAQ />

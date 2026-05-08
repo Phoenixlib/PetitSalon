@@ -25,7 +25,8 @@ async function main() {
       name: "Baño y Secado",
       price: 12000,
       duration: 60,
-      description: "Baño completo con shampoo profesional, acondicionador, secado y cepillado.",
+      description:
+        "Baño completo con shampoo profesional, acondicionador, secado y cepillado.",
     },
     {
       name: "Corte de Pelo",
@@ -37,7 +38,8 @@ async function main() {
       name: "Baño + Corte",
       price: 22000,
       duration: 120,
-      description: "Servicio completo: baño, secado y corte de pelo. El más solicitado.",
+      description:
+        "Servicio completo: baño, secado y corte de pelo. El más solicitado.",
     },
     {
       name: "Corte de Uñas",
@@ -55,13 +57,15 @@ async function main() {
       name: "Deslanado",
       price: 18000,
       duration: 90,
-      description: "Retiro del pelo muerto en razas de doble capa. Reduce la caída y mejora el pelo.",
+      description:
+        "Retiro del pelo muerto en razas de doble capa. Reduce la caída y mejora el pelo.",
     },
     {
       name: "Spa Completo",
       price: 32000,
       duration: 150,
-      description: "Baño, corte, deslanado, corte de uñas y limpieza de oídos. Experiencia premium.",
+      description:
+        "Baño, corte, deslanado, corte de uñas y limpieza de oídos. Experiencia premium.",
     },
   ];
 

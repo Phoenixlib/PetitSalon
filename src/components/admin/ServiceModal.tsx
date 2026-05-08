@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useActionState } from "react";
-import { createServiceAction, updateServiceAction, ServiceFormState } from "@/app/admin/servicios/actions";
+import {
+  createServiceAction,
+  updateServiceAction,
+  ServiceFormState,
+} from "@/app/admin/servicios/actions";
 
 type Service = {
   id: string;
@@ -27,11 +31,11 @@ export default function ServiceModal({ open, onClose, service }: Props) {
 
   const [createState, createAction, createPending] = useActionState(
     createServiceAction,
-    initialState
+    initialState,
   );
   const [updateState, updateAction, updatePending] = useActionState(
     boundUpdate,
-    initialState
+    initialState,
   );
 
   const state = isEditing ? updateState : createState;
@@ -55,7 +59,10 @@ export default function ServiceModal({ open, onClose, service }: Props) {
         style={{ border: "1px solid var(--border)" }}
       >
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg font-semibold" style={{ color: "var(--ps-text)" }}>
+          <h2
+            className="text-lg font-semibold"
+            style={{ color: "var(--ps-text)" }}
+          >
             {isEditing ? "Editar Servicio" : "Nuevo Servicio"}
           </h2>
           <button
@@ -64,7 +71,14 @@ export default function ServiceModal({ open, onClose, service }: Props) {
             style={{ color: "var(--ps-text-mid)" }}
             aria-label="Cerrar"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M18 6L6 18M6 6l12 12" />
             </svg>
           </button>
@@ -73,7 +87,10 @@ export default function ServiceModal({ open, onClose, service }: Props) {
         <form action={action} className="flex flex-col gap-4">
           {/* Nombre */}
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium" style={{ color: "var(--ps-text)" }}>
+            <label
+              className="text-sm font-medium"
+              style={{ color: "var(--ps-text)" }}
+            >
               Nombre del servicio
             </label>
             <input
@@ -82,11 +99,13 @@ export default function ServiceModal({ open, onClose, service }: Props) {
               defaultValue={service?.name ?? ""}
               placeholder="Ej: Baño y Secado"
               className="rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:ring-2"
-              style={{
-                borderColor: "var(--border)",
-                color: "var(--ps-text)",
-                "--tw-ring-color": "var(--primary)",
-              } as React.CSSProperties}
+              style={
+                {
+                  borderColor: "var(--border)",
+                  color: "var(--ps-text)",
+                  "--tw-ring-color": "var(--primary)",
+                } as React.CSSProperties
+              }
               required
             />
             {state.errors?.name && (
@@ -97,7 +116,10 @@ export default function ServiceModal({ open, onClose, service }: Props) {
           {/* Precio y Duración en fila */}
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium" style={{ color: "var(--ps-text)" }}>
+              <label
+                className="text-sm font-medium"
+                style={{ color: "var(--ps-text)" }}
+              >
                 Precio (CLP)
               </label>
               <input
@@ -107,7 +129,10 @@ export default function ServiceModal({ open, onClose, service }: Props) {
                 placeholder="15000"
                 min={0}
                 className="rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
-                style={{ borderColor: "var(--border)", color: "var(--ps-text)" }}
+                style={{
+                  borderColor: "var(--border)",
+                  color: "var(--ps-text)",
+                }}
                 required
               />
               {state.errors?.price && (
@@ -116,7 +141,10 @@ export default function ServiceModal({ open, onClose, service }: Props) {
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium" style={{ color: "var(--ps-text)" }}>
+              <label
+                className="text-sm font-medium"
+                style={{ color: "var(--ps-text)" }}
+              >
                 Duración (min)
               </label>
               <input
@@ -126,18 +154,26 @@ export default function ServiceModal({ open, onClose, service }: Props) {
                 placeholder="60"
                 min={5}
                 className="rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
-                style={{ borderColor: "var(--border)", color: "var(--ps-text)" }}
+                style={{
+                  borderColor: "var(--border)",
+                  color: "var(--ps-text)",
+                }}
                 required
               />
               {state.errors?.duration && (
-                <p className="text-xs text-red-500">{state.errors.duration[0]}</p>
+                <p className="text-xs text-red-500">
+                  {state.errors.duration[0]}
+                </p>
               )}
             </div>
           </div>
 
           {/* Descripción */}
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium" style={{ color: "var(--ps-text)" }}>
+            <label
+              className="text-sm font-medium"
+              style={{ color: "var(--ps-text)" }}
+            >
               Descripción{" "}
               <span style={{ color: "var(--ps-text-mid)", fontWeight: 400 }}>
                 (opcional)
@@ -152,7 +188,9 @@ export default function ServiceModal({ open, onClose, service }: Props) {
               style={{ borderColor: "var(--border)", color: "var(--ps-text)" }}
             />
             {state.errors?.description && (
-              <p className="text-xs text-red-500">{state.errors.description[0]}</p>
+              <p className="text-xs text-red-500">
+                {state.errors.description[0]}
+              </p>
             )}
           </div>
 
@@ -178,7 +216,11 @@ export default function ServiceModal({ open, onClose, service }: Props) {
               className="rounded-full px-5 py-2 text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-60"
               style={{ backgroundColor: "var(--primary)" }}
             >
-              {pending ? "Guardando..." : isEditing ? "Guardar cambios" : "Crear servicio"}
+              {pending
+                ? "Guardando..."
+                : isEditing
+                  ? "Guardar cambios"
+                  : "Crear servicio"}
             </button>
           </div>
         </form>
