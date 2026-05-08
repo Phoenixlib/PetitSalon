@@ -100,9 +100,7 @@ export async function toggleServiceAction(
   revalidatePath("/");
 }
 
-export type DeleteServiceResult =
-  | { success: true }
-  | { error: string };
+export type DeleteServiceResult = { success: true } | { error: string };
 
 export async function deleteServiceAction(
   id: string,
