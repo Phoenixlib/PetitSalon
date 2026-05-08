@@ -2,6 +2,7 @@
   "chat.tools.terminal.autoApprove": {
     "npx prisma": true,
     "npx tsx": true,
-    "npx vercel": true
+    "npx vercel": true,
+    "npm install": true
   }
 }
