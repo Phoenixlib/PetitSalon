@@ -85,7 +85,7 @@ export default function Header() {
           </a>
           <Link
             href="/reservar"
-            className="text-sm font-semibold px-5 py-2.5 rounded-full text-white transition-all duration-200 hover:opacity-90 hover:scale-[1.02]"
+            className="text-sm font-semibold px-5 py-2.5 rounded-full text-primary-foreground transition-all duration-200 hover:opacity-90 hover:scale-[1.02]"
             style={{ backgroundColor: "var(--ps-lila)" }}
           >
             Reservar
@@ -154,7 +154,7 @@ export default function Header() {
             </a>
             <Link
               href="/reservar"
-              className="text-center font-semibold py-3 rounded-full text-sm text-white"
+              className="text-center font-semibold py-3 rounded-full text-sm text-primary-foreground"
               style={{ backgroundColor: "var(--ps-lila)" }}
               onClick={() => setMenuOpen(false)}
             >

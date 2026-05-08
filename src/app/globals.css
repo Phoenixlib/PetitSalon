@@ -65,42 +65,67 @@
 :root {
   /* ========================================================
      SISTEMA DE DISEÑO - PETIT SALON BRAND
-     Roles Cromáticos Principales
+     Opción 3: Colores Vibrantes (Acción) + Fondos Pasteles
      ======================================================== */
-  --primary: #b6e6e6; /* Primary Light Cyan/Teal */
-  --secondary: #f9cedf; /* Secondary Light Pink */
-  --accent: #fef4cc; /* Accent Light Yellow */
-  --surface: #f4d0c1; /* Neutral/Surface Light Peach/Coral */
-  --background: #fafafa; /* Base background para legibilidad, contenedores usan surface */
-  --foreground: #333333; /* Dark Contrast Text principal */
+  /* --- COLORES VIBRANTES (Acciones, Botones, Logos y Textos Importantes) --- */
+  --primary: #42c2ed; /* Azul Cian Vibrante */
+  --secondary: #e91e63; /* Magenta */
+  --accent: #faa61a; /* Amarillo Intenso */
 
-  /* Alias Compatibles para código legado (Mapean a los nuevos colores) */
-  --ps-lila-deep: var(--primary);
-  --ps-lila: var(--primary);
-  --ps-lila-mid: var(--secondary);
-  --ps-lila-light: var(--surface);
-  --ps-lila-pale: #fcf4f0; /* Versión ultra clara del surface */
-  --ps-lila-base: var(--background);
-  --ps-gold: var(--accent);
-  --ps-gold-light: #fffbf0;
-  --ps-gold-dark: #e6dcb8;
-  --ps-text: var(--foreground);
-  --ps-text-mid: #666666;
+  /* --- COLORES BÁSICOS --- */
+  --background: #ffffff; /* Fondo principal blanco, aspecto limpio */
+  --foreground: #222222; /* Texto principal oscuro para alta legibilidad */
 
-  /* Shadcn UI Defectos (Adaptados a los nuevos tonos) */
+  /* --- COLORES PASTELES (Superficies, Blobs, Tarjetas Decorativas) --- */
+  --pastel-cyan: #b6e6e6; /* Turquesa Pastel */
+  --pastel-pink: #f9cedf; /* Rosa Polvo */
+  --pastel-peach: #f4d0c1; /* Melocotón Suave */
+  --pastel-yellow: #fef4cc; /* Amarillo Crema */
+
+  /* Superficies por defecto */
+  --surface: #fafafa; /* Gris casi imperceptible para fondos de tarjetas básicas */
+
+  /* --- DEFINICIONES SHADCN Y VARIABLES NATIVAS --- */
   --card: #ffffff;
   --card-foreground: var(--foreground);
   --popover: #ffffff;
   --popover-foreground: var(--foreground);
-  --primary-foreground: var(--foreground); /* Textoscuro on pasteles */
-  --secondary-foreground: var(--foreground);
-  --muted: #f2e8e4; /* Muted derivado del pastel */
+
+  /* Contraste estandarizado WCAG en botones de acción vibrantes */
+  --primary-foreground: #ffffff; /* Texto blanco en el Cielo/Cyan */
+  --secondary-foreground: #ffffff; /* Texto blanco sobre Magenta */
+  --accent-foreground: #1a1a1a; /* Texto negro sobre el Amarillo Vibrante para legibilidad total */
+
+  --muted: var(--pastel-yellow);
   --muted-foreground: #666666;
-  --accent-foreground: var(--foreground);
-  --destructive: #e65c5c;
-  --border: #e8d3cb;
-  --input: #e8d3cb;
+  --destructive: var(--secondary);
+  --border: var(--pastel-peach);
+  --input: var(--pastel-peach);
   --ring: var(--primary);
+
+  /* --- MAPEO DE TEXTOS E IDENTIDAD LEGADA (Alias) --- */
+  /* Botones principales y textos destacados ahora usan los colores Vibrantes */
+  --ps-lila-deep: var(--primary);
+  --ps-lila: var(--primary);
+  --ps-lila-mid: var(--secondary);
+
+  /* Decoraciones, fondos pálidos y blobs ahora usan los Pasteles */
+  --ps-lila-light: var(--pastel-cyan);
+  --ps-lila-pale: #f0fafa; /* Un cyan pastel ultra-suave para que no sature la vista */
+  --ps-lila-base: var(--background);
+
+  /* Amarillos */
+  --ps-gold: var(
+    --accent
+  ); /* Textos, WhatsApp o íconos dorados usan amarillo vibrante */
+  --ps-gold-light: var(
+    --pastel-yellow
+  ); /* Elementos de fondo amarillos usan crema pastel */
+  --ps-gold-dark: #d18910;
+
+  /* Textura general */
+  --ps-text: var(--foreground);
+  --ps-text-mid: #555555;
 
   /* Gráficas Default */
   --chart-1: #b6e6e6;

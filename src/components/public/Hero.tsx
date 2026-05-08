@@ -171,7 +171,7 @@ export default function Hero() {
               href={WHATSAPP_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2.5 font-semibold px-7 py-4 rounded-full text-white transition-all duration-300 hover:scale-[1.03] hover:shadow-xl"
+              className="inline-flex items-center justify-center gap-2.5 font-semibold px-7 py-4 rounded-full text-primary-foreground transition-all duration-300 hover:scale-[1.03] hover:shadow-xl"
               style={{
                 backgroundColor: "var(--ps-gold)",
                 boxShadow: "0 4px 24px oklch(0.72 0.12 78 / 0.3)",
