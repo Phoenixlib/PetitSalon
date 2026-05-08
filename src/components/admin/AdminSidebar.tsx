@@ -78,7 +78,7 @@ export default function AdminSidebar({ userName }: AdminSidebarProps) {
               }}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                !isActive && "hover:bg-ps-lila-pale",
+                !isActive && "hover:bg-surface",
               )}
               style={
                 isActive
@@ -100,7 +100,7 @@ export default function AdminSidebar({ userName }: AdminSidebarProps) {
         <form action={logoutAction}>
           <button
             type="submit"
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium w-full transition-colors hover:bg-ps-lila-pale"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium w-full transition-colors hover:bg-surface"
             style={{ color: "var(--ps-text-mid)" }}
           >
             <LogOut className="size-4 shrink-0" />

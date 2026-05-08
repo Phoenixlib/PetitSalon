@@ -64,7 +64,7 @@ export default function Header() {
             <Link
               key={href}
               href={href}
-              className="text-sm font-medium transition-colors duration-200 hover:text-ps-lila"
+              className="text-sm font-medium transition-colors duration-200 hover:text-primary"
               style={{ color: "var(--ps-text-mid)" }}
             >
               {label}

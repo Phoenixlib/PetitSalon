@@ -222,7 +222,7 @@ export default async function AdminDashboardPage() {
             </p>
           </div>
         ) : (
-          <div className="bg-white divide-y divide-ps-lila-light">
+          <div className="bg-white divide-y divide-surface">
             {upcomingAppointments.map((appt) => (
               <div
                 key={appt.id}

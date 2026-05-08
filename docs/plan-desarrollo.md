@@ -29,11 +29,11 @@
 
 ### Tareas
 
-- 🔲 Crear base de datos en **Neon** y obtener `DATABASE_URL` + `DIRECT_URL`
-- 🔲 Generar `AUTH_SECRET` (`openssl rand -base64 32`) y configurar en Vercel
+- ✅ Crear base de datos en **Neon** y obtener `DATABASE_URL` + `DIRECT_URL`
+- ✅ Generar `AUTH_SECRET` (`openssl rand -base64 32`) y configurar en Vercel
 - 🔲 Configurar variables de entorno en el Dashboard de Vercel (producción)
-- 🔲 Ejecutar `npx prisma migrate deploy` apuntando a Neon
-- 🔲 Crear el primer `AdminUser` con seed manual (`npx ts-node` o script de consola — **nunca** en el pipeline de `build`)
+- ✅ Ejecutar `npx prisma migrate deploy` apuntando a Neon
+- ✅ Crear el primer `AdminUser` con seed manual (`npx ts-node` o script de consola — **nunca** en el pipeline de `build`)
 - 🔲 Conectar repositorio GitHub a Vercel
 - 🔲 Configurar dominio propio en Vercel (SSL automático)
 - 🔲 Verificar que `npm run build` pase sin errores en CI

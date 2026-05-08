@@ -52,6 +52,7 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-surface: var(--surface);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -62,85 +63,102 @@
 }
 
 :root {
-  /* Petit Salón brand tokens */
-  --ps-lila-deep: oklch(0.42 0.1 295);
-  --ps-lila: oklch(0.52 0.1 295);
-  --ps-lila-mid: oklch(0.65 0.08 295);
-  --ps-lila-light: oklch(0.8 0.05 295);
-  --ps-lila-pale: oklch(0.94 0.02 295);
-  --ps-lila-base: oklch(0.97 0.01 295);
-  --ps-gold: oklch(0.72 0.12 78);
-  --ps-gold-light: oklch(0.85 0.08 85);
-  --ps-gold-dark: oklch(0.55 0.1 70);
-  --ps-text: oklch(0.22 0.07 295);
-  --ps-text-mid: oklch(0.48 0.07 295);
+  /* ========================================================
+     SISTEMA DE DISEÑO - PETIT SALON BRAND
+     Roles Cromáticos Principales
+     ======================================================== */
+  --primary: #b6e6e6; /* Primary Light Cyan/Teal */
+  --secondary: #f9cedf; /* Secondary Light Pink */
+  --accent: #fef4cc; /* Accent Light Yellow */
+  --surface: #f4d0c1; /* Neutral/Surface Light Peach/Coral */
+  --background: #fafafa; /* Base background para legibilidad, contenedores usan surface */
+  --foreground: #333333; /* Dark Contrast Text principal */
 
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  /* Alias Compatibles para código legado (Mapean a los nuevos colores) */
+  --ps-lila-deep: var(--primary);
+  --ps-lila: var(--primary);
+  --ps-lila-mid: var(--secondary);
+  --ps-lila-light: var(--surface);
+  --ps-lila-pale: #fcf4f0; /* Versión ultra clara del surface */
+  --ps-lila-base: var(--background);
+  --ps-gold: var(--accent);
+  --ps-gold-light: #fffbf0;
+  --ps-gold-dark: #e6dcb8;
+  --ps-text: var(--foreground);
+  --ps-text-mid: #666666;
+
+  /* Shadcn UI Defectos (Adaptados a los nuevos tonos) */
+  --card: #ffffff;
+  --card-foreground: var(--foreground);
+  --popover: #ffffff;
+  --popover-foreground: var(--foreground);
+  --primary-foreground: var(--foreground); /* Textoscuro on pasteles */
+  --secondary-foreground: var(--foreground);
+  --muted: #f2e8e4; /* Muted derivado del pastel */
+  --muted-foreground: #666666;
+  --accent-foreground: var(--foreground);
+  --destructive: #e65c5c;
+  --border: #e8d3cb;
+  --input: #e8d3cb;
+  --ring: var(--primary);
+
+  /* Gráficas Default */
+  --chart-1: #b6e6e6;
+  --chart-2: #f9cedf;
+  --chart-3: #fef4cc;
+  --chart-4: #f4d0c1;
+  --chart-5: #cae4d3;
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Sidebar Panels */
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--foreground);
+  --sidebar-accent: var(--secondary);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: #e8d3cb;
+  --sidebar-ring: var(--primary);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* Petitsalon Minimal Dark Mode Support */
+  --primary: #b6e6e6;
+  --secondary: #f9cedf;
+  --accent: #fef4cc;
+  --surface: #2a2a2a;
+  --background: #1a1a1a;
+  --foreground: #eeeeee;
+
+  --card: #222222;
+  --card-foreground: #eeeeee;
+  --popover: #222222;
+  --popover-foreground: #eeeeee;
+  --primary-foreground: #333333; /* Texto oscuro siempre en colores pastel */
+  --secondary-foreground: #333333;
+  --muted: #3a3a3a;
+  --muted-foreground: #a0a0a0;
+  --accent-foreground: #333333;
+  --destructive: #d94a4a;
+  --destructive-foreground: #ffffff;
+  --border: #444444;
+  --input: #444444;
+  --ring: var(--primary);
+
+  --chart-1: #b6e6e6;
+  --chart-2: #f9cedf;
+  --chart-3: #fef4cc;
+  --chart-4: #f4d0c1;
+  --chart-5: #cae4d3;
+
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: #333333;
+  --sidebar-accent: var(--secondary);
+  --sidebar-accent-foreground: #333333;
+  --sidebar-border: #444444;
+  --sidebar-ring: var(--primary);
 }
 
 @keyframes ps-fade-up {
