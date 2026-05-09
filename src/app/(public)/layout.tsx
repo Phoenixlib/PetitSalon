@@ -1,4 +1,4 @@
-import Header from "@/components/public/Header";
+import HeaderWithAuth from "@/components/public/HeaderWithAuth";
 import Footer from "@/components/public/Footer";
 
 export default function PublicLayout({
@@ -8,7 +8,7 @@ export default function PublicLayout({
 }) {
   return (
     <>
-      <Header />
+      <HeaderWithAuth />
       <main className="flex-1">{children}</main>
       <Footer />
     </>

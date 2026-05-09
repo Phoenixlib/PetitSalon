@@ -115,7 +115,7 @@ export default function AdminSidebar({ userName }: AdminSidebarProps) {
     <>
       {/* Desktop sidebar */}
       <aside
-        className="hidden md:flex flex-col w-56 shrink-0 sticky top-0 h-screen border-r overflow-y-auto"
+        className="hidden md:flex flex-col w-56 shrink-0 sticky top-16 h-[calc(100vh-4rem)] border-r overflow-y-auto"
         style={{
           backgroundColor: "var(--ps-lila-base)",
           borderColor: "var(--ps-lila-light)",
@@ -124,9 +124,9 @@ export default function AdminSidebar({ userName }: AdminSidebarProps) {
         {navLinks}
       </aside>
 
-      {/* Mobile: fixed top bar */}
+      {/* Mobile: fixed secondary bar (below public header at top-16) */}
       <div
-        className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 h-14 border-b"
+        className="md:hidden fixed top-16 left-0 right-0 z-40 flex items-center justify-between px-4 h-14 border-b"
         style={{
           backgroundColor: "var(--ps-lila-base)",
           borderColor: "var(--ps-lila-light)",

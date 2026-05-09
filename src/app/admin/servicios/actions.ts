@@ -12,7 +12,7 @@ const ServiceSchema = z.object({
     .int("El precio debe ser un entero (CLP)")
     .min(0, "El precio no puede ser negativo"),
   duration: z.coerce.number().int().min(5, "Mínimo 5 minutos"),
-  description: z.string().max(500).optional().nullable(),
+  description: z.string().max(3000).optional().nullable(),
 });
 
 export type ServiceFormState = {

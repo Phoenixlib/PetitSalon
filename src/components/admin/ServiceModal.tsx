@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useActionState } from "react";
+import { useEffect, useActionState, useState } from "react";
 import {
   createServiceAction,
   updateServiceAction,
@@ -23,6 +23,32 @@ type Props = {
 };
 
 const initialState: ServiceFormState = {};
+
+const MAX_DESC = 3000;
+
+function DescriptionTextarea({ defaultValue }: { defaultValue: string }) {
+  const [count, setCount] = useState(defaultValue.length);
+  return (
+    <div className="relative">
+      <textarea
+        name="description"
+        defaultValue={defaultValue}
+        placeholder="Describe brevemente qué incluye este servicio..."
+        rows={5}
+        maxLength={MAX_DESC}
+        onChange={(e) => setCount(e.target.value.length)}
+        className="w-full resize-y rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
+        style={{ borderColor: "var(--border)", color: "var(--ps-text)" }}
+      />
+      <span
+        className="absolute bottom-2 right-3 text-[10px] tabular-nums select-none"
+        style={{ color: "var(--ps-text-mid)" }}
+      >
+        {count}/{MAX_DESC}
+      </span>
+    </div>
+  );
+}
 
 export default function ServiceModal({ open, onClose, service }: Props) {
   const isEditing = !!service;
@@ -179,14 +205,7 @@ export default function ServiceModal({ open, onClose, service }: Props) {
                 (opcional)
               </span>
             </label>
-            <textarea
-              name="description"
-              defaultValue={service?.description ?? ""}
-              placeholder="Describe brevemente qué incluye este servicio..."
-              rows={3}
-              className="resize-none rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
-              style={{ borderColor: "var(--border)", color: "var(--ps-text)" }}
-            />
+            <DescriptionTextarea defaultValue={service?.description ?? ""} />
             {state.errors?.description && (
               <p className="text-xs text-red-500">
                 {state.errors.description[0]}
