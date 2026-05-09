@@ -128,7 +128,9 @@ const cardAnim = {
 };
 
 export default function Servicios({ services }: Props) {
-  const [selected, setSelected] = useState<(Service & { index: number }) | null>(null);
+  const [selected, setSelected] = useState<
+    (Service & { index: number }) | null
+  >(null);
 
   // Cerrar con Escape
   useEffect(() => {
@@ -142,263 +144,296 @@ export default function Servicios({ services }: Props) {
   // Bloquear scroll cuando el modal está abierto
   useEffect(() => {
     document.body.style.overflow = selected ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [selected]);
 
   if (services.length === 0) return null;
 
   return (
     <>
-    <section
-      id="servicios"
-      className="py-24 px-4 relative overflow-hidden"
-      style={{ backgroundColor: "var(--background)" }}
-    >
-      {/* Blobs decorativos */}
-      <div
-        className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-20 pointer-events-none"
-        style={{ backgroundColor: "var(--pastel-cyan)" }}
-      />
-      <div
-        className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full opacity-15 pointer-events-none"
-        style={{ backgroundColor: "var(--pastel-pink)" }}
-      />
+      <section
+        id="servicios"
+        className="py-24 px-4 relative overflow-hidden"
+        style={{ backgroundColor: "var(--background)" }}
+      >
+        {/* Blobs decorativos */}
+        <div
+          className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-20 pointer-events-none"
+          style={{ backgroundColor: "var(--pastel-cyan)" }}
+        />
+        <div
+          className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full opacity-15 pointer-events-none"
+          style={{ backgroundColor: "var(--pastel-pink)" }}
+        />
 
-      <div className="max-w-6xl mx-auto relative z-10">
-        {/* Encabezado */}
-        <div className="text-center mb-16">
-          <span
-            className="inline-block text-xs font-semibold tracking-[0.2em] uppercase mb-3"
-            style={{ color: "var(--ps-gold)" }}
-          >
-            Nuestra Especialidad
-          </span>
-          <h2
-            className="text-4xl md:text-5xl font-light mb-4"
-            style={{
-              fontFamily: "var(--font-display)",
-              color: "var(--ps-text)",
-            }}
-          >
-            Servicios
-          </h2>
-          <p
-            className="text-lg max-w-md mx-auto"
-            style={{ color: "var(--ps-text-mid)" }}
-          >
-            Todo lo que tu peludo necesita, con el amor que se merece.
-          </p>
-        </div>
-
-        {/* Grid de cards */}
-        <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
-          variants={container}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-80px" }}
-        >
-          {services.map((service, i) => (
-            <motion.button
-              key={service.id}
-              variants={cardAnim}
-              onClick={() => setSelected({ ...service, index: i })}
-              className="relative rounded-3xl p-6 flex flex-col gap-4 hover:scale-[1.02] transition-transform duration-300 text-left w-full cursor-pointer"
+        <div className="max-w-6xl mx-auto relative z-10">
+          {/* Encabezado */}
+          <div className="text-center mb-16">
+            <span
+              className="inline-block text-xs font-semibold tracking-[0.2em] uppercase mb-3"
+              style={{ color: "var(--ps-gold)" }}
+            >
+              Nuestra Especialidad
+            </span>
+            <h2
+              className="text-4xl md:text-5xl font-light mb-4"
               style={{
-                backgroundColor: CARD_COLORS[i % CARD_COLORS.length],
-                boxShadow: "0 2px 16px rgba(0,0,0,0.06)",
+                fontFamily: "var(--font-display)",
+                color: "var(--ps-text)",
               }}
             >
-              {/* Icono */}
-              <div
-                className="w-11 h-11 rounded-2xl flex items-center justify-center"
-                style={{ backgroundColor: "rgba(255,255,255,0.6)" }}
+              Servicios
+            </h2>
+            <p
+              className="text-lg max-w-md mx-auto"
+              style={{ color: "var(--ps-text-mid)" }}
+            >
+              Todo lo que tu peludo necesita, con el amor que se merece.
+            </p>
+          </div>
+
+          {/* Grid de cards */}
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-80px" }}
+          >
+            {services.map((service, i) => (
+              <motion.button
+                key={service.id}
+                variants={cardAnim}
+                onClick={() => setSelected({ ...service, index: i })}
+                className="relative rounded-3xl p-6 flex flex-col gap-4 hover:scale-[1.02] transition-transform duration-300 text-left w-full cursor-pointer"
+                style={{
+                  backgroundColor: CARD_COLORS[i % CARD_COLORS.length],
+                  boxShadow: "0 2px 16px rgba(0,0,0,0.06)",
+                }}
               >
-                <div className="w-5 h-5" style={{ color: "var(--ps-text)" }}>
-                  {SERVICE_ICONS[i % SERVICE_ICONS.length]}
-                </div>
-              </div>
-
-              {/* Nombre y descripción */}
-              <div>
-                <h3
-                  className="text-base font-semibold leading-snug"
-                  style={{ color: "var(--ps-text)" }}
+                {/* Icono */}
+                <div
+                  className="w-11 h-11 rounded-2xl flex items-center justify-center"
+                  style={{ backgroundColor: "rgba(255,255,255,0.6)" }}
                 >
-                  {service.name}
-                </h3>
-                {service.description && (
-                  <p
-                    className="text-sm mt-1 leading-relaxed line-clamp-2"
-                    style={{ color: "var(--ps-text-mid)" }}
-                  >
-                    {service.description}
-                  </p>
-                )}
-              </div>
+                  <div className="w-5 h-5" style={{ color: "var(--ps-text)" }}>
+                    {SERVICE_ICONS[i % SERVICE_ICONS.length]}
+                  </div>
+                </div>
 
-              {/* Footer card */}
-              <div className="mt-auto flex items-end justify-between pt-2">
+                {/* Nombre y descripción */}
                 <div>
-                  <p
-                    className="text-xl font-bold"
+                  <h3
+                    className="text-base font-semibold leading-snug"
                     style={{ color: "var(--ps-text)" }}
                   >
-                    {formatPrice(service.price)}
-                  </p>
+                    {service.name}
+                  </h3>
+                  {service.description && (
+                    <p
+                      className="text-sm mt-1 leading-relaxed line-clamp-2"
+                      style={{ color: "var(--ps-text-mid)" }}
+                    >
+                      {service.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* Footer card */}
+                <div className="mt-auto flex items-end justify-between pt-2">
+                  <div>
+                    <p
+                      className="text-xl font-bold"
+                      style={{ color: "var(--ps-text)" }}
+                    >
+                      {formatPrice(service.price)}
+                    </p>
+                    <p
+                      className="text-xs"
+                      style={{ color: "var(--ps-text-mid)" }}
+                    >
+                      {service.duration} min
+                    </p>
+                  </div>
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+                    style={{
+                      backgroundColor: "rgba(255,255,255,0.7)",
+                      color: "var(--primary)",
+                    }}
+                  >
+                    →
+                  </div>
+                </div>
+              </motion.button>
+            ))}
+          </motion.div>
+
+          {/* CTA */}
+          <div className="text-center mt-14">
+            <Link
+              href="/reservar"
+              className="inline-flex items-center gap-2 rounded-full px-8 py-4 text-sm font-semibold text-white shadow-md transition-all hover:opacity-90 hover:scale-[1.02]"
+              style={{ backgroundColor: "var(--primary)" }}
+            >
+              Reservar mi cita
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Modal de servicio */}
+      <AnimatePresence>
+        {selected && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {/* Overlay */}
+            <motion.div
+              className="absolute inset-0"
+              style={{
+                backgroundColor: "rgba(0,0,0,0.45)",
+                backdropFilter: "blur(4px)",
+              }}
+              onClick={() => setSelected(null)}
+            />
+
+            {/* Panel */}
+            <motion.div
+              className="relative w-full max-w-md rounded-3xl overflow-hidden shadow-2xl"
+              style={{
+                backgroundColor:
+                  CARD_COLORS[selected.index % CARD_COLORS.length],
+              }}
+              initial={{ opacity: 0, scale: 0.93, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.93, y: 20 }}
+              transition={{ duration: 0.28, ease: [0.04, 0.62, 0.23, 0.98] }}
+            >
+              {/* Botón cerrar */}
+              <button
+                onClick={() => setSelected(null)}
+                className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold z-10 transition-opacity hover:opacity-70"
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.6)",
+                  color: "var(--ps-text)",
+                }}
+                aria-label="Cerrar"
+              >
+                ×
+              </button>
+
+              <div className="p-8 flex flex-col gap-5">
+                {/* Icono grande */}
+                <div
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                  style={{ backgroundColor: "rgba(255,255,255,0.6)" }}
+                >
+                  <div className="w-7 h-7" style={{ color: "var(--ps-text)" }}>
+                    {SERVICE_ICONS[selected.index % SERVICE_ICONS.length]}
+                  </div>
+                </div>
+
+                {/* Nombre */}
+                <div>
+                  <h3
+                    className="text-2xl font-semibold leading-tight"
+                    style={{ color: "var(--ps-text)" }}
+                  >
+                    {selected.name}
+                  </h3>
+                </div>
+
+                {/* Descripción */}
+                {selected.description && (
                   <p
-                    className="text-xs"
+                    className="text-sm leading-relaxed"
                     style={{ color: "var(--ps-text-mid)" }}
                   >
-                    {service.duration} min
+                    {selected.description}
                   </p>
-                </div>
+                )}
+
+                {/* Precio + duración */}
                 <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-                  style={{
-                    backgroundColor: "rgba(255,255,255,0.7)",
-                    color: "var(--primary)",
-                  }}
+                  className="flex gap-4 rounded-2xl p-4"
+                  style={{ backgroundColor: "rgba(255,255,255,0.5)" }}
                 >
-                  →
+                  <div className="flex-1 text-center">
+                    <p
+                      className="text-xs uppercase tracking-widest mb-1"
+                      style={{ color: "var(--ps-text-mid)" }}
+                    >
+                      Precio
+                    </p>
+                    <p
+                      className="text-2xl font-bold"
+                      style={{ color: "var(--ps-text)" }}
+                    >
+                      {formatPrice(selected.price)}
+                    </p>
+                  </div>
+                  <div
+                    className="w-px"
+                    style={{ backgroundColor: "rgba(0,0,0,0.08)" }}
+                  />
+                  <div className="flex-1 text-center">
+                    <p
+                      className="text-xs uppercase tracking-widest mb-1"
+                      style={{ color: "var(--ps-text-mid)" }}
+                    >
+                      Duración
+                    </p>
+                    <p
+                      className="text-2xl font-bold"
+                      style={{ color: "var(--ps-text)" }}
+                    >
+                      {selected.duration}
+                      <span className="text-sm font-normal ml-1">min</span>
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </motion.button>
-          ))}
-        </motion.div>
 
-        {/* CTA */}
-        <div className="text-center mt-14">
-          <Link
-            href="/reservar"
-            className="inline-flex items-center gap-2 rounded-full px-8 py-4 text-sm font-semibold text-white shadow-md transition-all hover:opacity-90 hover:scale-[1.02]"
-            style={{ backgroundColor: "var(--primary)" }}
-          >
-            Reservar mi cita
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </Link>
-        </div>
-      </div>
-    </section>
-
-    {/* Modal de servicio */}
-    <AnimatePresence>
-      {selected && (
-        <motion.div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          {/* Overlay */}
-          <motion.div
-            className="absolute inset-0"
-            style={{ backgroundColor: "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}
-            onClick={() => setSelected(null)}
-          />
-
-          {/* Panel */}
-          <motion.div
-            className="relative w-full max-w-md rounded-3xl overflow-hidden shadow-2xl"
-            style={{ backgroundColor: CARD_COLORS[selected.index % CARD_COLORS.length] }}
-            initial={{ opacity: 0, scale: 0.93, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.93, y: 20 }}
-            transition={{ duration: 0.28, ease: [0.04, 0.62, 0.23, 0.98] }}
-          >
-            {/* Botón cerrar */}
-            <button
-              onClick={() => setSelected(null)}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold z-10 transition-opacity hover:opacity-70"
-              style={{ backgroundColor: "rgba(255,255,255,0.6)", color: "var(--ps-text)" }}
-              aria-label="Cerrar"
-            >
-              ×
-            </button>
-
-            <div className="p-8 flex flex-col gap-5">
-              {/* Icono grande */}
-              <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                style={{ backgroundColor: "rgba(255,255,255,0.6)" }}
-              >
-                <div className="w-7 h-7" style={{ color: "var(--ps-text)" }}>
-                  {SERVICE_ICONS[selected.index % SERVICE_ICONS.length]}
-                </div>
-              </div>
-
-              {/* Nombre */}
-              <div>
-                <h3
-                  className="text-2xl font-semibold leading-tight"
-                  style={{ color: "var(--ps-text)" }}
+                {/* CTA */}
+                <Link
+                  href="/reservar"
+                  className="inline-flex items-center justify-center gap-2 rounded-full px-8 py-4 text-sm font-semibold text-white shadow-md transition-all hover:opacity-90 hover:scale-[1.02] mt-1"
+                  style={{ backgroundColor: "var(--primary)" }}
+                  onClick={() => setSelected(null)}
                 >
-                  {selected.name}
-                </h3>
+                  Reservar este servicio
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </Link>
               </div>
-
-              {/* Descripción */}
-              {selected.description && (
-                <p
-                  className="text-sm leading-relaxed"
-                  style={{ color: "var(--ps-text-mid)" }}
-                >
-                  {selected.description}
-                </p>
-              )}
-
-              {/* Precio + duración */}
-              <div
-                className="flex gap-4 rounded-2xl p-4"
-                style={{ backgroundColor: "rgba(255,255,255,0.5)" }}
-              >
-                <div className="flex-1 text-center">
-                  <p className="text-xs uppercase tracking-widest mb-1" style={{ color: "var(--ps-text-mid)" }}>
-                    Precio
-                  </p>
-                  <p className="text-2xl font-bold" style={{ color: "var(--ps-text)" }}>
-                    {formatPrice(selected.price)}
-                  </p>
-                </div>
-                <div className="w-px" style={{ backgroundColor: "rgba(0,0,0,0.08)" }} />
-                <div className="flex-1 text-center">
-                  <p className="text-xs uppercase tracking-widest mb-1" style={{ color: "var(--ps-text-mid)" }}>
-                    Duración
-                  </p>
-                  <p className="text-2xl font-bold" style={{ color: "var(--ps-text)" }}>
-                    {selected.duration}
-                    <span className="text-sm font-normal ml-1">min</span>
-                  </p>
-                </div>
-              </div>
-
-              {/* CTA */}
-              <Link
-                href="/reservar"
-                className="inline-flex items-center justify-center gap-2 rounded-full px-8 py-4 text-sm font-semibold text-white shadow-md transition-all hover:opacity-90 hover:scale-[1.02] mt-1"
-                style={{ backgroundColor: "var(--primary)" }}
-                onClick={() => setSelected(null)}
-              >
-                Reservar este servicio
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </Link>
-            </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  </>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
