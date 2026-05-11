@@ -14,6 +14,7 @@ const ServiceSchema = z.object({
   duration: z.coerce.number().int().min(5, "Mínimo 5 minutos"),
   description: z.string().max(3000).optional().nullable(),
   categoryId: z.string().optional().nullable(),
+  calComLink: z.string().max(255).optional().nullable(),
 });
 
 export type ServiceFormState = {
@@ -45,6 +46,7 @@ export async function createServiceAction(
       duration: Number(formData.get("duration")),
       description: (formData.get("description") as string) || null,
       categoryId: (formData.get("categoryId") as string) || null,
+      calComLink: (formData.get("calComLink") as string) || null,
     };
 
     const parsed = ServiceSchema.safeParse(raw);
@@ -77,6 +79,7 @@ export async function updateServiceAction(
       duration: Number(formData.get("duration")),
       description: (formData.get("description") as string) || null,
       categoryId: (formData.get("categoryId") as string) || null,
+      calComLink: (formData.get("calComLink") as string) || null,
     };
 
     const parsed = ServiceSchema.safeParse(raw);

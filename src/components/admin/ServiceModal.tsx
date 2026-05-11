@@ -15,6 +15,7 @@ type Service = {
   description: string | null;
   isActive: boolean;
   categoryId?: string | null;
+  calComLink?: string | null;
 };
 
 type Category = { id: string; name: string };
@@ -55,7 +56,13 @@ function DescriptionTextarea({ defaultValue }: { defaultValue: string }) {
   );
 }
 
-export default function ServiceModal({ open, onClose, service, categories, defaultCategoryId }: Props) {
+export default function ServiceModal({
+  open,
+  onClose,
+  service,
+  categories,
+  defaultCategoryId,
+}: Props) {
   const isEditing = !!service;
 
   const boundUpdate = updateServiceAction.bind(null, service?.id ?? "");
@@ -126,13 +133,17 @@ export default function ServiceModal({ open, onClose, service, categories, defau
             </label>
             <select
               name="categoryId"
-              defaultValue={(service as any)?.categoryId ?? defaultCategoryId ?? ""}
+              defaultValue={
+                (service as any)?.categoryId ?? defaultCategoryId ?? ""
+              }
               className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 bg-white"
               style={{ borderColor: "var(--border)" }}
             >
               <option value="">Sin categoría</option>
               {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
               ))}
             </select>
           </div>
@@ -237,6 +248,39 @@ export default function ServiceModal({ open, onClose, service, categories, defau
                 {state.errors.description[0]}
               </p>
             )}
+          </div>
+
+          
+          {/* Link de Cal.com */}
+          <div className="flex flex-col gap-1">
+            <label
+              className="text-sm font-medium"
+              style={{ color: "var(--ps-text)" }}
+            >
+              Enlace de Cal.com{" "}
+              <span style={{ color: "var(--ps-text-mid)", fontWeight: 400 }}>
+                (opcional)
+              </span>
+            </label>
+            <input
+              type="text"
+              name="calComLink"
+              defaultValue={service?.calComLink || ""}
+              placeholder="Ej: pequeños/corte-perro-pequeno"
+              className="w-full rounded-xl px-4 py-2.5 text-sm transition-shadow focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: "#f9fafb",
+                border: "1px solid var(--border)",
+              }}
+            />
+            {state.errors && "calComLink" in state.errors && (
+              <p className="text-xs text-red-500 mt-1">
+                {(state.errors as any).calComLink?.[0]}
+              </p>
+            )}
+            <p className="text-xs mt-1" style={{ color: "var(--ps-text-mid)" }}>
+              Si se deja en blanco usará el link por defecto configurado.
+            </p>
           </div>
 
           {state.errors?._form && (
