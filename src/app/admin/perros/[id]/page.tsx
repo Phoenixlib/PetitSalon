@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import { AppointmentStatus } from "@prisma/client";
 import DogDetailClient from "./DogDetailClient";
 
-export default async function DogDetailPage(props: { params: Promise<{ id: string }> }) {
+export default async function DogDetailPage(props: {
+  params: Promise<{ id: string }>;
+}) {
   const params = await props.params;
 
   const servicesP = prisma.service.findMany({
@@ -16,17 +18,17 @@ export default async function DogDetailPage(props: { params: Promise<{ id: strin
     include: {
       owner: true,
       attendances: {
-        orderBy: { date: 'desc' }
+        orderBy: { date: "desc" },
       },
       appointments: {
         where: {
           status: {
-            in: [AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED]
-          }
+            in: [AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED],
+          },
         },
         include: { service: true },
-        orderBy: { date: 'asc' }
-      }
+        orderBy: { date: "asc" },
+      },
     },
   });
 

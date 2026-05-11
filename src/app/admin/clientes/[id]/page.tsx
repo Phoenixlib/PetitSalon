@@ -2,7 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import ClientDetailClient from "./ClientDetailClient";
 
-export default async function ClientDetailPage(props: { params: Promise<{ id: string }> }) {
+export default async function ClientDetailPage(props: {
+  params: Promise<{ id: string }>;
+}) {
   const params = await props.params;
   const owner = await prisma.owner.findUnique({
     where: { id: params.id },
