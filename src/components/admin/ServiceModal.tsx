@@ -14,12 +14,17 @@ type Service = {
   duration: number;
   description: string | null;
   isActive: boolean;
+  categoryId?: string | null;
 };
+
+type Category = { id: string; name: string };
 
 type Props = {
   open: boolean;
   onClose: () => void;
   service?: Service | null;
+  categories: Category[];
+  defaultCategoryId?: string | null;
 };
 
 const initialState: ServiceFormState = {};
@@ -50,7 +55,7 @@ function DescriptionTextarea({ defaultValue }: { defaultValue: string }) {
   );
 }
 
-export default function ServiceModal({ open, onClose, service }: Props) {
+export default function ServiceModal({ open, onClose, service, categories, defaultCategoryId }: Props) {
   const isEditing = !!service;
 
   const boundUpdate = updateServiceAction.bind(null, service?.id ?? "");
@@ -111,6 +116,27 @@ export default function ServiceModal({ open, onClose, service }: Props) {
         </div>
 
         <form action={action} className="flex flex-col gap-4">
+          {/* Categoria */}
+          <div className="flex flex-col gap-1">
+            <label
+              className="text-sm font-medium"
+              style={{ color: "var(--ps-text)" }}
+            >
+              Categoría
+            </label>
+            <select
+              name="categoryId"
+              defaultValue={(service as any)?.categoryId ?? defaultCategoryId ?? ""}
+              className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 bg-white"
+              style={{ borderColor: "var(--border)" }}
+            >
+              <option value="">Sin categoría</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+
           {/* Nombre */}
           <div className="flex flex-col gap-1">
             <label

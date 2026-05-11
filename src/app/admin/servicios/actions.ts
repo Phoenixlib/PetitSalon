@@ -13,6 +13,7 @@ const ServiceSchema = z.object({
     .min(0, "El precio no puede ser negativo"),
   duration: z.coerce.number().int().min(5, "Mínimo 5 minutos"),
   description: z.string().max(3000).optional().nullable(),
+  categoryId: z.string().optional().nullable(),
 });
 
 export type ServiceFormState = {
@@ -43,6 +44,7 @@ export async function createServiceAction(
       price: Number(formData.get("price")),
       duration: Number(formData.get("duration")),
       description: (formData.get("description") as string) || null,
+      categoryId: (formData.get("categoryId") as string) || null,
     };
 
     const parsed = ServiceSchema.safeParse(raw);
@@ -74,6 +76,7 @@ export async function updateServiceAction(
       price: Number(formData.get("price")),
       duration: Number(formData.get("duration")),
       description: (formData.get("description") as string) || null,
+      categoryId: (formData.get("categoryId") as string) || null,
     };
 
     const parsed = ServiceSchema.safeParse(raw);
@@ -125,5 +128,106 @@ export async function deleteServiceAction(
     return { success: true };
   } catch {
     return { error: "Error al eliminar el servicio." };
+  }
+}
+
+// --- CATEGORY ACTIONS ---
+
+const CategorySchema = z.object({
+  name: z.string().min(1, "El nombre es obligatorio").max(100),
+  description: z.string().max(3000).optional().nullable(),
+  order: z.coerce.number().int().min(0).default(0),
+});
+
+export type CategoryFormState = {
+  errors?: {
+    name?: string[];
+    description?: string[];
+    order?: string[];
+    _form?: string[];
+  };
+  success?: boolean;
+};
+
+export async function createCategoryAction(
+  _prev: CategoryFormState,
+  formData: FormData,
+): Promise<CategoryFormState> {
+  try {
+    await requireAdmin();
+
+    const raw = {
+      name: formData.get("name") as string,
+      description: (formData.get("description") as string) || null,
+      order: Number(formData.get("order") || 0),
+    };
+
+    const parsed = CategorySchema.safeParse(raw);
+    if (!parsed.success) {
+      return { errors: parsed.error.flatten().fieldErrors };
+    }
+
+    await prisma.serviceCategory.create({ data: parsed.data });
+    revalidatePath("/admin/servicios");
+    revalidatePath("/");
+    return { success: true };
+  } catch {
+    return {
+      errors: { _form: ["Error al crear la categoría. Intenta de nuevo."] },
+    };
+  }
+}
+
+export async function updateCategoryAction(
+  id: string,
+  _prev: CategoryFormState,
+  formData: FormData,
+): Promise<CategoryFormState> {
+  try {
+    await requireAdmin();
+
+    const raw = {
+      name: formData.get("name") as string,
+      description: (formData.get("description") as string) || null,
+      order: Number(formData.get("order") || 0),
+    };
+
+    const parsed = CategorySchema.safeParse(raw);
+    if (!parsed.success) {
+      return { errors: parsed.error.flatten().fieldErrors };
+    }
+
+    await prisma.serviceCategory.update({ where: { id }, data: parsed.data });
+    revalidatePath("/admin/servicios");
+    revalidatePath("/");
+    return { success: true };
+  } catch {
+    return { errors: { _form: ["Error al actualizar la categoría."] } };
+  }
+}
+
+export async function deleteCategoryAction(
+  id: string,
+): Promise<{ success: true } | { error: string }> {
+  try {
+    await requireAdmin();
+
+    // Guard: no permitir eliminar si tiene servicios activos
+    const activeServicesCount = await prisma.service.count({
+      where: { categoryId: id, isActive: true },
+    });
+
+    if (activeServicesCount > 0) {
+      return {
+        error: `No se puede eliminar: tiene ${activeServicesCount} servicio(s) activo(s). Desactiva o mueve los servicios primero.`,
+      };
+    }
+
+    await prisma.serviceCategory.delete({ where: { id } });
+    revalidatePath("/admin/servicios");
+    revalidatePath("/");
+    return { success: true };
+  } catch {
+    return { error: "Error al eliminar la categoría." };
   }
 }

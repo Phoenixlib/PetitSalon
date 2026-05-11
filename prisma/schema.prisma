@@ -73,14 +73,26 @@ model Attendance {
 }
 
 model Service {
-  id           String        @id @default(cuid())
+  id           String           @id @default(cuid())
   name         String
   price        Int
   duration     Int
   description  String?
-  isActive     Boolean       @default(true)
-  calComLink   String?       @map("cal_com_link")
+  isActive     Boolean          @default(true)
+  calComLink   String?          @map("cal_com_link")
+  categoryId   String?
+  category     ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   appointments Appointment[]
+}
+
+model ServiceCategory {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  order       Int       @default(0)
+  isActive    Boolean   @default(true)
+  services    Service[]
+  createdAt   DateTime  @default(now())
 }
 
 model AdminUser {

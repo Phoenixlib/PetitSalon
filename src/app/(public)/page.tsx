@@ -16,8 +16,27 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const services = await prisma.service.findMany({
+  const categories = await prisma.serviceCategory.findMany({
     where: { isActive: true },
+    orderBy: { order: "asc" },
+    include: {
+      services: {
+        where: { isActive: true },
+        orderBy: { name: "asc" },
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          duration: true,
+          description: true,
+          calComLink: true,
+        },
+      },
+    },
+  });
+
+  const uncategorizedServices = await prisma.service.findMany({
+    where: { isActive: true, categoryId: null },
     orderBy: { name: "asc" },
     select: {
       id: true,
@@ -33,7 +52,7 @@ export default async function HomePage() {
     <>
       <Hero />
       <AcercaDeNosotros />
-      <Servicios services={services} />
+      <Servicios categories={categories} uncategorizedServices={uncategorizedServices} />
       <Galeria />
       <Testimonios />
       <FAQ />

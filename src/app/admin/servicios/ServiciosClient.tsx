@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { toggleServiceAction, deleteServiceAction } from "./actions";
+import { toggleServiceAction, deleteServiceAction, deleteCategoryAction } from "./actions";
 import ServiceModal from "@/components/admin/ServiceModal";
+import CategoryModal from "@/components/admin/CategoryModal";
 
 type Service = {
   id: string;
@@ -11,10 +12,21 @@ type Service = {
   duration: number;
   description: string | null;
   isActive: boolean;
+  categoryId: string | null;
+};
+
+type Category = {
+  id: string;
+  name: string;
+  description: string | null;
+  order: number;
+  isActive: boolean;
+  services: Service[];
 };
 
 type Props = {
-  services: Service[];
+  categories: Category[];
+  uncategorized: Service[];
 };
 
 function formatPrice(price: number) {
@@ -25,43 +37,69 @@ function formatPrice(price: number) {
   }).format(price);
 }
 
-export default function ServiciosClient({ services }: Props) {
+export default function ServiciosClient({ categories, uncategorized }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
+  const [defaultCatId, setDefaultCatId] = useState<string | null>(null);
+
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+
   const [isPending, startTransition] = useTransition();
-  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleNew = () => {
+  // -- Services --
+  const handleNewService = (categoryId: string | null = null) => {
     setEditingService(null);
+    setDefaultCatId(categoryId);
     setModalOpen(true);
   };
 
-  const handleEdit = (service: Service) => {
+  const handleEditService = (service: Service) => {
     setEditingService(service);
+    setDefaultCatId(service.categoryId);
     setModalOpen(true);
   };
 
-  const handleToggle = (id: string, currentActive: boolean) => {
+  const handleToggleService = (id: string, currentActive: boolean) => {
     startTransition(() => {
       toggleServiceAction(id, !currentActive);
     });
   };
 
-  const handleDelete = (id: string) => {
-    setDeleteError(null);
+  const handleDeleteService = (id: string) => {
+    setErrorMsg(null);
     startTransition(async () => {
       const result = await deleteServiceAction(id);
-      if ("error" in result) setDeleteError(result.error);
+      if ("error" in result) setErrorMsg(result.error);
     });
   };
 
-  const active = services.filter((s) => s.isActive);
-  const inactive = services.filter((s) => !s.isActive);
+  // -- Categories --
+  const handleNewCategory = () => {
+    setEditingCategory(null);
+    setCategoryModalOpen(true);
+  };
+
+  const handleEditCategory = (category: Category) => {
+    setEditingCategory(category);
+    setCategoryModalOpen(true);
+  };
+
+  const handleDeleteCategory = (id: string) => {
+    setErrorMsg(null);
+    startTransition(async () => {
+      const result = await deleteCategoryAction(id);
+      if ("error" in result) setErrorMsg(result.error);
+    });
+  };
+
+  const allCategoriesForSelect = categories.map(c => ({ id: c.id, name: c.name }));
 
   return (
     <>
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1
             className="text-2xl font-semibold"
@@ -70,39 +108,35 @@ export default function ServiciosClient({ services }: Props) {
             Servicios
           </h1>
           <p className="text-sm mt-0.5" style={{ color: "var(--ps-text-mid)" }}>
-            {active.length} activo{active.length !== 1 ? "s" : ""} ·{" "}
-            {inactive.length} inactivo
-            {inactive.length !== 1 ? "s" : ""}
+            Añade servicios y organízalos por categoría.
           </p>
         </div>
-        <button
-          onClick={handleNew}
-          className="flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:scale-[1.02]"
-          style={{ backgroundColor: "var(--primary)" }}
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
+        <div className="flex gap-2">
+          <button
+            onClick={handleNewCategory}
+            className="rounded-full px-4 py-2 text-sm font-semibold border border-neutral-300 shadow-sm transition-all hover:bg-neutral-50"
+            style={{ color: "var(--ps-text)" }}
           >
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-          Nuevo servicio
-        </button>
+            + Nueva Categoría
+          </button>
+          <button
+            onClick={() => handleNewService(null)}
+            className="flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 hover:scale-[1.02]"
+            style={{ backgroundColor: "var(--primary)" }}
+          >
+            Nuevo Servicio
+          </button>
+        </div>
       </div>
 
-      {/* Error de eliminación */}
-      {deleteError && (
+      {errorMsg && (
         <div
           className="mb-4 rounded-xl px-4 py-3 text-sm flex items-center justify-between gap-3"
           style={{ backgroundColor: "#fee2e2", color: "#dc2626" }}
         >
-          <span>{deleteError}</span>
+          <span>{errorMsg}</span>
           <button
-            onClick={() => setDeleteError(null)}
+            onClick={() => setErrorMsg(null)}
             className="font-bold text-lg leading-none"
           >
             &times;
@@ -110,105 +144,95 @@ export default function ServiciosClient({ services }: Props) {
         </div>
       )}
 
-      {/* Tabla activos */}
-      <div
-        className="rounded-2xl overflow-hidden shadow-sm"
-        style={{ border: "1px solid var(--border)" }}
-      >
-        <div
-          className="px-5 py-3.5"
-          style={{
-            backgroundColor: "var(--ps-lila-pale)",
-            borderBottom: "1px solid var(--border)",
-          }}
-        >
-          <h2
-            className="text-xs font-semibold uppercase tracking-wider"
-            style={{ color: "var(--ps-text-mid)" }}
-          >
-            Activos ({active.length})
-          </h2>
-        </div>
+      {/* Categories */}
+      <div className="space-y-6">
+        {categories.map((category) => (
+          <div key={category.id} className="rounded-2xl overflow-hidden shadow-sm" style={{ border: "1px solid var(--border)" }}>
+            <div className="px-5 py-4 flex items-center justify-between" style={{ backgroundColor: "var(--ps-lila-pale)", borderBottom: "1px solid var(--border)" }}>
+              <div>
+                <h2 className="text-lg font-semibold" style={{ color: "var(--ps-text)" }}>📁 {category.name}</h2>
+                {category.description && (
+                  <p className="text-sm mt-1" style={{ color: "var(--ps-text-mid)" }}>{category.description}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={() => handleEditCategory(category)}
+                  className="rounded-lg px-3 py-1.5 text-xs font-medium bg-white border border-neutral-200 hover:bg-neutral-50"
+                >
+                  Editar Categoría
+                </button>
+                <button
+                  onClick={() => handleDeleteCategory(category.id)}
+                  disabled={isPending}
+                  className="rounded-lg px-3 py-1.5 text-xs font-medium text-red-600 bg-white border border-neutral-200 hover:bg-red-50 disabled:opacity-50"
+                >
+                  🗑️
+                </button>
+              </div>
+            </div>
 
-        {active.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-3 bg-white">
-            <svg
-              width="40"
-              height="40"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              style={{ color: "var(--ps-text-mid)", opacity: 0.4 }}
-            >
-              <rect x="3" y="3" width="18" height="18" rx="3" />
-              <path d="M12 8v8M8 12h8" />
-            </svg>
-            <p className="text-sm" style={{ color: "var(--ps-text-mid)" }}>
-              No hay servicios activos. Crea uno nuevo.
-            </p>
+            <div className="bg-white divide-y" style={{ borderColor: "var(--border)" }}>
+              {category.services.map((s) => (
+                <ServiceRow
+                  key={s.id}
+                  service={s}
+                  onEdit={handleEditService}
+                  onToggle={handleToggleService}
+                  onDelete={handleDeleteService}
+                  isPending={isPending}
+                />
+              ))}
+              {category.services.length === 0 && (
+                <div className="p-4 text-sm text-center text-neutral-400">No hay servicios en esta categoría</div>
+              )}
+            </div>
+            
+            <div className="p-3 bg-neutral-50 border-t border-neutral-200">
+              <button 
+                onClick={() => handleNewService(category.id)}
+                className="text-sm font-medium hover:underline text-[var(--primary)]"
+              >
+                + Agregar servicio a {category.name}
+              </button>
+            </div>
           </div>
-        ) : (
-          <div
-            className="bg-white divide-y"
-            style={{ borderColor: "var(--border)" }}
-          >
-            {active.map((s) => (
-              <ServiceRow
-                key={s.id}
-                service={s}
-                onEdit={handleEdit}
-                onToggle={handleToggle}
-                onDelete={handleDelete}
-                isPending={isPending}
-              />
-            ))}
+        ))}
+
+        {/* Uncategorized */}
+        {uncategorized.length > 0 && (
+          <div className="rounded-2xl overflow-hidden shadow-sm" style={{ border: "1px solid var(--border)" }}>
+            <div className="px-5 py-4 flex items-center justify-between" style={{ backgroundColor: "#f5f5f5", borderBottom: "1px solid var(--border)" }}>
+              <h2 className="text-lg font-semibold" style={{ color: "var(--ps-text)" }}>📂 Sin Categoría</h2>
+            </div>
+            <div className="bg-white divide-y" style={{ borderColor: "var(--border)" }}>
+              {uncategorized.map((s) => (
+                <ServiceRow
+                  key={s.id}
+                  service={s}
+                  onEdit={handleEditService}
+                  onToggle={handleToggleService}
+                  onDelete={handleDeleteService}
+                  isPending={isPending}
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>
-
-      {/* Tabla inactivos */}
-      {inactive.length > 0 && (
-        <div
-          className="mt-6 rounded-2xl overflow-hidden shadow-sm"
-          style={{ border: "1px solid var(--border)" }}
-        >
-          <div
-            className="px-5 py-3.5"
-            style={{
-              backgroundColor: "#f5f5f5",
-              borderBottom: "1px solid var(--border)",
-            }}
-          >
-            <h2
-              className="text-xs font-semibold uppercase tracking-wider"
-              style={{ color: "var(--ps-text-mid)" }}
-            >
-              Desactivados ({inactive.length})
-            </h2>
-          </div>
-          <div
-            className="bg-white divide-y"
-            style={{ borderColor: "var(--border)" }}
-          >
-            {inactive.map((s) => (
-              <ServiceRow
-                key={s.id}
-                service={s}
-                onEdit={handleEdit}
-                onToggle={handleToggle}
-                onDelete={handleDelete}
-                isPending={isPending}
-              />
-            ))}
-          </div>
-        </div>
-      )}
 
       <ServiceModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         service={editingService}
+        categories={allCategoriesForSelect}
+        defaultCategoryId={defaultCatId}
+      />
+      
+      <CategoryModal
+        open={categoryModalOpen}
+        onClose={() => setCategoryModalOpen(false)}
+        category={editingCategory}
       />
     </>
   );
@@ -291,7 +315,6 @@ function ServiceRow({
           {service.isActive ? "Desactivar" : "Activar"}
         </button>
 
-        {/* Eliminar con confirmación inline */}
         {confirmDelete ? (
           <div className="flex items-center gap-1">
             <button
@@ -320,14 +343,7 @@ function ServiceRow({
             style={{ color: "#dc2626" }}
             title="Eliminar servicio"
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="3 6 5 6 21 6" />
               <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
               <path d="M10 11v6M14 11v6" />

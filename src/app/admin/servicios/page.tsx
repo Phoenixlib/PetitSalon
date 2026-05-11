@@ -6,9 +6,19 @@ export const metadata = {
 };
 
 export default async function ServiciosPage() {
-  const services = await prisma.service.findMany({
+  const categories = await prisma.serviceCategory.findMany({
+    orderBy: { order: "asc" },
+    include: {
+      services: {
+        orderBy: [{ isActive: "desc" }, { name: "asc" }],
+      },
+    },
+  });
+
+  const uncategorized = await prisma.service.findMany({
+    where: { categoryId: null },
     orderBy: [{ isActive: "desc" }, { name: "asc" }],
   });
 
-  return <ServiciosClient services={services} />;
+  return <ServiciosClient categories={categories} uncategorized={uncategorized} />;
 }
