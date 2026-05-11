@@ -32,12 +32,18 @@ interface CalComResponses {
   nombre_perro?: { value: string };
   // "Raza" con slug "raza_perro"
   raza_perro?: { value: string };
-  // "Teléfono" con slug "telefono"
-  telefono?: { value: string };
+  // "Teléfono" con slug "attendeePhoneNumber"
+  attendeePhoneNumber?: { value: string };
   // "Tamaño" con slug "dog_size" — valores: XS, S, M, L, XL
   dog_size?: { value: string };
   // "Notas del perro" con slug "dog_notes" — alergias, temperamento, etc.
   dog_notes?: { value: string };
+  // "Edad" con slug "edad"
+  edad?: { value: string };
+  // "Peso" con slug "peso"
+  peso?: { value: string };
+  // "Servicio Específico" con slug "servicio" (para pasarlo por parámetro)
+  servicio?: { value: string };
   notes?: { value: string };
   [key: string]: { value: string } | undefined;
 }
@@ -97,22 +103,45 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
   const responses = payload.responses ?? {};
   const ownerName = responses.name?.value ?? attendee.name;
   const ownerEmail = responses.email?.value ?? attendee.email ?? null;
-  const ownerPhone = responses.telefono?.value ?? attendee.phoneNumber ?? "";
+  const ownerPhone =
+    responses.attendeePhoneNumber?.value ?? attendee.phoneNumber ?? "";
   const dogName = responses.nombre_perro?.value ?? "Sin nombre";
   const dogBreed = responses.raza_perro?.value ?? "Sin raza";
   const dogSize = parseDogSize(responses.dog_size?.value);
   const dogNotes = responses.dog_notes?.value ?? null;
+  const dogAge = responses.edad?.value ?? null;
+  const dogWeight = responses.peso?.value ?? null;
+  const passedService = responses.servicio?.value ?? null;
   const notes = responses.notes?.value ?? null;
 
-  // 1. Upsert Service por nombre del tipo de evento
-  let service = await prisma.service.findFirst({
-    where: {
-      name: { contains: payload.title, mode: "insensitive" },
-      isActive: true,
-    },
-  });
+  // 1. Upsert Service
+  let service = null;
+
+  if (passedService) {
+    // Si viene el nombre del servicio desde el formulario/url, búscalo exactamente así
+    service = await prisma.service.findFirst({
+      where: {
+        name: { equals: passedService, mode: "insensitive" },
+        isActive: true,
+      },
+    });
+  }
+
   if (!service) {
-    // Fallback al primer servicio activo si no hay coincidencia exacta
+    // Fallback: Busca por nombre del evento de cal.com o por el link
+    service = await prisma.service.findFirst({
+      where: {
+        OR: [
+          { name: { contains: payload.title, mode: "insensitive" } },
+          { calComLink: { contains: payload.title, mode: "insensitive" } },
+        ],
+        isActive: true,
+      },
+    });
+  }
+
+  if (!service) {
+    // Fallback absoluto al primer servicio activo si no hay coincidencia exacta
     service = await prisma.service.findFirst({ where: { isActive: true } });
   }
   if (!service)
@@ -149,6 +178,8 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
         breed: dogBreed,
         ownerId: owner.id,
         ...(dogSize !== null && { size: dogSize }),
+        ...(dogAge !== null && { age: dogAge }),
+        ...(dogWeight !== null && { weight: dogWeight }),
         ...(dogNotes !== null && { notes: dogNotes }),
       },
     });
@@ -159,6 +190,8 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
       data: {
         breed: dogBreed || dog.breed,
         ...(dogSize !== null && { size: dogSize }),
+        ...(dogAge !== null && { age: dogAge }),
+        ...(dogWeight !== null && { weight: dogWeight }),
         ...(dogNotes !== null && { notes: dogNotes }),
       },
     });

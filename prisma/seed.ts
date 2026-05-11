@@ -20,6 +20,10 @@ async function main() {
   console.log("✅ AdminUser creado");
 
   // Servicios reales de Petitsalon
+  // calComLink: usa los 3 eventos creados en Cal.com agrupados por duración
+  // servicio90min  → hasta 90 min
+  // servicio120min → 120 min
+  // servicio150min → 150 min
   const services = [
     {
       name: "Baño y Secado",
@@ -27,12 +31,14 @@ async function main() {
       duration: 60,
       description:
         "Baño completo con shampoo profesional, acondicionador, secado y cepillado.",
+      calComLink: "petitsalon/servicio90min",
     },
     {
       name: "Corte de Pelo",
       price: 15000,
       duration: 75,
       description: "Corte a medida según la raza, perfil o gustos del dueño.",
+      calComLink: "petitsalon/servicio90min",
     },
     {
       name: "Baño + Corte",
@@ -40,18 +46,21 @@ async function main() {
       duration: 120,
       description:
         "Servicio completo: baño, secado y corte de pelo. El más solicitado.",
+      calComLink: "petitsalon/servicio120min",
     },
     {
       name: "Corte de Uñas",
       price: 4000,
       duration: 15,
       description: "Corte y limado de uñas para la comodidad de tu mascota.",
+      calComLink: "petitsalon/servicio90min",
     },
     {
       name: "Limpieza de Oídos",
       price: 4000,
       duration: 15,
       description: "Limpieza suave del conducto auditivo externo.",
+      calComLink: "petitsalon/servicio90min",
     },
     {
       name: "Deslanado",
@@ -59,6 +68,7 @@ async function main() {
       duration: 90,
       description:
         "Retiro del pelo muerto en razas de doble capa. Reduce la caída y mejora el pelo.",
+      calComLink: "petitsalon/servicio90min",
     },
     {
       name: "Spa Completo",
@@ -66,6 +76,7 @@ async function main() {
       duration: 150,
       description:
         "Baño, corte, deslanado, corte de uñas y limpieza de oídos. Experiencia premium.",
+      calComLink: "petitsalon/servicio150min",
     },
   ];
 
@@ -74,7 +85,16 @@ async function main() {
     await prisma.service.createMany({ data: services });
     console.log(`✅ ${services.length} servicios creados`);
   } else {
-    console.log(`ℹ️  Servicios ya existentes (${count}), seed omitido`);
+    // Actualizar calComLink en servicios existentes aunque ya estén creados
+    for (const s of services) {
+      await prisma.service.updateMany({
+        where: { name: s.name },
+        data: { calComLink: s.calComLink },
+      });
+    }
+    console.log(
+      `ℹ️  Servicios ya existentes (${count}), calComLink actualizado`,
+    );
   }
 }
 

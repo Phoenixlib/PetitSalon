@@ -25,6 +25,7 @@ export default async function HomePage() {
       price: true,
       duration: true,
       description: true,
+      calComLink: true,
     },
   });
 

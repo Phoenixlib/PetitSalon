@@ -10,6 +10,7 @@ type Service = {
   price: number;
   duration: number;
   description: string | null;
+  calComLink: string | null;
 };
 
 type Props = {
@@ -412,7 +413,7 @@ export default function Servicios({ services }: Props) {
 
                 {/* CTA */}
                 <Link
-                  href="/reservar"
+                  href={`/reservar?link=${selected.calComLink || "petitsalon"}&servicio=${encodeURIComponent(selected.name)}`}
                   className="inline-flex items-center justify-center gap-2 rounded-full px-8 py-4 text-sm font-semibold text-white shadow-md transition-all hover:opacity-90 hover:scale-[1.02] mt-1"
                   style={{ backgroundColor: "var(--primary)" }}
                   onClick={() => setSelected(null)}

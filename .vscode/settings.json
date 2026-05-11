@@ -4,5 +4,14 @@
     "npx tsx": true,
     "npx vercel": true,
     "npm install": true
+  },
+  "github.copilot.chat.mcp.servers": {
+    "calcom": {
+      "command": "npx",
+      "args": ["-y", "@calcom/cal-mcp"],
+      "env": {
+        "CALCOM_API_KEY": "cal_live_7c225cfa8deaeb68c3afa2441c718432"
+      }
+    }
   }
 }

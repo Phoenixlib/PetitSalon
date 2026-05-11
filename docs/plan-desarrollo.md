@@ -95,44 +95,46 @@
 
 ---
 
-## Sprint 4 — Activación Cal.com (Embed + Webhooks)
+## Sprint 4 — Activación Cal.com (Embed + Webhooks) ✅
 
 > **Objetivo:** El sistema de reservas público funciona en producción con Cal.com gestionando disponibilidad, correos y recordatorios. El webhook sincroniza cada reserva a Prisma automáticamente.
 
 ### Configuración en Cal.com (sin código)
 
-- 🔲 Crear cuenta Cal.com y configurar el Event Type principal (ej: "Cita en Petitsalon")
-- 🔲 Configurar disponibilidad horaria y duración de la cita en Cal.com
-- 🔲 Agregar Custom Fields obligatorios en Cal.com → Event Type → Advanced:
-  - `telefono` (Phone, requerido)
+- ✅ Crear cuenta Cal.com y configurar el Event Type principal (ej: "Cita en Petitsalon")
+- ✅ Configurar disponibilidad horaria y duración de la cita en Cal.com
+- ✅ Agregar Custom Fields obligatorios en Cal.com → Event Type → Advanced:
+  - `telefono` (Phone, requerido, slug: attendeePhoneNumber)
   - `nombre_perro` (Text, requerido)
   - `raza_perro` (Text, requerido)
   - `dog_size` (Select: XS / S / M / L / XL, requerido)
+  - `edad` (text, opcional)
+  - `peso` (text, opcional)
   - `dog_notes` (Textarea, opcional — alergias, temperamento)
-- 🔲 Configurar Webhook en Cal.com → Settings → Webhooks:
+- ✅ Configurar Webhook en Cal.com → Settings → Webhooks:
   - URL: `https://[dominio]/api/webhooks/calcom`
   - Eventos: `BOOKING_CREATED`, `BOOKING_RESCHEDULED`, `BOOKING_CANCELLED`
   - Copiar el secreto HMAC generado
-- 🔲 Agregar variables de entorno en Vercel:
+- ✅ Agregar variables de entorno en Vercel:
   - `NEXT_PUBLIC_CALCOM_LINK` → `"usuario/nombre-del-evento"`
   - `CALCOM_WEBHOOK_SECRET` → secreto HMAC de Cal.com
 
 ### Verificación de código (ya existente)
 
 - ✅ `src/components/booking/CalComEmbed.tsx` — embed con colores de marca
-- ✅ `src/app/(public)/reservar/page.tsx` — página que usa el embed
+- ✅ `src/app/(public)/reservar/page.tsx` — página que usa el embed (Actualizada para recibir links dinámicos por query params)
 - ✅ `src/app/api/webhooks/calcom/route.ts` — webhook con firma HMAC y upsert de Owner+Dog+Appointment
-- 🔲 Verificar que el webhook procesa correctamente `dog_size` → `Dog.size` (DogSize enum)
-- 🔲 Verificar que el webhook procesa `dog_notes` → `Dog.notes`
+- ✅ Verificar que el webhook procesa correctamente `dog_size` → `Dog.size` (DogSize enum)
+- ✅ Verificar que el webhook procesa `dog_notes`, `edad` y `peso`
 
 ### Criterios de Aceptación
 
-- [ ] El widget de Cal.com carga correctamente en `/reservar` con los colores de Petitsalon
-- [ ] Al completar una reserva en Cal.com, el webhook crea/actualiza Owner + Dog + Appointment en Neon
-- [ ] Los campos `nombre_perro`, `raza_perro`, `telefono`, `dog_size` y `dog_notes` llegan correctamente
-- [ ] La cancelación en Cal.com cambia el estado en Prisma a `CANCELLED`
-- [ ] Cal.com envía correo de confirmación automático al cliente (sin código adicional)
-- [ ] Build verde en Vercel
+- [x] El widget de Cal.com carga correctamente en `/reservar` con los colores de Petitsalon
+- [x] Al completar una reserva en Cal.com, el webhook crea/actualiza Owner + Dog + Appointment en Neon
+- [x] Los campos nombre_perro, raza_perro, teléfono, tamaño, edad, peso y notas llegan correctamente
+- [x] La cancelación en Cal.com cambia el estado en Prisma a `CANCELLED`
+- [x] Cal.com envía correo de confirmación automático al cliente (sin código adicional)
+- [x] Build verde en Vercel
 
 ---
 
@@ -223,7 +225,7 @@
 
 ### Tareas
 
-- 🔲 Dashboard `/admin` completo: citas de hoy, próximas 48h, últimos perros atendidos
+- ✅ Dashboard `/admin` completo: citas de hoy, próximas 48h, últimos perros atendidos
 - 🔲 SEO: `metadata` en todas las páginas públicas (title, description, og:image)
 - 🔲 `next/image` para todas las imágenes (optimización automática)
 - 🔲 Configurar `remotePatterns` en `next.config.ts` para dominios de Cloudinary
@@ -231,7 +233,7 @@
 - 🔲 Limpieza de código: eliminar `console.log`, imports no usados, variables huérfanas
 - 🔲 Revisar todos los `// TODO` del codebase
 - 🔲 Test end-to-end manual: reserva → cita en agenda → confirmar → registrar atención → ver historial
-- 🔲 Entregar credenciales de acceso y guía de uso a la dueña
+- 🔲 Entregar credenciales de acceso y guía de uso a la dueña (Incluir sección detallada de cómo crear un evento en Cal.com y copiar el link hacia el panel Admin)
 
 ### Criterios de Aceptación
 

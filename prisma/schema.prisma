@@ -21,6 +21,8 @@ model Dog {
   name         String
   breed        String
   size         DogSize?
+  age          String?
+  weight       String?
   birthDate    DateTime?
   notes        String?
   photo        String?
@@ -77,6 +79,7 @@ model Service {
   duration     Int
   description  String?
   isActive     Boolean       @default(true)
+  calComLink   String?       @map("cal_com_link")
   appointments Appointment[]
 }
 

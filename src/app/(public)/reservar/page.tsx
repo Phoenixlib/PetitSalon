@@ -1,10 +1,17 @@
-import CalComEmbed from "@/components/booking/CalComEmbed";
+import BookingFlow from "@/components/booking/BookingFlow";
 
-// El link de Cal.com tiene el formato "usuario/tipo-de-evento"
-// Configura NEXT_PUBLIC_CALCOM_LINK en .env.local, ej: petitsalon/cita
-const calLink = process.env.NEXT_PUBLIC_CALCOM_LINK ?? "";
+interface Props {
+  searchParams: Promise<{ link?: string; servicio?: string }>;
+}
 
-export default function ReservarPage() {
+export default async function ReservarPage({ searchParams }: Props) {
+  const resolvedParams = await searchParams;
+  const linkParam = resolvedParams.link;
+  const servicioParam = resolvedParams.servicio;
+
+  // Usa el link específico por parámetro, o el genérico configurado por defecto
+  const calLink = linkParam || process.env.NEXT_PUBLIC_CALCOM_LINK || "";
+
   return (
     <section className="container mx-auto py-12 px-4">
       <div className="max-w-4xl mx-auto">
@@ -19,7 +26,7 @@ export default function ReservarPage() {
         </div>
 
         {calLink ? (
-          <CalComEmbed calLink={calLink} />
+          <BookingFlow calLink={calLink} servicio={servicioParam} />
         ) : (
           <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
             <p className="font-medium">Sistema de reservas en configuración.</p>

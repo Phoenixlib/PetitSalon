@@ -3,11 +3,24 @@
 import Cal, { getCalApi } from "@calcom/embed-react";
 import { useEffect } from "react";
 
-interface CalComEmbedProps {
-  calLink: string;
+export interface CalComPrefill {
+  name?: string;
+  email?: string;
+  attendeePhoneNumber?: string;
+  nombre_perro?: string;
+  raza_perro?: string;
+  dog_size?: string;
+  edad?: string;
+  peso?: string;
+  servicio?: string;
 }
 
-export default function CalComEmbed({ calLink }: CalComEmbedProps) {
+interface CalComEmbedProps {
+  calLink: string;
+  prefill?: CalComPrefill;
+}
+
+export default function CalComEmbed({ calLink, prefill }: CalComEmbedProps) {
   useEffect(() => {
     (async function () {
       const cal = await getCalApi({ namespace: "petitsalon" });
@@ -33,17 +46,43 @@ export default function CalComEmbed({ calLink }: CalComEmbedProps) {
     })();
   }, []);
 
+  // Construimos The query string if prefill data exists
+  let finalCalLink = calLink;
+  if (prefill) {
+    const params = new URLSearchParams();
+    if (prefill.name) params.append("name", prefill.name);
+    if (prefill.email) params.append("email", prefill.email);
+    if (prefill.attendeePhoneNumber)
+      params.append("attendeePhoneNumber", prefill.attendeePhoneNumber);
+    if (prefill.nombre_perro)
+      params.append("nombre_perro", prefill.nombre_perro);
+    if (prefill.raza_perro) params.append("raza_perro", prefill.raza_perro);
+    if (prefill.dog_size) params.append("dog_size", prefill.dog_size);
+    if (prefill.edad) params.append("edad", prefill.edad);
+    if (prefill.peso) params.append("peso", prefill.peso);
+    if (prefill.servicio) params.append("servicio", prefill.servicio);
+
+    const queryString = params.toString();
+    if (queryString) {
+      finalCalLink = `${calLink}?${queryString}`;
+    }
+  }
+
   return (
     <Cal
       namespace="petitsalon"
-      calLink={calLink}
+      calLink={finalCalLink}
       style={{
         width: "100%",
         height: "100%",
         minHeight: "600px",
         overflow: "scroll",
       }}
-      config={{ layout: "month_view" }}
+      config={{
+        layout: "month_view",
+        // Cal.com embed también permite pasar por config
+        // pero enviar en el Link directamente suele ser más robusto para campos personalizados
+      }}
     />
   );
 }
