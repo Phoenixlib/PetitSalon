@@ -28,11 +28,11 @@ export default function CategoryModal({ open, onClose, category }: Props) {
 
   const [createState, createAction, createPending] = useActionState(
     createCategoryAction,
-    initialState
+    initialState,
   );
   const [updateState, updateAction, updatePending] = useActionState(
     boundUpdate,
-    initialState
+    initialState,
   );
 
   const state = isEditing ? updateState : createState;
@@ -50,7 +50,7 @@ export default function CategoryModal({ open, onClose, category }: Props) {
     if (open && state.success) {
       // Small hack to force state reset. Usually you handle this differently.
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   if (!open) return null;
@@ -72,10 +72,7 @@ export default function CategoryModal({ open, onClose, category }: Props) {
         style={{ border: "1px solid var(--border)" }}
       >
         <div className="mb-5 flex items-center justify-between">
-          <h2
-            className="text-xl font-bold"
-            style={{ color: "var(--ps-text)" }}
-          >
+          <h2 className="text-xl font-bold" style={{ color: "var(--ps-text)" }}>
             {isEditing ? "Editar categoría" : "Nueva categoría"}
           </h2>
           <button
@@ -113,7 +110,9 @@ export default function CategoryModal({ open, onClose, category }: Props) {
               style={{ borderColor: "var(--border)" }}
             />
             {state.errors?.name && (
-              <p className="mt-1 text-xs text-red-500">{state.errors.name[0]}</p>
+              <p className="mt-1 text-xs text-red-500">
+                {state.errors.name[0]}
+              </p>
             )}
           </div>
 

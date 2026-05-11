@@ -250,7 +250,6 @@ export default function ServiceModal({
             )}
           </div>
 
-          
           {/* Link de Cal.com */}
           <div className="flex flex-col gap-1">
             <label

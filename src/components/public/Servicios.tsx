@@ -136,7 +136,10 @@ const cardAnim = {
   },
 };
 
-export default function Servicios({ categories, uncategorizedServices }: Props) {
+export default function Servicios({
+  categories,
+  uncategorizedServices,
+}: Props) {
   const [selected, setSelected] = useState<
     (ServiceItem & { index: number }) | null
   >(null);
@@ -158,7 +161,9 @@ export default function Servicios({ categories, uncategorizedServices }: Props) 
     };
   }, [selected]);
 
-  const hasAnyService = categories.some((c) => c.services.length > 0) || uncategorizedServices.length > 0;
+  const hasAnyService =
+    categories.some((c) => c.services.length > 0) ||
+    uncategorizedServices.length > 0;
   if (!hasAnyService) return null;
 
   return (
@@ -204,15 +209,26 @@ export default function Servicios({ categories, uncategorizedServices }: Props) 
             </p>
           </div>
 
-
           <div className="space-y-16">
             {categories.map((category) => {
               if (category.services.length === 0) return null;
               return (
                 <div key={category.id}>
                   <div className="mb-6">
-                    <h3 className="text-2xl font-semibold mb-2" style={{ color: "var(--ps-text)" }}>{category.name}</h3>
-                    {category.description && <p className="text-sm" style={{ color: "var(--ps-text-mid)" }}>{category.description}</p>}
+                    <h3
+                      className="text-2xl font-semibold mb-2"
+                      style={{ color: "var(--ps-text)" }}
+                    >
+                      {category.name}
+                    </h3>
+                    {category.description && (
+                      <p
+                        className="text-sm"
+                        style={{ color: "var(--ps-text-mid)" }}
+                      >
+                        {category.description}
+                      </p>
+                    )}
                   </div>
                   <motion.div
                     className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
@@ -237,7 +253,12 @@ export default function Servicios({ categories, uncategorizedServices }: Props) 
             {uncategorizedServices.length > 0 && (
               <div>
                 <div className="mb-6">
-                  <h3 className="text-2xl font-semibold mb-2" style={{ color: "var(--ps-text)" }}>Otros Servicios</h3>
+                  <h3
+                    className="text-2xl font-semibold mb-2"
+                    style={{ color: "var(--ps-text)" }}
+                  >
+                    Otros Servicios
+                  </h3>
                 </div>
                 <motion.div
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
@@ -426,8 +447,15 @@ export default function Servicios({ categories, uncategorizedServices }: Props) 
   );
 }
 
-
-function ServiceCard({ service, index, onClick }: { service: ServiceItem, index: number, onClick: () => void }) {
+function ServiceCard({
+  service,
+  index,
+  onClick,
+}: {
+  service: ServiceItem;
+  index: number;
+  onClick: () => void;
+}) {
   return (
     <motion.button
       variants={cardAnim}
@@ -447,11 +475,17 @@ function ServiceCard({ service, index, onClick }: { service: ServiceItem, index:
         </div>
       </div>
       <div>
-        <h3 className="text-base font-semibold leading-snug" style={{ color: "var(--ps-text)" }}>
+        <h3
+          className="text-base font-semibold leading-snug"
+          style={{ color: "var(--ps-text)" }}
+        >
           {service.name}
         </h3>
         {service.description && (
-          <p className="text-sm mt-1 leading-relaxed line-clamp-2" style={{ color: "var(--ps-text-mid)" }}>
+          <p
+            className="text-sm mt-1 leading-relaxed line-clamp-2"
+            style={{ color: "var(--ps-text-mid)" }}
+          >
             {service.description}
           </p>
         )}
@@ -467,7 +501,10 @@ function ServiceCard({ service, index, onClick }: { service: ServiceItem, index:
         </div>
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-          style={{ backgroundColor: "rgba(255,255,255,0.7)", color: "var(--primary)" }}
+          style={{
+            backgroundColor: "rgba(255,255,255,0.7)",
+            color: "var(--primary)",
+          }}
         >
           →
         </div>

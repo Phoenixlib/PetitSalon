@@ -52,7 +52,10 @@ export default async function HomePage() {
     <>
       <Hero />
       <AcercaDeNosotros />
-      <Servicios categories={categories} uncategorizedServices={uncategorizedServices} />
+      <Servicios
+        categories={categories}
+        uncategorizedServices={uncategorizedServices}
+      />
       <Galeria />
       <Testimonios />
       <FAQ />

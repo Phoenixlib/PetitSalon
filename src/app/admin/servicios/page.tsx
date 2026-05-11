@@ -20,5 +20,7 @@ export default async function ServiciosPage() {
     orderBy: [{ isActive: "desc" }, { name: "asc" }],
   });
 
-  return <ServiciosClient categories={categories} uncategorized={uncategorized} />;
+  return (
+    <ServiciosClient categories={categories} uncategorized={uncategorized} />
+  );
 }
