@@ -1,11 +1,19 @@
 "use server";
 
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { DogSize } from "@prisma/client";
 
+
+async function requireAdmin() {
+  const session = await auth();
+  if (!session?.user) throw new Error("No autorizado");
+}
+
 export async function createClientWithDog(formData: FormData) {
+  await requireAdmin();
   const name = formData.get("name") as string;
   const phone = formData.get("phone") as string;
   const email = formData.get("email") as string;

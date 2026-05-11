@@ -2,8 +2,19 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Dog } from "@prisma/client";
 
-export default async function ClientesPage() {
+export default async function ClientesPage(props: { searchParams: Promise<{ q?: string }> }) {
+  const searchParams = await props.searchParams;
+  const q = searchParams.q?.trim() ?? "";
   const owners = await prisma.owner.findMany({
+    where: q
+      ? {
+          OR: [
+            { name: { contains: q, mode: "insensitive" } },
+            { phone: { contains: q, mode: "insensitive" } },
+            { email: { contains: q, mode: "insensitive" } },
+          ],
+        }
+      : undefined,
     include: {
       dogs: true,
     },
@@ -14,6 +25,19 @@ export default async function ClientesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Clientes</h1>
+        
+        <form method="GET" className="flex items-center relative mx-4 flex-1 max-w-md">
+          <input
+            type="text"
+            name="q"
+            defaultValue={q}
+            placeholder="Buscar por nombre, teléfono o email..."
+            className="w-full px-4 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+          />
+          <button type="submit" className="absolute right-3 text-neutral-400">
+            🔍
+          </button>
+        </form>
         <Link
           href="/admin/clientes/nuevo"
           className="bg-[var(--primary)] text-white px-4 py-2 rounded-lg font-medium hover:opacity-90 transition-opacity"
@@ -64,9 +88,9 @@ export default async function ClientesPage() {
                     </div>
                   </td>
                   <td className="p-4 text-right">
-                    <button className="text-[var(--primary)] hover:underline font-medium text-xs">
-                      Ver detalle
-                    </button>
+                    <Link href={`/admin/clientes/${owner.id}`} className="text-[var(--primary)] hover:underline font-medium text-xs">
+                      Ver detalle →
+                    </Link>
                   </td>
                 </tr>
               ))
