@@ -4,6 +4,7 @@ export type { AppointmentStatus };
 
 export interface AppointmentWithRelations {
   id: string;
+  calComUid: string | null;
   date: Date;
   status: AppointmentStatus;
   notes: string | null;
