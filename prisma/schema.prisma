@@ -102,3 +102,21 @@ model AdminUser {
   name      String
   createdAt DateTime @default(now())
 }
+
+// Configuración global del sitio (clave-valor)
+model SiteConfig {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+// Preguntas frecuentes
+model FaqItem {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

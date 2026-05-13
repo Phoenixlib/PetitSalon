@@ -1,4 +1,8 @@
-export default function ContactoCTA() {
+interface ContactoCTAProps {
+  whatsapp: string;
+}
+
+export default function ContactoCTA({ whatsapp }: ContactoCTAProps) {
   return (
     <section
       className="py-24 lg:py-32"
@@ -34,7 +38,7 @@ export default function ContactoCTA() {
         </p>
 
         <a
-          href="https://wa.me/56937541863"
+          href={`https://wa.me/${whatsapp}`}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-3 font-semibold px-8 py-4 rounded-full transition-all duration-300 hover:scale-[1.04] hover:shadow-2xl"

@@ -7,6 +7,7 @@ import {
   CalendarDays,
   ClipboardList,
   LayoutDashboard,
+  FileText,
   LogOut,
   Menu,
   PawPrint,
@@ -31,6 +32,12 @@ const NAV_ITEMS = [
     href: "/admin/servicios",
     label: "Servicios",
     icon: Scissors,
+    exact: false,
+  },
+  {
+    href: "/admin/contenido",
+    label: "Contenido",
+    icon: FileText,
     exact: false,
   },
 ] as const;

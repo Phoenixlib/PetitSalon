@@ -1,6 +1,20 @@
 import { MapPin, Mail, Map, Car, Dog } from "lucide-react";
 
-export default function AcercaDeNosotros() {
+interface AcercaDeNosotrosProps {
+  about_text: string;
+  whatsapp: string;
+  email: string;
+  address: string;
+  parking: boolean;
+}
+
+export default function AcercaDeNosotros({
+  about_text,
+  whatsapp,
+  email,
+  address,
+  parking,
+}: AcercaDeNosotrosProps) {
   return (
     <section
       className="py-20 px-4"
@@ -27,23 +41,9 @@ export default function AcercaDeNosotros() {
 
           <div
             className="space-y-4 text-base leading-relaxed"
-            style={{ color: "var(--ps-text-mid)" }}
+            style={{ color: "var(--ps-text-mid)", whiteSpace: "pre-line" }}
           >
-            <p>
-              En <strong>Petit Salon</strong> priorizamos la atención
-              personalizada, respetuosa y profesional, cuidando cada detalle
-              para que tu mascota tenga una buena experiencia en su sesión.
-            </p>
-            <p>
-              Atendemos cada requerimiento de sus tutores, salvaguardando
-              primeramente el bienestar de la mascota. En un espacio seguro,{" "}
-              <strong>sin caniles ni sedantes</strong>, con un horario dedicado
-              solo para tu peludo.
-            </p>
-            <p>
-              No dudes en comunicarte con nosotros ante cualquier duda y con
-              gusto te atenderemos.
-            </p>
+            <p dangerouslySetInnerHTML={{ __html: about_text }}></p>
           </div>
 
           {/* Badges de Amenidades */}
@@ -63,18 +63,20 @@ export default function AcercaDeNosotros() {
                 Atendemos Perros
               </span>
             </div>
-            <div
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white border shadow-sm"
-              style={{ borderColor: "var(--ps-lila-mid)" }}
-            >
-              <Car className="w-5 h-5 text-pink-500" />
-              <span
-                className="text-sm font-semibold"
-                style={{ color: "var(--ps-text)" }}
+            {parking && (
+              <div
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-white border shadow-sm"
+                style={{ borderColor: "var(--ps-lila-mid)" }}
               >
-                Estacionamiento
-              </span>
-            </div>
+                <Car className="w-5 h-5 text-pink-500" />
+                <span
+                  className="text-sm font-semibold"
+                  style={{ color: "var(--ps-text)" }}
+                >
+                  Estacionamiento
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -91,7 +93,7 @@ export default function AcercaDeNosotros() {
           </h3>
 
           <a
-            href="https://wa.me/56937541863"
+            href={`https://wa.me/${whatsapp}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-4 group"
@@ -116,7 +118,7 @@ export default function AcercaDeNosotros() {
                 className="text-lg font-semibold"
                 style={{ color: "var(--ps-text)" }}
               >
-                +56 9 3754 1863
+                +{whatsapp.slice(0, 2)} {whatsapp.slice(2, 3)} {whatsapp.slice(3, 7)} {whatsapp.slice(7)}
               </p>
             </div>
           </a>
@@ -142,7 +144,7 @@ export default function AcercaDeNosotros() {
                 className="text-base font-medium break-all"
                 style={{ color: "var(--ps-text)" }}
               >
-                Petitsalon.contacto@gmail.com
+                {email}
               </p>
             </div>
           </div>
@@ -165,7 +167,7 @@ export default function AcercaDeNosotros() {
                 className="text-base font-medium"
                 style={{ color: "var(--ps-text)" }}
               >
-                Carvajal 330, La Cisterna, Chile
+                {address}
               </p>
             </div>
           </div>

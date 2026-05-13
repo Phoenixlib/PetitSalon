@@ -9,7 +9,7 @@ const NAV = [
 
 const SERVICIOS_LIST = ["Baño y Secado", "Corte", "Corte de Uñas"];
 
-export default function Footer() {
+export default function Footer({ whatsapp }: { whatsapp: string }) {
   const year = new Date().getFullYear();
 
   return (
@@ -108,7 +108,7 @@ export default function Footer() {
             © {year} Petit Salón. Todos los derechos reservados.
           </p>
           <a
-            href="https://wa.me/56937541863"
+            href={`https://wa.me/${whatsapp}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs font-semibold transition-opacity hover:opacity-70"

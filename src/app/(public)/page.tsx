@@ -48,19 +48,48 @@ export default async function HomePage() {
     },
   });
 
+  // Leer configuración del sitio
+  const configsDB = await prisma.siteConfig.findMany();
+  const config = Object.fromEntries(configsDB.map((c) => [c.key, c.value]));
+
+  // Leer FAQs activas
+  const faqs = await prisma.faqItem.findMany({
+    where: { isActive: true },
+    orderBy: { order: "asc" },
+    select: { id: true, question: true, answer: true },
+  });
+
+  const defaultConfig = {
+    whatsapp: "56937541863",
+    email: "Petitsalon.contacto@gmail.com",
+    address: "Carvajal 330, La Cisterna, Chile",
+    parking: "true",
+    about_text: "En <strong>Petit Salon</strong> priorizamos la atención personalizada, respetuosa y profesional, cuidando cada detalle para que tu mascota tenga una buena experiencia en su sesión.\n\nAtendemos cada requerimiento de sus tutores, salvaguardando primeramente el bienestar de la mascota. En un espacio seguro, <strong>sin caniles ni sedantes</strong>, con un horario dedicado solo para tu peludo.\n\nNo dudes en comunicarte con nosotros ante cualquier duda y con gusto te atenderemos.",
+  };
+
+  const merged = { ...defaultConfig, ...config };
+
   return (
     <>
-      <Hero />
-      <AcercaDeNosotros />
+      <Hero whatsapp={merged.whatsapp} />
+      <AcercaDeNosotros
+        about_text={merged.about_text}
+        whatsapp={merged.whatsapp}
+        email={merged.email}
+        address={merged.address}
+        parking={merged.parking === "true"}
+      />
       <Servicios
         categories={categories}
         uncategorizedServices={uncategorizedServices}
       />
       <Galeria />
       <Testimonios />
-      <FAQ />
-      <Ubicacion />
-      <ContactoCTA />
+      <FAQ items={faqs} whatsapp={merged.whatsapp} />
+      <Ubicacion
+        address={merged.address}
+      />
+      <ContactoCTA whatsapp={merged.whatsapp} />
     </>
   );
 }

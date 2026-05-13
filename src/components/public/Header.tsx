@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const WHATSAPP_URL = "https://wa.me/56937541863";
+
 
 const NAV_LINKS = [
   { href: "/#servicios", label: "Servicios" },
@@ -23,9 +23,10 @@ const ADMIN_NAV = [
 
 type Props = {
   isAuthenticated?: boolean;
+  whatsapp: string;
 };
 
-export default function Header({ isAuthenticated = false }: Props) {
+export default function Header({ isAuthenticated = false, whatsapp }: Props) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -110,7 +111,7 @@ export default function Header({ isAuthenticated = false }: Props) {
           {isAuthenticated ? (
             <>
               <a
-                href={WHATSAPP_URL}
+                href={`https://wa.me/${whatsapp}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm font-semibold transition-opacity hover:opacity-70"
@@ -155,7 +156,7 @@ export default function Header({ isAuthenticated = false }: Props) {
           ) : (
             <>
               <a
-                href={WHATSAPP_URL}
+                href={`https://wa.me/${whatsapp}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm font-semibold transition-opacity hover:opacity-70"
@@ -279,7 +280,7 @@ export default function Header({ isAuthenticated = false }: Props) {
           {/* CTAs */}
           <div className="flex flex-col gap-3 mt-4">
             <a
-              href={WHATSAPP_URL}
+              href={`https://wa.me/${whatsapp}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-center font-semibold py-3 rounded-full border text-sm"

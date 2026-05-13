@@ -3,8 +3,6 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 
-const WHATSAPP_URL = "https://wa.me/56937541863";
-
 const container = {
   hidden: { opacity: 0 },
   visible: {
@@ -42,38 +40,10 @@ function PawSVG({
       aria-hidden="true"
     >
       {/* Toe pads */}
-      <ellipse
-        cx="22"
-        cy="30"
-        rx="10"
-        ry="12"
-        stroke="currentColor"
-        strokeWidth="1.4"
-      />
-      <ellipse
-        cx="40"
-        cy="18"
-        rx="10"
-        ry="12"
-        stroke="currentColor"
-        strokeWidth="1.4"
-      />
-      <ellipse
-        cx="62"
-        cy="18"
-        rx="10"
-        ry="12"
-        stroke="currentColor"
-        strokeWidth="1.4"
-      />
-      <ellipse
-        cx="80"
-        cy="30"
-        rx="10"
-        ry="12"
-        stroke="currentColor"
-        strokeWidth="1.4"
-      />
+      <ellipse cx="22" cy="30" rx="10" ry="12" stroke="currentColor" strokeWidth="1.4" />
+      <ellipse cx="40" cy="18" rx="10" ry="12" stroke="currentColor" strokeWidth="1.4" />
+      <ellipse cx="62" cy="18" rx="10" ry="12" stroke="currentColor" strokeWidth="1.4" />
+      <ellipse cx="80" cy="30" rx="10" ry="12" stroke="currentColor" strokeWidth="1.4" />
       {/* Main pad */}
       <path
         d="M14,68 Q13,50 50,46 Q87,50 86,68 Q85,84 72,90 Q61,94 50,94 Q39,94 28,90 Q15,84 14,68Z"
@@ -84,7 +54,11 @@ function PawSVG({
   );
 }
 
-export default function Hero() {
+interface HeroProps {
+  whatsapp: string;
+}
+
+export default function Hero({ whatsapp }: HeroProps) {
   return (
     <section
       className="relative min-h-screen flex items-center overflow-hidden"
@@ -168,7 +142,7 @@ export default function Hero() {
             variants={item}
           >
             <a
-              href={WHATSAPP_URL}
+              href={`https://wa.me/${whatsapp}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2.5 font-semibold px-7 py-4 rounded-full text-primary-foreground transition-all duration-300 hover:scale-[1.03] hover:shadow-xl"

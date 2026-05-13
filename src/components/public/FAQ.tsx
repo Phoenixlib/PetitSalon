@@ -4,41 +4,19 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 
-const faqs = [
-  {
-    pregunta: "¿Con cuánta anticipación debo reservar?",
-    respuesta:
-      "Recomendamos reservar con al menos 2 días de anticipación, especialmente en fines de semana. Para turnos de urgencia, contáctanos por WhatsApp y verificamos disponibilidad.",
-  },
-  {
-    pregunta: "¿Qué razas y tamaños aceptan?",
-    respuesta:
-      "Trabajamos con todas las razas y tamaños, desde pequeños como Chihuahuas hasta grandes como Golden Retrievers. Cada perro recibe atención personalizada según sus necesidades.",
-  },
-  {
-    pregunta: "¿Cuánto tiempo dura la sesión?",
-    respuesta:
-      "Depende del servicio y tamaño del perro. Un baño y secado para un perro pequeño toma entre 1 y 1.5 horas. Un corte completo para razas grandes puede llevar hasta 3 horas.",
-  },
-  {
-    pregunta: "¿Qué productos usan?",
-    respuesta:
-      "Utilizamos shampoos y acondicionadores dermatológicos, libres de parabenos y sulfatos, aptos para piel sensible. Si tu perro tiene alguna alergia específica, avísanos al reservar.",
-  },
-  {
-    pregunta: "¿Puedo acompañar a mi mascota durante el servicio?",
-    respuesta:
-      "En general pedimos que el dueño espere fuera para que el perro no se distraiga y el proceso sea más rápido y seguro. ¡Te avisamos cuando esté listo!",
-  },
-  {
-    pregunta: "¿Cómo puedo ver los precios?",
-    respuesta:
-      "Los precios varían según la raza, tamaño y tipo de servicio. Escríbenos por WhatsApp con una foto de tu perro y te enviamos una cotización personalizada sin compromiso.",
-  },
-];
+interface FAQItem {
+  id: string;
+  question: string;
+  answer: string;
+}
 
-export default function FAQ() {
-  const [abierto, setAbierto] = useState<number | null>(null);
+interface FAQProps {
+  items: FAQItem[];
+  whatsapp: string;
+}
+
+export default function FAQ({ items, whatsapp }: FAQProps) {
+  const [abierto, setAbierto] = useState<string | null>(null);
 
   return (
     <section className="py-20 px-4 bg-white">
@@ -64,11 +42,11 @@ export default function FAQ() {
 
         {/* Acordeón */}
         <div className="space-y-3">
-          {faqs.map((faq, i) => {
-            const estaAbierto = abierto === i;
+          {items.map((faq) => {
+            const estaAbierto = abierto === faq.id;
             return (
               <motion.div
-                key={i}
+                key={faq.id}
                 initial={false}
                 className="rounded-2xl overflow-hidden border"
                 style={{
@@ -83,7 +61,7 @@ export default function FAQ() {
               >
                 <button
                   className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left cursor-pointer"
-                  onClick={() => setAbierto(estaAbierto ? null : i)}
+                  onClick={() => setAbierto(estaAbierto ? null : faq.id)}
                   aria-expanded={estaAbierto}
                 >
                   <span
@@ -94,7 +72,7 @@ export default function FAQ() {
                         : "var(--ps-text)",
                     }}
                   >
-                    {faq.pregunta}
+                    {faq.question}
                   </span>
                   <motion.span
                     animate={{ rotate: estaAbierto ? 180 : 0 }}
@@ -124,7 +102,7 @@ export default function FAQ() {
                         className="px-6 pb-5 text-sm leading-relaxed"
                         style={{ color: "var(--ps-text-mid)" }}
                       >
-                        {faq.respuesta}
+                        {faq.answer}
                       </p>
                     </motion.div>
                   )}
@@ -141,7 +119,7 @@ export default function FAQ() {
         >
           ¿Tienes otra consulta?{" "}
           <a
-            href="https://wa.me/56937541863"
+            href={`https://wa.me/${whatsapp}`}
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold underline underline-offset-2"

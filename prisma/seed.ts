@@ -96,6 +96,70 @@ async function main() {
       `ℹ️  Servicios ya existentes (${count}), calComLink actualizado`,
     );
   }
+
+  // --- SPRINT 8: Seed de Contenido (SiteConfig y FaqItem) ---
+  console.log("🌱 Seeding SiteConfig and FaqItem...");
+
+  const siteConfigs = [
+    { key: "whatsapp", value: "56937541863" },
+    { key: "email", value: "Petitsalon.contacto@gmail.com" },
+    { key: "address", value: "Carvajal 330, La Cisterna, Chile" },
+    { key: "parking", value: "true" },
+    { key: "about_p1", value: "En <strong>Petit Salon</strong> priorizamos la atención personalizada, respetuosa y profesional, cuidando cada detalle para que tu mascota tenga una buena experiencia en su sesión." },
+    { key: "about_p2", value: "Atendemos cada requerimiento de sus tutores, salvaguardando primeramente el bienestar de la mascota. En un espacio seguro, <strong>sin caniles ni sedantes</strong>, con un horario dedicado solo para tu peludo." },
+    { key: "about_p3", value: "No dudes en comunicarte con nosotros ante cualquier duda y con gusto te atenderemos." },
+    { key: "maps_embed_url", value: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3325.297746594244!2d-70.6693892!3d-33.5244199!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9662dae31a1a7995%3A0xe5772390f7adca0!2sCarvajal%20330%2C%20La%20Cisterna%2C%20Regi%C3%B3n%20Metropolitana%2C%20Chile!5e0!3m2!1ses-419!2scl!4v1714856000000!5m2!1ses-419!2scl" },
+  ];
+
+  for (const config of siteConfigs) {
+    await prisma.siteConfig.upsert({
+      where: { key: config.key },
+      update: {},
+      create: { key: config.key, value: config.value },
+    });
+  }
+  console.log("✅ SiteConfig seed completado");
+
+  const faqCount = await prisma.faqItem.count();
+  if (faqCount === 0) {
+    const faqItems = [
+      {
+        question: "¿Con cuánta anticipación debo reservar?",
+        answer: "Recomendamos reservar con al menos 2 días de anticipación, especialmente en fines de semana. Para turnos de urgencia, contáctanos por WhatsApp y verificamos disponibilidad.",
+        order: 0,
+      },
+      {
+        question: "¿Qué razas y tamaños aceptan?",
+        answer: "Trabajamos con todas las razas y tamaños, desde pequeños como Chihuahuas hasta grandes como Golden Retrievers. Cada perro recibe atención personalizada según sus necesidades.",
+        order: 1,
+      },
+      {
+        question: "¿Cuánto tiempo dura la sesión?",
+        answer: "Depende del servicio y tamaño del perro. Un baño y secado para un perro pequeño toma entre 1 y 1.5 horas. Un corte completo para razas grandes puede llevar hasta 3 horas.",
+        order: 2,
+      },
+      {
+        question: "¿Qué productos usan?",
+        answer: "Utilizamos shampoos y acondicionadores dermatológicos, libres de parabenos y sulfatos, aptos para piel sensible. Si tu perro tiene alguna alergia específica, avísanos al reservar.",
+        order: 3,
+      },
+      {
+        question: "¿Puedo acompañar a mi mascota durante el servicio?",
+        answer: "En general pedimos que el dueño espere fuera para que el perro no se distraiga y el proceso sea más rápido y seguro. ¡Te avisamos cuando esté listo!",
+        order: 4,
+      },
+      {
+        question: "¿Cómo puedo ver los precios?",
+        answer: "Los precios varían según la raza, tamaño y tipo de servicio. Escríbenos por WhatsApp con una foto de tu perro y te enviamos una cotización personalizada sin compromiso.",
+        order: 5,
+      },
+    ];
+
+    await prisma.faqItem.createMany({ data: faqItems });
+    console.log(`✅ ${faqItems.length} FaqItems creados`);
+  } else {
+    console.log(`ℹ️  FaqItems ya existentes (${faqCount})`);
+  }
 }
 
 main()
