@@ -12,20 +12,33 @@ async function requireAdmin() {
 }
 
 const DogSchema = z.object({
-  name:   z.string().min(1, "El nombre es obligatorio").max(100),
-  breed:  z.string().min(1, "La raza es obligatoria").max(100),
-  size:   z.enum(["XS","S","M","L","XL"]).optional().nullable().or(z.literal("")),
-  age:    z.string().max(50).optional().nullable(),
+  name: z.string().min(1, "El nombre es obligatorio").max(100),
+  breed: z.string().min(1, "La raza es obligatoria").max(100),
+  size: z
+    .enum(["XS", "S", "M", "L", "XL"])
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  age: z.string().max(50).optional().nullable(),
   weight: z.string().max(50).optional().nullable(),
-  notes:  z.string().max(2000).optional().nullable(),
+  notes: z.string().max(2000).optional().nullable(),
 });
 
 export type DogFormState = {
-  errors?: { name?: string[]; breed?: string[]; size?: string[]; _form?: string[] };
+  errors?: {
+    name?: string[];
+    breed?: string[];
+    size?: string[];
+    _form?: string[];
+  };
   success?: boolean;
 };
 
-export async function updateDogAction(dogId: string, _prev: DogFormState, formData: FormData): Promise<DogFormState> {
+export async function updateDogAction(
+  dogId: string,
+  _prev: DogFormState,
+  formData: FormData,
+): Promise<DogFormState> {
   try {
     await requireAdmin();
     const raw = {
@@ -42,7 +55,10 @@ export async function updateDogAction(dogId: string, _prev: DogFormState, formDa
       return { errors: parsed.error.flatten().fieldErrors };
     }
 
-    const dog = await prisma.dog.findUnique({ where: { id: dogId }, select: { ownerId: true } });
+    const dog = await prisma.dog.findUnique({
+      where: { id: dogId },
+      select: { ownerId: true },
+    });
     if (!dog) return { errors: { _form: ["Perro no encontrado"] } };
 
     await prisma.dog.update({
@@ -54,7 +70,7 @@ export async function updateDogAction(dogId: string, _prev: DogFormState, formDa
         age: parsed.data.age || null,
         weight: parsed.data.weight || null,
         notes: parsed.data.notes || null,
-      }
+      },
     });
 
     revalidatePath(`/admin/perros/${dogId}`);
@@ -67,16 +83,25 @@ export async function updateDogAction(dogId: string, _prev: DogFormState, formDa
 
 const AttendanceSchema = z.object({
   service: z.string().min(1, "El servicio es obligatorio").max(200),
-  date:    z.coerce.date(),
-  notes:   z.string().max(2000).optional().nullable(),
+  date: z.coerce.date(),
+  notes: z.string().max(2000).optional().nullable(),
 });
 
 export type AttendanceFormState = {
-  errors?: { service?: string[]; date?: string[]; notes?: string[]; _form?: string[] };
+  errors?: {
+    service?: string[];
+    date?: string[];
+    notes?: string[];
+    _form?: string[];
+  };
   success?: boolean;
 };
 
-export async function createAttendanceAction(dogId: string, _prev: AttendanceFormState, formData: FormData): Promise<AttendanceFormState> {
+export async function createAttendanceAction(
+  dogId: string,
+  _prev: AttendanceFormState,
+  formData: FormData,
+): Promise<AttendanceFormState> {
   try {
     await requireAdmin();
     const raw = {
@@ -90,14 +115,24 @@ export async function createAttendanceAction(dogId: string, _prev: AttendanceFor
       return { errors: parsed.error.flatten().fieldErrors };
     }
 
+    const photos: string[] = [];
+    let i = 0;
+    while (formData.get(`photos[${i}]`)) {
+      const url = formData.get(`photos[${i}]`) as string;
+      if (url.startsWith("https://res.cloudinary.com/")) {
+        photos.push(url); // solo aceptar URLs de Cloudinary (validación de origen)
+      }
+      i++;
+    }
+
     await prisma.attendance.create({
       data: {
         service: parsed.data.service,
         date: parsed.data.date,
         notes: parsed.data.notes || null,
-        photos: [],
+        photos,
         dogId,
-      }
+      },
     });
 
     revalidatePath(`/admin/perros/${dogId}`);
@@ -109,16 +144,25 @@ export async function createAttendanceAction(dogId: string, _prev: AttendanceFor
 
 const AppointmentSchema = z.object({
   serviceId: z.string().min(1, "Selecciona un servicio"),
-  date:      z.coerce.date(),
-  notes:     z.string().max(1000).optional().nullable(),
+  date: z.coerce.date(),
+  notes: z.string().max(1000).optional().nullable(),
 });
 
 export type AppointmentFormState = {
-  errors?: { serviceId?: string[]; date?: string[]; notes?: string[]; _form?: string[] };
+  errors?: {
+    serviceId?: string[];
+    date?: string[];
+    notes?: string[];
+    _form?: string[];
+  };
   success?: boolean;
 };
 
-export async function createAppointmentAction(dogId: string, _prev: AppointmentFormState, formData: FormData): Promise<AppointmentFormState> {
+export async function createAppointmentAction(
+  dogId: string,
+  _prev: AppointmentFormState,
+  formData: FormData,
+): Promise<AppointmentFormState> {
   try {
     await requireAdmin();
     const raw = {
@@ -139,7 +183,7 @@ export async function createAppointmentAction(dogId: string, _prev: AppointmentF
         notes: parsed.data.notes || null,
         status: "PENDING",
         dogId,
-      }
+      },
     });
 
     revalidatePath(`/admin/perros/${dogId}`);
