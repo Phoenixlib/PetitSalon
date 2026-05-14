@@ -83,13 +83,24 @@ function verifySignature(rawBody: string, signature: string | null): boolean {
   }
   if (!signature) return false;
 
-  const expected = `sha256=${crypto
+  const computedHash = crypto
     .createHmac("sha256", env.CALCOM_WEBHOOK_SECRET)
     .update(rawBody)
-    .digest("hex")}`;
+    .digest("hex");
+    
+  const expected = `sha256=${computedHash}`;
+  const cleanSignature = signature.replace(/^sha256=/, "");
+
+  const signatureBuffer = Buffer.from(cleanSignature);
+  const expectedBuffer = Buffer.from(computedHash);
+
+  if (signatureBuffer.length !== expectedBuffer.length) {
+    console.error(`[calcom-webhook] Signature length mismatch. Received clean length: ${cleanSignature.length}, Expected: ${computedHash.length}`);
+    return false;
+  }
 
   // Comparación de tiempo constante para evitar timing attacks
-  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+  return crypto.timingSafeEqual(signatureBuffer, expectedBuffer);
 }
 
 // ---------------------------------------------------------------------------
@@ -244,6 +255,7 @@ export async function POST(request: NextRequest) {
   let body: CalComWebhookBody;
   try {
     body = JSON.parse(rawBody) as CalComWebhookBody;
+    console.log(`[calcom-webhook] Event: ${body.triggerEvent}, UID: ${body.payload?.uid}`);
   } catch {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
   }
