@@ -48,7 +48,7 @@ export default function ReviewCard({ review }: Props) {
 
       {hasContent ? (
         <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded-lg italic">
-          "{review.text}"
+          &quot;{review.text}&quot;
         </p>
       ) : (
         <p className="text-xs text-gray-400 italic text-center py-2">
