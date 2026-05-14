@@ -16,6 +16,7 @@ import {
   X,
   Star,
   Mail,
+  Image as ImageIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/app/admin/actions";
@@ -46,6 +47,13 @@ export default function AdminSidebar({ userName, pendingReviewsCount = 0 }: Admi
       label: "Contenido",
       icon: FileText,
       exact: false,
+    },
+    {
+      href: "/admin/galeria",
+      label: "Galería",
+      icon: ImageIcon,
+      exact: false,
+      badge: 0,
     },
     {
       href: "/admin/resenas",

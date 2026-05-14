@@ -1,31 +1,17 @@
-const PLACEHOLDERS = [
-  { id: 1, raza: "Golden Retriever" },
-  { id: 2, raza: "Bichón Frisé" },
-  { id: 3, raza: "Schnauzer" },
-  { id: 4, raza: "Caniche" },
-];
+import Image from "next/image";
 
-function PhotoPlaceholder({ label }: { label: string }) {
-  return (
-    <div
-      className="aspect-square rounded-2xl flex flex-col items-center justify-center gap-2"
-      style={{
-        background:
-          "linear-gradient(135deg, var(--ps-lila-pale) 0%, var(--ps-lila-light) 100%)",
-      }}
-    >
-      <span className="text-3xl opacity-50">📷</span>
-      <span
-        className="text-[10px] uppercase tracking-wider font-semibold"
-        style={{ color: "var(--ps-lila-mid)" }}
-      >
-        {label}
-      </span>
-    </div>
-  );
+interface GalleryPairPublic {
+  id: string;
+  beforeUrl: string;
+  afterUrl: string;
+  breed: string | null;
 }
 
-export default function Galeria() {
+interface Props {
+  pairs: GalleryPairPublic[];
+}
+
+export default function Galeria({ pairs }: Props) {
   return (
     <section
       id="galeria"
@@ -65,43 +51,75 @@ export default function Galeria() {
             className="mt-4 text-sm max-w-md"
             style={{ color: "var(--ps-text-mid)" }}
           >
-            Las fotos reales del negocio se mostrarán aquí muy pronto.
+            {pairs.length === 0
+              ? "Las fotos reales del negocio se mostrarán aquí muy pronto."
+              : "Resultados reales de nuestros clientes peludos."}
           </p>
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-          {PLACEHOLDERS.map(({ id, raza }) => (
-            <div key={id} className="flex flex-col gap-3">
-              {/* Before / After */}
-              <div className="grid grid-cols-2 gap-2">
-                <PhotoPlaceholder label="Antes" />
-                <PhotoPlaceholder label="Después" />
+        {pairs.length === 0 ? (
+          /* Empty state */
+          <div className="flex justify-center">
+            <span
+              className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] px-5 py-2.5 rounded-full"
+              style={{
+                backgroundColor: "white",
+                color: "var(--ps-lila)",
+                border: "1px solid var(--ps-lila-light)",
+              }}
+            >
+              ✨ Fotos reales muy pronto
+            </span>
+          </div>
+        ) : (
+          /* Dynamic grid */
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            {pairs.map((pair) => (
+              <div key={pair.id} className="flex flex-col gap-3">
+                <div className="grid grid-cols-2 gap-2">
+                  {/* Before */}
+                  <div className="relative aspect-square rounded-2xl overflow-hidden">
+                    <Image
+                      src={pair.beforeUrl}
+                      alt={`Antes — ${pair.breed ?? "perrito"}`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 25vw, 12vw"
+                    />
+                    <div className="absolute inset-0 flex items-end p-1.5">
+                      <span className="text-[9px] font-bold uppercase tracking-wide bg-black/50 text-white rounded-full px-1.5 py-0.5">
+                        Antes
+                      </span>
+                    </div>
+                  </div>
+                  {/* After */}
+                  <div className="relative aspect-square rounded-2xl overflow-hidden">
+                    <Image
+                      src={pair.afterUrl}
+                      alt={`Después — ${pair.breed ?? "perrito"}`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 25vw, 12vw"
+                    />
+                    <div className="absolute inset-0 flex items-end p-1.5">
+                      <span className="text-[9px] font-bold uppercase tracking-wide bg-black/50 text-white rounded-full px-1.5 py-0.5">
+                        Después
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                {pair.breed && (
+                  <p
+                    className="text-xs text-center font-medium"
+                    style={{ color: "var(--ps-text-mid)" }}
+                  >
+                    {pair.breed}
+                  </p>
+                )}
               </div>
-              {/* Label */}
-              <p
-                className="text-xs text-center font-medium"
-                style={{ color: "var(--ps-text-mid)" }}
-              >
-                {raza}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Coming soon badge */}
-        <div className="mt-14 flex justify-center">
-          <span
-            className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] px-5 py-2.5 rounded-full"
-            style={{
-              backgroundColor: "white",
-              color: "var(--ps-lila)",
-              border: "1px solid var(--ps-lila-light)",
-            }}
-          >
-            ✨ Fotos reales muy pronto
-          </span>
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
