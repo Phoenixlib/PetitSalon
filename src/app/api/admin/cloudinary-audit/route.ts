@@ -19,11 +19,16 @@ import { listAssetsInFolder, destroyByUrls, publicIdFromUrl } from "@/lib/cloudi
 import { env } from "@/env";
 
 export async function GET(request: NextRequest) {
-  // Autenticación: sesión de admin O bearer token (para cron jobs)
+  // Autenticación: sesión de admin O Vercel Cron (header automático de Vercel)
   const authHeader = request.headers.get("authorization");
   const bearerToken = authHeader?.replace("Bearer ", "");
 
-  if (bearerToken !== env.AUTH_SECRET) {
+  // Vercel Cron Jobs envían automáticamente el CRON_SECRET como Bearer token
+  const cronSecret = process.env.CRON_SECRET;
+  const isVercelCron = cronSecret && bearerToken === cronSecret;
+  const isFallbackSecret = bearerToken === env.AUTH_SECRET;
+
+  if (!isVercelCron && !isFallbackSecret) {
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
