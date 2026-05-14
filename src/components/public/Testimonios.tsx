@@ -41,8 +41,19 @@ export default function Testimonios({ reviews = [] }: Props) {
         }))
       : TESTIMONIOS;
 
+  const REVIEW_COLORS = [
+    { bg: "var(--pastel-cyan)",   border: "rgba(182,230,230,0.6)",  quote: "#42c2ed" },
+    { bg: "var(--pastel-pink)",   border: "rgba(249,206,223,0.6)",  quote: "#e91e63" },
+    { bg: "var(--pastel-yellow)", border: "rgba(254,244,204,0.6)",  quote: "#d18910" },
+  ];
+
   return (
-    <section className="py-28 lg:py-36" style={{ backgroundColor: "white" }}>
+    <section
+      className="py-28 lg:py-36"
+      style={{
+        background: "linear-gradient(160deg, #f0fafa 0%, #ffffff 50%, #fef4cc 100%)",
+      }}
+    >
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         {/* Header */}
         <div className="mb-16">
@@ -76,53 +87,64 @@ export default function Testimonios({ reviews = [] }: Props) {
 
         {/* Cards */}
         <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
-          {displayData.map((t, i) => (
-            <div
-              key={i}
-              className="flex flex-col gap-5 p-8 rounded-3xl"
-              style={{
-                backgroundColor: "var(--ps-lila-base)",
-                border: "1px solid var(--ps-lila-pale)",
-              }}
-            >
-              {/* Quote mark */}
-              <span
-                className="text-5xl font-light leading-none select-none"
+          {displayData.map((t, i) => {
+            const color = REVIEW_COLORS[i % REVIEW_COLORS.length];
+            return (
+              <div
+                key={i}
+                className="flex flex-col gap-5 p-8 rounded-3xl relative overflow-hidden"
                 style={{
-                  fontFamily: "var(--font-display)",
-                  color: "var(--ps-lila-light)",
+                  backgroundColor: color.bg,
+                  border: `1.5px solid ${color.border}`,
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
                 }}
               >
-                &ldquo;
-              </span>
-
-              <p
-                className="text-sm leading-relaxed -mt-3 flex-1"
-                style={{ color: "var(--ps-text-mid)" }}
-              >
-                {t.texto}
-              </p>
-
-              {/* Author */}
-              <div
-                className="pt-4"
-                style={{ borderTop: "1px solid var(--ps-lila-pale)" }}
-              >
-                <p
-                  className="text-sm font-semibold"
-                  style={{ color: "var(--ps-text)" }}
+                {/* Cita decorativa de fondo */}
+                <span
+                  className="absolute -top-4 -left-2 text-9xl font-light leading-none select-none pointer-events-none"
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    color: color.quote,
+                    opacity: 0.12,
+                  }}
                 >
-                  {t.nombre}
-                </p>
-                <p
-                  className="text-xs mt-0.5"
-                  style={{ color: "var(--ps-lila-mid)" }}
+                  &ldquo;
+                </span>
+
+                {/* Cita visible */}
+                <span
+                  className="text-4xl font-light leading-none select-none relative z-10"
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    color: color.quote,
+                    opacity: 0.8,
+                  }}
                 >
-                  {t.mascota}
+                  &ldquo;
+                </span>
+
+                <p
+                  className="text-sm leading-relaxed -mt-3 flex-1 relative z-10"
+                  style={{ color: "var(--ps-text-mid)" }}
+                >
+                  {t.texto}
                 </p>
+
+                {/* Author */}
+                <div
+                  className="pt-4 relative z-10"
+                  style={{ borderTop: "1px solid rgba(0,0,0,0.08)" }}
+                >
+                  <p className="text-sm font-semibold" style={{ color: "var(--ps-text)" }}>
+                    {t.nombre}
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: "var(--ps-text-mid)" }}>
+                    {t.mascota}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

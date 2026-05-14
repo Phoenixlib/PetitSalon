@@ -33,87 +33,25 @@ function formatPrice(price: number) {
   }).format(price);
 }
 
-const SERVICE_ICONS = [
+const PAW_ICON = (
   <svg
-    key="scissors"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
     strokeWidth="1.5"
     strokeLinecap="round"
+    strokeLinejoin="round"
   >
-    <circle cx="6" cy="6" r="3" />
-    <circle cx="6" cy="18" r="3" />
-    <line x1="20" y1="4" x2="8.12" y2="15.88" />
-    <line x1="14.47" y1="14.48" x2="20" y2="20" />
-    <line x1="8.12" y1="8.12" x2="12" y2="12" />
-  </svg>,
-  <svg
-    key="drop"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-  >
-    <path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" />
-  </svg>,
-  <svg
-    key="star"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-  >
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-  </svg>,
-  <svg
-    key="paw"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-  >
-    <circle cx="7" cy="8" r="2" />
-    <circle cx="17" cy="8" r="2" />
-    <circle cx="4" cy="14" r="2" />
-    <circle cx="20" cy="14" r="2" />
-    <path d="M12 15c-2 0-5 1.5-5 4.5 0 1.4 1.4 2.5 5 2.5s5-1.1 5-2.5c0-3-3-4.5-5-4.5z" />
-  </svg>,
-  <svg
-    key="heart"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-  >
-    <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
-  </svg>,
-  <svg
-    key="zap"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-  >
-    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-  </svg>,
-  <svg
-    key="clock"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-  >
-    <circle cx="12" cy="12" r="10" />
-    <polyline points="12 6 12 12 16 14" />
-  </svg>,
-];
+    {/* Dedos superiores */}
+    <ellipse cx="7" cy="7.5" rx="2" ry="2.5" />
+    <ellipse cx="12" cy="5.5" rx="2" ry="2.5" />
+    <ellipse cx="17" cy="7.5" rx="2" ry="2.5" />
+    {/* Dedo pulgar lateral */}
+    <ellipse cx="4" cy="12" rx="1.5" ry="2" />
+    {/* Almohadilla central */}
+    <path d="M12 10.5c-3.5 0-6 2-6 5.5 0 2 1.5 4 6 4s6-2 6-4c0-3.5-2.5-5.5-6-5.5z" />
+  </svg>
+);
 
 const CARD_COLORS = [
   "var(--pastel-cyan)",
@@ -213,7 +151,16 @@ export default function Servicios({
             {categories.map((category) => {
               if (category.services.length === 0) return null;
               return (
-                <div key={category.id}>
+                <div
+                  key={category.id}
+                  className="rounded-3xl p-7 md:p-10"
+                  style={{
+                    backgroundColor: "rgba(255, 255, 255, 0.65)",
+                    backdropFilter: "blur(8px)",
+                    border: "1px solid rgba(182, 230, 230, 0.35)",
+                    boxShadow: "0 4px 24px rgba(0,0,0,0.04)",
+                  }}
+                >
                   <div className="mb-6">
                     <h3
                       className="text-2xl font-semibold mb-2"
@@ -224,7 +171,7 @@ export default function Servicios({
                     {category.description && (
                       <p
                         className="text-sm"
-                        style={{ color: "var(--ps-text-mid)" }}
+                        style={{ color: "var(--ps-text-mid)", whiteSpace: "pre-line" }}
                       >
                         {category.description}
                       </p>
@@ -355,7 +302,7 @@ export default function Servicios({
                   style={{ backgroundColor: "rgba(255,255,255,0.6)" }}
                 >
                   <div className="w-7 h-7" style={{ color: "var(--ps-text)" }}>
-                    {SERVICE_ICONS[selected.index % SERVICE_ICONS.length]}
+                    {PAW_ICON}
                   </div>
                 </div>
 
@@ -373,7 +320,7 @@ export default function Servicios({
                 {selected.description && (
                   <p
                     className="text-sm leading-relaxed"
-                    style={{ color: "var(--ps-text-mid)" }}
+                    style={{ color: "var(--ps-text-mid)", whiteSpace: "pre-line" }}
                   >
                     {selected.description}
                   </p>
@@ -471,7 +418,7 @@ function ServiceCard({
         style={{ backgroundColor: "rgba(255,255,255,0.6)" }}
       >
         <div className="w-5 h-5" style={{ color: "var(--ps-text)" }}>
-          {SERVICE_ICONS[index % SERVICE_ICONS.length]}
+          {PAW_ICON}
         </div>
       </div>
       <div>
@@ -484,7 +431,7 @@ function ServiceCard({
         {service.description && (
           <p
             className="text-sm mt-1 leading-relaxed line-clamp-2"
-            style={{ color: "var(--ps-text-mid)" }}
+            style={{ color: "var(--ps-text-mid)", whiteSpace: "pre-line" }}
           >
             {service.description}
           </p>
