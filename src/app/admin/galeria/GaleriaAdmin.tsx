@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useState, useTransition, useEffect, useRef, useCallback } from "react";
 import {
   createGalleryPairAction,
   deleteGalleryPairAction,
@@ -102,11 +102,138 @@ function PhotoUploadButton({
 }
 
 // ---------------------------------------------------------------------------
+// Preview Modal — simula cómo se ve el par en el landing
+// ---------------------------------------------------------------------------
+function PreviewModal({
+  pair,
+  onClose,
+}: {
+  pair: GalleryPair;
+  onClose: () => void;
+}) {
+  // Cerrar con Escape
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: "rgba(0,0,0,0.75)" }}
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl"
+        style={{ backgroundColor: "var(--ps-lila-base)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header del modal */}
+        <div className="px-6 pt-6 pb-4 flex items-center justify-between">
+          <div>
+            <p
+              className="text-xs font-semibold uppercase tracking-[0.25em]"
+              style={{ color: "var(--ps-gold)" }}
+            >
+              ✦ Vista previa
+            </p>
+            <h3
+              className="mt-1 font-light"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "1.5rem",
+                color: "var(--ps-text)",
+              }}
+            >
+              Antes &{" "}
+              <em className="italic font-medium" style={{ color: "var(--ps-lila)" }}>
+                después
+              </em>
+            </h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-full w-9 h-9 flex items-center justify-center text-lg transition-colors hover:bg-black/10"
+            style={{ color: "var(--ps-text-mid)" }}
+            aria-label="Cerrar"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Simulación de la tarjeta del landing */}
+        <div className="px-6 pb-8">
+          <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--ps-lila-pale)" }}>
+            <div className="grid grid-cols-2">
+              <div className="flex flex-col">
+                <div className="relative aspect-square">
+                  <Image
+                    src={pair.beforeUrl}
+                    alt="Antes"
+                    fill
+                    className="object-cover"
+                    sizes="50vw"
+                  />
+                  <div className="absolute inset-0 flex items-end p-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wide bg-black/50 text-white rounded-full px-2 py-0.5">
+                      Antes
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <div className="relative aspect-square">
+                  <Image
+                    src={pair.afterUrl}
+                    alt="Después"
+                    fill
+                    className="object-cover"
+                    sizes="50vw"
+                  />
+                  <div className="absolute inset-0 flex items-end p-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wide bg-black/50 text-white rounded-full px-2 py-0.5">
+                      Después
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {pair.breed && (
+              <p
+                className="text-xs text-center font-medium py-2"
+                style={{ color: "var(--ps-text-mid)" }}
+              >
+                {pair.breed}
+              </p>
+            )}
+          </div>
+          <p className="text-xs text-center mt-3" style={{ color: "var(--ps-text-mid)" }}>
+            Así se verá en el Landing Page · Haz clic fuera o presiona Esc para cerrar
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 export default function GaleriaAdmin({ initialPairs }: Props) {
   const [pairs, setPairs] = useState<GalleryPair[]>(initialPairs);
   const [isPending, startTransition] = useTransition();
+  const [previewPair, setPreviewPair] = useState<GalleryPair | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const closePreview = useCallback(() => setPreviewPair(null), []);
+
+  // Sync with server updates (e.g. after a revalidatePath)
+  useEffect(() => {
+    setPairs(initialPairs);
+  }, [initialPairs]);
 
   // --- Upload state ---
   const [beforeUrl, setBeforeUrl] = useState<string | null>(null);
@@ -115,12 +242,19 @@ export default function GaleriaAdmin({ initialPairs }: Props) {
   const [uploadingAfter, setUploadingAfter] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // --- Form action ---
   const initialState: CreateState = {};
   const [formState, formAction, isCreating] = useActionState(
     createGalleryPairAction,
     initialState,
   );
+
+  useEffect(() => {
+    if (formState.success) {
+      setBeforeUrl(null);
+      setAfterUrl(null);
+      formRef.current?.reset();
+    }
+  }, [formState.success]);
 
   const handleUploadBefore = async (file: File) => {
     setUploadingBefore(true);
@@ -190,6 +324,8 @@ export default function GaleriaAdmin({ initialPairs }: Props) {
 
   return (
     <div className="space-y-10">
+      {/* Preview modal */}
+      {previewPair && <PreviewModal pair={previewPair} onClose={closePreview} />}
       {/* ------------------------------------------------------------------ */}
       {/* Upload form                                                          */}
       {/* ------------------------------------------------------------------ */}
@@ -202,6 +338,7 @@ export default function GaleriaAdmin({ initialPairs }: Props) {
         </h2>
 
         <form
+          ref={formRef}
           action={(fd) => {
             if (!beforeUrl || !afterUrl) return;
             fd.set("beforeUrl", beforeUrl);
@@ -259,9 +396,9 @@ export default function GaleriaAdmin({ initialPairs }: Props) {
           </button>
         </form>
 
-        {formState.success && (
+        {formState.success && !beforeUrl && !afterUrl && (
           <p className="text-emerald-600 text-sm font-medium">
-            ✅ Par publicado. Recarga la página para seguir agregando.
+            ✅ Par publicado correctamente en la galería.
           </p>
         )}
       </div>
@@ -339,6 +476,16 @@ export default function GaleriaAdmin({ initialPairs }: Props) {
                 </div>
 
                 <div className="flex items-center gap-1 shrink-0">
+                  {/* Preview */}
+                  <button
+                    type="button"
+                    onClick={() => setPreviewPair(pair)}
+                    className="px-3 py-1 rounded-lg text-xs font-medium transition-colors"
+                    style={{ backgroundColor: "var(--ps-lila-pale)", color: "var(--ps-lila)" }}
+                  >
+                    Vista previa
+                  </button>
+
                   {/* Order buttons */}
                   <button
                     type="button"

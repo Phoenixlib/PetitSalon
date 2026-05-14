@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { destroyByUrls } from "@/lib/cloudinary";
 
 async function requireAdmin() {
   const session = await auth();
@@ -58,11 +59,25 @@ export async function createGalleryPairAction(
 }
 
 // ---------------------------------------------------------------------------
-// Delete
+// Delete (+ Cloudinary cleanup — Estrategia 1)
 // ---------------------------------------------------------------------------
 export async function deleteGalleryPairAction(id: string): Promise<void> {
   await requireAdmin();
+
+  // 1. Obtener las URLs antes de borrar el registro
+  const pair = await prisma.galleryPair.findUnique({
+    where: { id },
+    select: { beforeUrl: true, afterUrl: true },
+  });
+
+  // 2. Borrar de la BD
   await prisma.galleryPair.delete({ where: { id } });
+
+  // 3. Borrar imágenes de Cloudinary (después de la BD para evitar inconsistencias)
+  if (pair) {
+    await destroyByUrls([pair.beforeUrl, pair.afterUrl]);
+  }
+
   revalidatePath("/");
   revalidatePath("/admin/galeria");
 }
