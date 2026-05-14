@@ -19,7 +19,28 @@ const TESTIMONIOS = [
   },
 ];
 
-export default function Testimonios() {
+interface ReviewData {
+  id: string;
+  ownerName: string;
+  petName: string;
+  rating: number;
+  text: string;
+}
+
+interface Props {
+  reviews?: ReviewData[];
+}
+
+export default function Testimonios({ reviews = [] }: Props) {
+  const displayData =
+    reviews.length > 0
+      ? reviews.map((r) => ({
+          texto: r.text,
+          nombre: r.ownerName,
+          mascota: `${r.petName} ${"⭐".repeat(r.rating)}`,
+        }))
+      : TESTIMONIOS;
+
   return (
     <section className="py-28 lg:py-36" style={{ backgroundColor: "white" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
@@ -55,7 +76,7 @@ export default function Testimonios() {
 
         {/* Cards */}
         <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
-          {TESTIMONIOS.map((t, i) => (
+          {displayData.map((t, i) => (
             <div
               key={i}
               className="flex flex-col gap-5 p-8 rounded-3xl"

@@ -9,7 +9,8 @@ import {
   updateFaqAction, 
   deleteFaqAction, 
   toggleFaqAction, 
-  reorderFaqAction 
+  reorderFaqAction,
+  type FaqFormState
 } from "./actions";
 
 interface ContenidoClientProps {
@@ -231,7 +232,8 @@ function FaqTab({ faqs }: { faqs: FaqItem[] }) {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   
-  const [state, action, isPending] = useActionState(createFaqAction, {});
+  const initialState: FaqFormState = {};
+  const [state, action, isPending] = useActionState(createFaqAction, initialState);
 
   async function handleMove(index: number, direction: -1 | 1) {
     const newIndex = index + direction;
@@ -398,7 +400,8 @@ function FaqTab({ faqs }: { faqs: FaqItem[] }) {
 
 function EditFaqForm({ faq, onCancel }: { faq: FaqItem; onCancel: () => void }) {
   const updateActionWithId = updateFaqAction.bind(null, faq.id);
-  const [state, action, isPending] = useActionState(updateActionWithId, {});
+  const initialState: FaqFormState = {};
+  const [state, action, isPending] = useActionState(updateActionWithId, initialState);
 
   return (
     <form action={action} className="space-y-3">

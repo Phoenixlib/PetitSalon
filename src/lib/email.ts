@@ -57,3 +57,112 @@ export async function sendNewAppointmentEmail(
     html,
   });
 }
+
+interface ReviewRequestEmailData {
+  ownerName: string;
+  petName: string;
+  reviewUrl: string; // ej: https://dominio.com/resena/[token]
+}
+
+/**
+ * Envía email al cliente con el link para dejar una reseña.
+ * Es un no-op silencioso si SMTP no está configurado.
+ */
+export async function sendReviewRequestEmail(
+  to: string,
+  data: ReviewRequestEmailData,
+): Promise<void> {
+  if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS) {
+    console.log("-----------------------------------------------------");
+    console.log(`[EMAIL SIMULADO] Se generó una solicitud de reseña para ${data.ownerName}`);
+    console.log(`URL de Reseña: ${data.reviewUrl}`);
+    console.log("-----------------------------------------------------");
+    return;
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: env.SMTP_HOST,
+    port: env.SMTP_PORT ?? 587,
+    secure: (env.SMTP_PORT ?? 587) === 465,
+    auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
+  });
+
+  const html = `
+    <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:24px">
+      <h2 style="color:#c17b5c;margin-bottom:8px">🐾 ¡Gracias por visitar Petit Salon!</h2>
+      <p style="color:#444;font-size:15px">
+        Hola <strong>${data.ownerName}</strong>, esperamos que <strong>${data.petName}</strong> haya quedado precioso/a 🐶
+      </p>
+      <p style="color:#444;font-size:15px">
+        Nos encantaría conocer tu experiencia. ¿Nos dejas una reseña? Solo toma un minuto.
+      </p>
+      <div style="text-align:center;margin:32px 0">
+        <a
+          href="${data.reviewUrl}"
+          style="background:#c17b5c;color:#fff;padding:14px 32px;border-radius:999px;text-decoration:none;font-weight:600;font-size:16px"
+        >
+          Dejar mi reseña ⭐
+        </a>
+      </div>
+      <p style="color:#888;font-size:12px;text-align:center">
+        Este link es de un solo uso y es exclusivo para ti.
+      </p>
+    </div>
+  `;
+
+  await transporter.sendMail({
+    from: `"Petit Salon" <${env.SMTP_USER}>`,
+    to,
+    subject: `¿Cómo fue la experiencia de ${data.petName} en Petit Salon? 🐾`,
+    html,
+  });
+}
+
+interface CampaignEmailData {
+  ownerName: string;
+  subject: string;
+  htmlBody: string;
+}
+
+/**
+ * Envía un email de campaña personalizado al cliente.
+ * Es un no-op silencioso (con log) si SMTP no está configurado.
+ */
+export async function sendCampaignEmail(
+  to: string,
+  data: CampaignEmailData,
+): Promise<void> {
+  if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS) {
+    console.log(`[EMAIL SIMULADO — CAMPAÑA] Para: ${to} | Asunto: ${data.subject}`);
+    return;
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: env.SMTP_HOST,
+    port: env.SMTP_PORT ?? 587,
+    secure: (env.SMTP_PORT ?? 587) === 465,
+    auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
+  });
+
+  const html = `
+    <div style="font-family:sans-serif;max-width:560px;margin:auto;padding:24px">
+      <div style="text-align:center;margin-bottom:24px">
+        <h1 style="color:#c17b5c;font-size:22px;margin:0">🐾 Petit Salon</h1>
+      </div>
+      <div style="background:#fffaf7;border:1px solid #f3e8df;border-radius:16px;padding:28px">
+        <p style="margin:0 0 16px;color:#6b5c55;font-size:14px">Hola <strong>${data.ownerName}</strong>,</p>
+        ${data.htmlBody}
+      </div>
+      <p style="color:#aaa;font-size:11px;text-align:center;margin-top:20px">
+        Petit Salon · Peluquería Canina Premium
+      </p>
+    </div>
+  `;
+
+  await transporter.sendMail({
+    from: `"Petit Salon" <${env.SMTP_USER}>`,
+    to,
+    subject: data.subject,
+    html,
+  });
+}

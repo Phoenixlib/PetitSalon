@@ -27,6 +27,9 @@ const envSchema = z.object({
   // Link de Cal.com: "usuario/tipo-de-evento" — expuesto al cliente (build-time)
   NEXT_PUBLIC_CALCOM_LINK: z.string().optional(),
 
+  // URL base de la app (para construir links en emails)
+  APP_URL: z.string().url().optional(),
+
   // App
   NODE_ENV: z
     .enum(["development", "test", "production"])

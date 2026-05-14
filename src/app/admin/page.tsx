@@ -73,6 +73,7 @@ async function getDashboardData() {
         take: 10,
         select: {
           id: true,
+          calComUid: true,
           date: true,
           status: true,
           notes: true,
@@ -83,7 +84,7 @@ async function getDashboardData() {
               name: true,
               breed: true,
               owner: {
-                select: { id: true, name: true, phone: true },
+                select: { id: true, name: true, phone: true, email: true },
               },
             },
           },

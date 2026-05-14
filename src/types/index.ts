@@ -17,6 +17,7 @@ export interface AppointmentWithRelations {
       id: string;
       name: string;
       phone: string;
+      email: string | null;
     };
   };
   service: {

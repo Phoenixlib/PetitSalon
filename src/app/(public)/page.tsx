@@ -59,6 +59,13 @@ export default async function HomePage() {
     select: { id: true, question: true, answer: true },
   });
 
+  // Leer reseñas aprobadas
+  const reviews = await prisma.review.findMany({
+    where: { status: "APPROVED" },
+    orderBy: { submittedAt: "desc" },
+    select: { id: true, ownerName: true, petName: true, rating: true, text: true },
+  });
+
   const defaultConfig = {
     whatsapp: "56937541863",
     email: "Petitsalon.contacto@gmail.com",
@@ -84,7 +91,7 @@ export default async function HomePage() {
         uncategorizedServices={uncategorizedServices}
       />
       <Galeria />
-      <Testimonios />
+      <Testimonios reviews={reviews} />
       <FAQ items={faqs} whatsapp={merged.whatsapp} />
       <Ubicacion
         address={merged.address}

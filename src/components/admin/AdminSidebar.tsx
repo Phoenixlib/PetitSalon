@@ -14,37 +14,54 @@ import {
   Scissors,
   Users,
   X,
+  Star,
+  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/app/admin/actions";
 
 interface AdminSidebarProps {
   userName: string;
+  pendingReviewsCount?: number;
 }
 
-const NAV_ITEMS = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/admin/agenda", label: "Agenda", icon: CalendarDays, exact: false },
-  { href: "/admin/citas", label: "Citas", icon: ClipboardList, exact: false },
-  { href: "/admin/clientes", label: "Clientes", icon: Users, exact: false },
-  { href: "/admin/perros", label: "Perros", icon: PawPrint, exact: false },
-  {
-    href: "/admin/servicios",
-    label: "Servicios",
-    icon: Scissors,
-    exact: false,
-  },
-  {
-    href: "/admin/contenido",
-    label: "Contenido",
-    icon: FileText,
-    exact: false,
-  },
-] as const;
-
-export default function AdminSidebar({ userName }: AdminSidebarProps) {
+export default function AdminSidebar({ userName, pendingReviewsCount = 0 }: AdminSidebarProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+
+  const NAV_ITEMS = [
+    { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+    { href: "/admin/agenda", label: "Agenda", icon: CalendarDays, exact: false },
+    { href: "/admin/citas", label: "Citas", icon: ClipboardList, exact: false },
+    { href: "/admin/clientes", label: "Clientes", icon: Users, exact: false },
+    { href: "/admin/perros", label: "Perros", icon: PawPrint, exact: false },
+    {
+      href: "/admin/servicios",
+      label: "Servicios",
+      icon: Scissors,
+      exact: false,
+    },
+    {
+      href: "/admin/contenido",
+      label: "Contenido",
+      icon: FileText,
+      exact: false,
+    },
+    {
+      href: "/admin/resenas",
+      label: "Reseñas",
+      icon: Star,
+      exact: false,
+      badge: pendingReviewsCount,
+    },
+    {
+      href: "/admin/campanas",
+      label: "Campañas",
+      icon: Mail,
+      exact: false,
+      badge: 0,
+    },
+  ];
 
   function active(href: string, exact: boolean): boolean {
     return exact ? pathname === href : pathname.startsWith(href);
@@ -74,7 +91,7 @@ export default function AdminSidebar({ userName }: AdminSidebarProps) {
       </div>
 
       <nav className="flex-1 px-2 py-4 space-y-0.5">
-        {NAV_ITEMS.map(({ href, label, icon: Icon, exact }) => {
+        {NAV_ITEMS.map(({ href, label, icon: Icon, exact, badge }) => {
           const isActive = active(href, exact);
           return (
             <Link
@@ -94,7 +111,12 @@ export default function AdminSidebar({ userName }: AdminSidebarProps) {
               }
             >
               <Icon className="size-4 shrink-0" />
-              {label}
+              <span className="flex-1">{label}</span>
+              {badge !== undefined && badge > 0 && (
+                <span className="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-0.5 rounded-full">
+                  {badge}
+                </span>
+              )}
             </Link>
           );
         })}

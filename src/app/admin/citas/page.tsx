@@ -21,7 +21,7 @@ export default async function CitasPage() {
             id: true,
             name: true,
             breed: true,
-            owner: { select: { id: true, name: true, phone: true } },
+            owner: { select: { id: true, name: true, phone: true, email: true } },
           },
         },
         service: {

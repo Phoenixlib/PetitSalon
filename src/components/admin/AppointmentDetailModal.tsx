@@ -44,8 +44,13 @@ export default function AppointmentDetailModal({
 }: Props) {
   const [isPending, startTransition] = useTransition();
 
-  type Step = "detail" | "done-form";
+  type Step = "detail" | "done-form" | "review-prompt";
   const [step, setStep] = useState<Step>("detail");
+  const [pendingFormData, setPendingFormData] = useState<{
+    service: string;
+    notes: string | null;
+    photos: string[];
+  } | null>(null);
   const [photos, setPhotos] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -107,12 +112,23 @@ export default function AppointmentDetailModal({
         uploadedPhotos.push(...results.map((r) => r.secureUrl));
       }
 
-      const result = await markDoneWithAttendanceAction(appointment.id, {
+      setPendingFormData({
         service,
         notes: notes || null,
         photos: uploadedPhotos,
       });
+      setStep("review-prompt");
+    });
+  };
 
+  const handleConfirmDone = (sendReview: boolean) => {
+    if (!appointment || !pendingFormData) return;
+    startTransition(async () => {
+      const result = await markDoneWithAttendanceAction(
+        appointment.id,
+        pendingFormData,
+        sendReview,
+      );
       if (result.success) {
         onStatusChange(appointment.id, "DONE");
         onClose();
@@ -320,7 +336,7 @@ export default function AppointmentDetailModal({
                 )}
               </div>
             </>
-          ) : (
+          ) : step === "done-form" ? (
             <>
               <div className="flex items-center mb-6">
                 <button
@@ -477,7 +493,50 @@ export default function AppointmentDetailModal({
                 </div>
               </form>
             </>
-          )}
+          ) : step === "review-prompt" ? (
+            <>
+              <div className="flex flex-col items-center text-center gap-4 py-4">
+                <span className="text-5xl">⭐</span>
+                <h2 className="text-xl font-bold" style={{ color: "var(--ps-text)" }}>
+                  ¿Enviar link de reseña?
+                </h2>
+                <p className="text-sm" style={{ color: "var(--ps-text-mid)" }}>
+                  ¿Deseas enviarle a{" "}
+                  <strong>{appointment.dog.owner.name}</strong> un link para que
+                  deje una reseña de la experiencia de{" "}
+                  <strong>{appointment.dog.name}</strong>?
+                </p>
+                {!appointment.dog.owner.email && (
+                  <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2 w-full">
+                    ⚠️ Este cliente no tiene email registrado. No se puede enviar el
+                    link de forma automática.
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-2 mt-4">
+                {appointment.dog.owner.email && (
+                  <button
+                    type="button"
+                    onClick={() => handleConfirmDone(true)}
+                    disabled={isPending}
+                    className="w-full rounded-full py-2.5 font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                    style={{ backgroundColor: "var(--primary)" }}
+                  >
+                    {isPending ? "Guardando…" : "Sí, enviar link de reseña ✉️"}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleConfirmDone(false)}
+                  disabled={isPending}
+                  className="w-full rounded-full py-2.5 font-semibold text-gray-700 bg-gray-200 transition-opacity hover:bg-gray-300 disabled:opacity-50"
+                >
+                  {isPending ? "Guardando…" : "No, solo marcar como Realizado"}
+                </button>
+              </div>
+            </>
+          ) : null}
         </motion.div>
       </div>
     </AnimatePresence>

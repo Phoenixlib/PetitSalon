@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
           name: true,
           breed: true,
           owner: {
-            select: { id: true, name: true, phone: true },
+            select: { id: true, name: true, phone: true, email: true },
           },
         },
       },

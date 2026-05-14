@@ -27,7 +27,7 @@ export default async function AgendaPage() {
           id: true,
           name: true,
           breed: true,
-          owner: { select: { id: true, name: true, phone: true } },
+          owner: { select: { id: true, name: true, phone: true, email: true } },
         },
       },
       service: { select: { id: true, name: true, price: true, duration: true } },

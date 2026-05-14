@@ -4,6 +4,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { sendReviewRequestEmail } from "@/lib/email";
+import { env } from "@/env";
 
 async function requireAdmin() {
   const session = await auth();
@@ -58,6 +60,7 @@ export type MarkDoneState = {
 export async function markDoneWithAttendanceAction(
   appointmentId: string,
   input: MarkDoneInput,
+  sendReviewLink: boolean,
 ): Promise<MarkDoneState> {
   try {
     await requireAdmin();
@@ -71,10 +74,19 @@ export async function markDoneWithAttendanceAction(
       url.startsWith("https://res.cloudinary.com/"),
     );
 
-    // Buscar la cita para obtener dogId
+    // Buscar la cita para obtener dogId y datos del dueño
     const appointment = await prisma.appointment.findUnique({
       where: { id: appointmentId },
-      select: { dogId: true, date: true },
+      select: {
+        dogId: true,
+        date: true,
+        dog: {
+          select: {
+            name: true,
+            owner: { select: { name: true, email: true } },
+          },
+        },
+      },
     });
 
     if (!appointment) {
@@ -97,6 +109,30 @@ export async function markDoneWithAttendanceAction(
         },
       }),
     ]);
+
+    // Crear reseña y enviar email si se solicitó y el dueño tiene email
+    if (sendReviewLink) {
+      const ownerEmail = appointment.dog.owner.email;
+      if (ownerEmail) {
+        const review = await prisma.review.create({
+          data: {
+            ownerName: appointment.dog.owner.name,
+            petName: appointment.dog.name,
+            appointmentId,
+          },
+        });
+
+        const baseUrl = env.APP_URL ?? env.NEXTAUTH_URL ?? "";
+        const reviewUrl = `${baseUrl}/resena/${review.token}`;
+
+        // Fire-and-forget — no bloquear la respuesta
+        void sendReviewRequestEmail(ownerEmail, {
+          ownerName: appointment.dog.owner.name,
+          petName: appointment.dog.name,
+          reviewUrl,
+        });
+      }
+    }
 
     revalidatePath("/admin/agenda");
     revalidatePath("/admin/citas");

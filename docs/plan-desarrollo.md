@@ -288,7 +288,9 @@ model FaqItem {
 
 ## Sprint 9 — Sistema de Reseñas
 
-> **Objetivo:** Al marcar una cita como Realizada, el cliente recibe un link para dejar una reseña. Las reseñas aprobadas por la dueña se muestran en la sección Testimonios del landing.
+> **Objetivo:** Al marcar una cita como Realizada, la dueña puede optar por enviarle al cliente un link de reseña. Las reseñas aprobadas se muestran en la sección Testimonios del landing.
+>
+> **Plan detallado:** `docs/plan-sprint9-resenas.md`
 
 ### Nuevo modelo de Prisma requerido
 
@@ -377,3 +379,4 @@ enum ReviewStatus {
 - **11/05/2026** — Sprint 5b completado: fichas CRM de clientes y perros con modales de edición conectados.
 - **11/05/2026** — Sprint 6 completado: agenda FullCalendar + lista de citas con filtros + página pública `/servicios`.
 - **12/05/2026** — Sprints 8 y 9 añadidos al plan: contenido editable del landing y sistema de reseñas.
+- **13/05/2026** — Plan detallado del Sprint 9 aprobado: flujo de 3 pasos en el modal (detail → done-form → review-prompt), la dueña decide si enviar el link antes de ejecutar la acción. Ver `docs/plan-sprint9-resenas.md`.
