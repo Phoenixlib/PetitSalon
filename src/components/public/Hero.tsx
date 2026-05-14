@@ -162,7 +162,7 @@ export default function Hero({ whatsapp }: HeroProps) {
               Escribir por WhatsApp
             </a>
             <Link
-              href="/reservar"
+              href="/#servicios"
               className="inline-flex items-center justify-center gap-2 font-semibold px-7 py-4 rounded-full border-2 transition-all duration-300 hover:scale-[1.03]"
               style={{
                 color: "var(--ps-lila)",

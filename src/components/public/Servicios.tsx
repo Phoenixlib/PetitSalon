@@ -230,7 +230,7 @@ export default function Servicios({
           {/* CTA */}
           <div className="text-center mt-14">
             <Link
-              href="/reservar"
+              href="/#servicios"
               className="inline-flex items-center gap-2 rounded-full px-8 py-4 text-sm font-semibold text-white shadow-md transition-all hover:opacity-90 hover:scale-[1.02]"
               style={{ backgroundColor: "var(--primary)" }}
             >

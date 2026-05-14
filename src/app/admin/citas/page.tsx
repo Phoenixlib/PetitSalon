@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import CitasClient from "./CitasClient";
 import type { AppointmentWithRelations } from "@/types";
+import Link from "next/link";
 
 export const metadata = { title: "Citas — Petit Salón Admin" };
 
@@ -32,16 +33,24 @@ export default async function CitasPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1
-          className="text-3xl font-bold tracking-tight"
-          style={{ color: "var(--ps-text)" }}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1
+            className="text-3xl font-bold tracking-tight"
+            style={{ color: "var(--ps-text)" }}
+          >
+            Citas
+          </h1>
+          <p className="text-sm mt-1" style={{ color: "var(--ps-text-mid)" }}>
+            Historial y gestión de todas las citas.
+          </p>
+        </div>
+        <Link
+          href="/admin/citas/nueva"
+          className="bg-[var(--primary)] text-white px-4 py-2 rounded-lg font-medium hover:opacity-90 transition-opacity"
         >
-          Citas
-        </h1>
-        <p className="text-sm mt-1" style={{ color: "var(--ps-text-mid)" }}>
-          Historial y gestión de todas las citas.
-        </p>
+          + Nueva Cita
+        </Link>
       </div>
       <CitasClient initialAppointments={appointments} />
     </div>

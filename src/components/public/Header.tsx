@@ -120,7 +120,7 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
                 WhatsApp ↗
               </a>
               <Link
-                href="/reservar"
+                href="/#servicios"
                 className="text-sm font-semibold px-4 py-2 rounded-full text-white transition-all duration-200 hover:opacity-90"
                 style={{ backgroundColor: "var(--ps-lila)" }}
               >
@@ -165,7 +165,7 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
                 WhatsApp ↗
               </a>
               <Link
-                href="/reservar"
+                href="/#servicios"
                 className="text-sm font-semibold px-4 py-2 rounded-full text-white transition-all duration-200 hover:opacity-90"
                 style={{ backgroundColor: "var(--ps-lila)" }}
               >
@@ -289,7 +289,7 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
               Escribir por WhatsApp
             </a>
             <Link
-              href="/reservar"
+              href="/#servicios"
               className="text-center font-semibold py-3 rounded-full text-sm text-white"
               style={{ backgroundColor: "var(--ps-lila)" }}
               onClick={() => setMenuOpen(false)}
