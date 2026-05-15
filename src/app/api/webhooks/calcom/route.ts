@@ -198,19 +198,27 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
     throw new Error("No hay servicios configurados en la base de datos");
 
   // 2. Upsert Owner por email o por nombre+teléfono
-  let owner = ownerEmail
-    ? await prisma.owner.findFirst({ where: { email: ownerEmail } })
-    : null;
+  let owner = null;
+  if (ownerEmail) {
+    owner = await prisma.owner.findUnique({ where: { email: ownerEmail } });
+  }
+  if (!owner && ownerPhone) {
+    owner = await prisma.owner.findUnique({ where: { phone: ownerPhone } });
+  }
 
   if (!owner) {
     owner = await prisma.owner.create({
       data: { name: ownerName, email: ownerEmail, phone: ownerPhone },
     });
   } else {
-    // Actualizar teléfono si llegó con más datos
+    // Actualizar teléfono/email si llegó con más datos (y evitar conflictos de unicidad si el otro dato ya existe en otro lado)
+    // Es más seguro solo actualizar si no lo tenía.
     owner = await prisma.owner.update({
       where: { id: owner.id },
-      data: { phone: ownerPhone || owner.phone },
+      data: { 
+        ...(ownerPhone && !owner.phone ? { phone: ownerPhone } : {}),
+        ...(ownerEmail && !owner.email ? { email: ownerEmail } : {})
+      },
     });
   }
 

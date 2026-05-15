@@ -35,6 +35,19 @@ export async function createClientWithDog(formData: FormData) {
   }
 
   try {
+    const existing = await prisma.owner.findFirst({
+      where: {
+        OR: [
+          { phone },
+          ...(email ? [{ email }] : [])
+        ]
+      }
+    });
+
+    if (existing) {
+      return { error: "El correo o teléfono ya pertenece a otro cliente registrado." };
+    }
+
     const owner = await prisma.$transaction(async (tx) => {
       // 1. Create owner
       const newOwner = await tx.owner.create({
@@ -96,6 +109,20 @@ export async function updateOwnerAction(id: string, _prev: OwnerFormState, formD
       return { errors: parsed.error.flatten().fieldErrors };
     }
     
+    const existing = await prisma.owner.findFirst({
+      where: {
+        id: { not: id },
+        OR: [
+          { phone: parsed.data.phone },
+          ...(parsed.data.email ? [{ email: parsed.data.email }] : [])
+        ]
+      }
+    });
+
+    if (existing) {
+      return { errors: { _form: ["El correo o teléfono ya está registrado en otro cliente."] } };
+    }
+
     await prisma.owner.update({
       where: { id },
       data: { ...parsed.data, email: parsed.data.email || null }
