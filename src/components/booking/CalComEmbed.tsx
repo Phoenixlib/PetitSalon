@@ -69,20 +69,17 @@ export default function CalComEmbed({ calLink, prefill }: CalComEmbedProps) {
   }
 
   return (
-    <Cal
-      namespace="petitsalon"
-      calLink={finalCalLink}
-      style={{
-        width: "100%",
-        height: "100%",
-        minHeight: "600px",
-        overflow: "scroll",
-      }}
-      config={{
-        layout: "month_view",
-        // Cal.com embed también permite pasar por config
-        // pero enviar en el Link directamente suele ser más robusto para campos personalizados
-      }}
-    />
+    <div className="w-full h-full min-h-[850px] md:min-h-[650px] overflow-y-auto">
+      <Cal
+        namespace="petitsalon"
+        calLink={finalCalLink}
+        style={{ width: "100%", height: "100%" }}
+        config={{
+          layout: "month_view",
+          // Cal.com embed también permite pasar por config
+          // pero enviar en el Link directamente suele ser más robusto para campos personalizados
+        }}
+      />
+    </div>
   );
 }
