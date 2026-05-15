@@ -47,7 +47,8 @@ export default async function ClientesPage(props: { searchParams: Promise<{ q?: 
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
-        <table className="w-full text-left text-sm">
+        {/* Desktop Table */}
+        <table className="hidden lg:table w-full text-left text-sm">
           <thead className="bg-neutral-50 border-b border-neutral-200">
             <tr>
               <th className="p-4 font-semibold text-neutral-600">Nombre</th>
@@ -97,6 +98,48 @@ export default async function ClientesPage(props: { searchParams: Promise<{ q?: 
             )}
           </tbody>
         </table>
+
+        {/* Mobile Cards */}
+        <div className="lg:hidden flex flex-col divide-y divide-neutral-200">
+          {owners.length === 0 ? (
+            <div className="p-8 text-center text-neutral-500 text-sm">
+              No hay clientes registrados aún.
+            </div>
+          ) : (
+            owners.map((owner) => (
+              <div key={owner.id} className="p-4 flex flex-col gap-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-semibold text-base text-gray-900">{owner.name}</h3>
+                    <div className="text-sm text-neutral-600 mt-0.5">
+                      <a href={`tel:${owner.phone}`} className="hover:underline text-blue-600">{owner.phone}</a>
+                      {owner.email && <span className="block text-xs text-neutral-400">{owner.email}</span>}
+                    </div>
+                  </div>
+                </div>
+                
+                {owner.dogs.length > 0 && (
+                  <div className="flex gap-2 flex-wrap">
+                    {owner.dogs.map((dog: Dog) => (
+                      <span
+                        key={dog.id}
+                        className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full border border-orange-200"
+                      >
+                        {dog.name} <span className="text-orange-600 opacity-80">({dog.breed})</span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                
+                <div className="mt-1 pt-3 border-t border-neutral-100 flex justify-end">
+                  <Link href={`/admin/clientes/${owner.id}`} className="inline-flex items-center justify-center bg-[var(--primary)] text-white hover:opacity-90 transition-opacity font-medium text-sm px-4 py-2 rounded-lg w-full sm:w-auto">
+                    Ver ficha del cliente
+                  </Link>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

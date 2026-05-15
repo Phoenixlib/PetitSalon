@@ -96,7 +96,25 @@ export default function AgendaCalendar({ initialAppointments }: Props) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-2 lg:p-4">
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media (max-width: 1023px) {
+          .fc .fc-toolbar.fc-header-toolbar {
+            flex-direction: column;
+            gap: 12px;
+          }
+          .fc .fc-toolbar-title {
+            font-size: 1.25rem !important;
+          }
+          .fc .fc-button {
+            padding: 0.4em 0.6em;
+            font-size: 0.85em;
+          }
+          .fc .fc-timegrid-slot-label {
+            font-size: 0.75rem;
+          }
+        }
+      `}} />
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"

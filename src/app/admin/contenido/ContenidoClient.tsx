@@ -23,40 +23,40 @@ export default function ContenidoClient({ config, faqs: initialFaqs }: Contenido
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-      <div className="flex border-b border-slate-200 overflow-x-auto">
+      <div className="flex flex-col lg:flex-row border-b border-slate-200 overflow-x-auto divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
         <button
           onClick={() => setTab("about")}
-          className={`px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+          className={`px-6 py-4 text-sm font-medium whitespace-nowrap transition-colors text-left lg:text-center ${
             tab === "about"
-              ? "border-[var(--ps-lila)] text-[var(--ps-lila-deep)]"
-              : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+              ? "bg-[var(--ps-lila-pale)] border-l-4 lg:border-l-0 lg:border-b-2 border-[var(--ps-lila)] text-[var(--ps-lila-deep)]"
+              : "border-l-4 lg:border-l-0 lg:border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
           }`}
         >
           Acerca de Nosotros
         </button>
         <button
           onClick={() => setTab("faq")}
-          className={`px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+          className={`px-6 py-4 text-sm font-medium whitespace-nowrap transition-colors text-left lg:text-center ${
             tab === "faq"
-              ? "border-[var(--ps-lila)] text-[var(--ps-lila-deep)]"
-              : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+              ? "bg-[var(--ps-lila-pale)] border-l-4 lg:border-l-0 lg:border-b-2 border-[var(--ps-lila)] text-[var(--ps-lila-deep)]"
+              : "border-l-4 lg:border-l-0 lg:border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
           }`}
         >
           Preguntas Frecuentes
         </button>
         <button
           onClick={() => setTab("location")}
-          className={`px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+          className={`px-6 py-4 text-sm font-medium whitespace-nowrap transition-colors text-left lg:text-center ${
             tab === "location"
-              ? "border-[var(--ps-lila)] text-[var(--ps-lila-deep)]"
-              : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+              ? "bg-[var(--ps-lila-pale)] border-l-4 lg:border-l-0 lg:border-b-2 border-[var(--ps-lila)] text-[var(--ps-lila-deep)]"
+              : "border-l-4 lg:border-l-0 lg:border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
           }`}
         >
           Cómo Llegar
         </button>
       </div>
 
-      <div className="p-6 lg:p-8">
+      <div className="p-4 lg:p-6 xl:p-8">
         {tab === "about" && <AboutTab config={config} />}
         {tab === "faq" && <FaqTab faqs={initialFaqs} />}
         {tab === "location" && <LocationTab config={config} />}
@@ -322,72 +322,76 @@ function FaqTab({ faqs }: { faqs: FaqItem[] }) {
           </p>
         ) : (
           faqs.map((faq, index) => (
-            <div key={faq.id} className="bg-white border border-slate-200 rounded-xl p-4 flex gap-4 items-start shadow-sm">
-              <div className="flex flex-col gap-1 items-center justify-center shrink-0">
-                <button 
-                  onClick={() => handleMove(index, -1)}
-                  disabled={index === 0}
-                  className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 transition-colors"
-                >
-                  <ChevronUp className="size-5" />
-                </button>
-                <button 
-                  onClick={() => handleMove(index, 1)}
-                  disabled={index === faqs.length - 1}
-                  className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 transition-colors"
-                >
-                  <ChevronDown className="size-5" />
-                </button>
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                {editingId === faq.id ? (
-                  <EditFaqForm faq={faq} onCancel={() => setEditingId(null)} />
-                ) : (
-                  <>
-                    <div className="flex items-center gap-3 mb-1">
-                      <h4 className="font-semibold text-slate-800 truncate" title={faq.question}>{faq.question}</h4>
-                      <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${faq.isActive ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
-                        {faq.isActive ? 'Visible' : 'Oculto'}
-                      </span>
-                    </div>
-                    <p className="text-sm text-slate-600 line-clamp-2" title={faq.answer}>{faq.answer}</p>
-                  </>
-                )}
+            <div key={faq.id} className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-4 shadow-sm relative">
+              <div className="flex flex-col sm:flex-row gap-4 items-start w-full">
+                <div className="flex-1 min-w-0 w-full">
+                  {editingId === faq.id ? (
+                    <EditFaqForm faq={faq} onCancel={() => setEditingId(null)} />
+                  ) : (
+                    <>
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <h4 className="font-semibold text-slate-800" title={faq.question}>{faq.question}</h4>
+                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full shrink-0 ${faq.isActive ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
+                          {faq.isActive ? 'Visible' : 'Oculto'}
+                        </span>
+                      </div>
+                      <p className="text-sm text-slate-600 whitespace-pre-line break-words">{faq.answer}</p>
+                    </>
+                  )}
+                </div>
               </div>
 
               {editingId !== faq.id && (
-                <div className="flex items-center gap-2 shrink-0 ml-2">
-                  <button
-                    onClick={() => {
-                      startTransition(() => {
-                        toggleFaqAction(faq.id, !faq.isActive);
-                      });
-                    }}
-                    className="p-2 text-slate-400 hover:text-[var(--ps-lila)] transition-colors rounded-lg hover:bg-slate-50"
-                    title={faq.isActive ? "Ocultar" : "Mostrar"}
-                  >
-                    <span className="sr-only">Toggle visibilidad</span>
-                    {faq.isActive ? <Check className="size-4" /> : <X className="size-4" />}
-                  </button>
-                  <button
-                    onClick={() => setEditingId(faq.id)}
-                    className="p-2 text-slate-400 hover:text-[var(--ps-lila)] transition-colors rounded-lg hover:bg-slate-50"
-                  >
-                    <Pencil className="size-4" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (confirm("¿Seguro que quieres eliminar esta pregunta?")) {
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={() => handleMove(index, -1)}
+                      disabled={index === 0}
+                      className="p-1.5 bg-slate-50 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-md disabled:opacity-30 transition-colors"
+                      title="Subir"
+                    >
+                      <ChevronUp className="size-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleMove(index, 1)}
+                      disabled={index === faqs.length - 1}
+                      className="p-1.5 bg-slate-50 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-md disabled:opacity-30 transition-colors"
+                      title="Bajar"
+                    >
+                      <ChevronDown className="size-4" />
+                    </button>
+                  </div>
+                  
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => {
                         startTransition(() => {
-                          deleteFaqAction(faq.id);
+                          toggleFaqAction(faq.id, !faq.isActive);
                         });
-                      }
-                    }}
-                    className="p-2 text-slate-400 hover:text-red-500 transition-colors rounded-lg hover:bg-slate-50"
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
+                      }}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors rounded-lg ${faq.isActive ? 'text-slate-600 bg-slate-100 hover:bg-slate-200' : 'text-green-700 bg-green-50 hover:bg-green-100'}`}
+                    >
+                      {faq.isActive ? <><X className="size-3.5" /> Ocultar</> : <><Check className="size-3.5" /> Mostrar</>}
+                    </button>
+                    <button
+                      onClick={() => setEditingId(faq.id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--ps-lila)] bg-[var(--ps-lila-pale)] hover:bg-[var(--ps-lila-light)] transition-colors rounded-lg"
+                    >
+                      <Pencil className="size-3.5" /> Editar
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (confirm("¿Seguro que quieres eliminar esta pregunta?")) {
+                          startTransition(() => {
+                            deleteFaqAction(faq.id);
+                          });
+                        }
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 transition-colors rounded-lg ml-1"
+                    >
+                      <Trash2 className="size-3.5" /> Borrar
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

@@ -49,7 +49,8 @@ export default async function PerrosPage(props: { searchParams: Promise<{ q?: st
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
-        <table className="w-full text-left text-sm">
+        {/* Desktop Table */}
+        <table className="hidden lg:table w-full text-left text-sm">
           <thead className="bg-neutral-50 border-b border-neutral-200">
             <tr>
               <th className="p-4 font-semibold text-neutral-600">Perro</th>
@@ -105,6 +106,52 @@ export default async function PerrosPage(props: { searchParams: Promise<{ q?: st
             )}
           </tbody>
         </table>
+
+        {/* Mobile Cards */}
+        <div className="lg:hidden flex flex-col divide-y divide-neutral-200">
+          {dogs.length === 0 ? (
+            <div className="p-8 text-center text-neutral-500 text-sm">
+              No se encontraron perros.
+            </div>
+          ) : (
+            dogs.map((dog) => (
+              <div key={dog.id} className="p-4 flex flex-col gap-3">
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 bg-neutral-100 rounded-full flex items-center justify-center text-2xl shrink-0 overflow-hidden shadow-sm border border-neutral-200">
+                    {dog.photo ? (
+                      <img src={dog.photo} alt={dog.name} className="w-full h-full object-cover" />
+                    ) : (
+                      "🐾"
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start">
+                      <h3 className="font-bold text-lg text-gray-900 truncate">{dog.name}</h3>
+                      <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-xs shrink-0" title="Atenciones previas">
+                        ★ {dog._count.attendances}
+                      </span>
+                    </div>
+                    <p className="text-sm font-medium text-neutral-700 truncate">{dog.breed}</p>
+                    <p className="text-xs text-neutral-500 mt-0.5">Tamaño: {dog.size || "-"} | Peso: {dog.weight || "-"}</p>
+                  </div>
+                </div>
+
+                <div className="bg-neutral-50 p-3 rounded-lg border border-neutral-100">
+                  <span className="text-xs text-neutral-500 uppercase font-semibold">Dueño</span>
+                  <Link href={`/admin/clientes/${dog.owner.id}`} className="block mt-0.5 text-sm text-[var(--primary)] hover:underline font-medium truncate">
+                    {dog.owner.name}
+                  </Link>
+                </div>
+                
+                <div className="mt-1 pt-2">
+                  <Link href={`/admin/perros/${dog.id}`} className="inline-flex items-center justify-center bg-[var(--primary)] text-white hover:opacity-90 transition-opacity font-medium text-sm px-4 py-2 rounded-lg w-full">
+                    Ver ficha de la mascota
+                  </Link>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

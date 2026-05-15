@@ -148,14 +148,33 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
       <div className="space-y-6">
         {categories.map((category) => (
           <div key={category.id} className="rounded-2xl overflow-hidden shadow-sm" style={{ border: "1px solid var(--border)" }}>
-            <div className="px-5 py-4 flex items-center justify-between" style={{ backgroundColor: "var(--ps-lila-pale)", borderBottom: "1px solid var(--border)" }}>
-              <div>
-                <h2 className="text-lg font-semibold" style={{ color: "var(--ps-text)" }}>📁 {category.name}</h2>
+            <div className="px-4 py-3 lg:px-5 lg:py-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3" style={{ backgroundColor: "var(--ps-lila-pale)", borderBottom: "1px solid var(--border)" }}>
+              <div className="flex-1">
+                <div className="flex items-center justify-between lg:justify-start gap-2">
+                  <h2 className="text-base lg:text-lg font-semibold" style={{ color: "var(--ps-text)" }}>📁 {category.name}</h2>
+                  <div className="flex items-center gap-1 lg:hidden">
+                    <button
+                      onClick={() => handleEditCategory(category)}
+                      className="rounded-lg p-1.5 text-xs font-medium bg-white border border-neutral-200 hover:bg-neutral-50 shadow-sm"
+                      title="Editar Categoría"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCategory(category.id)}
+                      disabled={isPending}
+                      className="rounded-lg p-1.5 text-xs font-medium text-red-600 bg-white border border-neutral-200 hover:bg-red-50 disabled:opacity-50 shadow-sm"
+                      title="Eliminar Categoría"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
                 {category.description && (
-                  <p className="text-sm mt-1" style={{ color: "var(--ps-text-mid)" }}>{category.description}</p>
+                  <p className="text-xs lg:text-sm mt-1 text-slate-600">{category.description}</p>
                 )}
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
                 <button
                   onClick={() => handleEditCategory(category)}
                   className="rounded-lg px-3 py-1.5 text-xs font-medium bg-white border border-neutral-200 hover:bg-neutral-50"
@@ -191,9 +210,9 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
             <div className="p-3 bg-neutral-50 border-t border-neutral-200">
               <button 
                 onClick={() => handleNewService(category.id)}
-                className="text-sm font-medium hover:underline text-[var(--primary)]"
+                className="text-sm font-medium hover:underline text-[var(--primary)] flex items-center gap-1"
               >
-                + Agregar servicio a {category.name}
+                <span>+</span> Agregar servicio
               </button>
             </div>
           </div>
@@ -253,39 +272,42 @@ function ServiceRow({
 }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   return (
-    <div className="flex items-center gap-4 px-5 py-4">
-      {/* Indicador de estado */}
-      <div
-        className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-        style={{
-          backgroundColor: service.isActive ? "var(--primary)" : "#ccc",
-        }}
-      />
+    <div className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 sm:px-5 sm:py-4">
+      <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+        {/* Indicador de estado */}
+        <div
+          className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1.5 sm:mt-0"
+          style={{ backgroundColor: service.isActive ? "var(--primary)" : "#ccc" }}
+        />
 
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <p
-          className="font-medium text-sm truncate"
-          style={{ color: service.isActive ? "var(--ps-text)" : "#999" }}
-        >
-          {service.name}
-        </p>
-        {service.description && (
-          <p
-            className="text-xs truncate mt-0.5"
-            style={{ color: "var(--ps-text-mid)" }}
-          >
-            {service.description}
-          </p>
-        )}
+        {/* Info principal */}
+        <div className="flex-1 min-w-0">
+          <div className="flex justify-between items-start sm:block">
+            <p
+              className="font-bold text-sm sm:text-base text-gray-900 truncate"
+              style={{ opacity: service.isActive ? 1 : 0.6 }}
+            >
+              {service.name}
+            </p>
+            {/* Precio y duración móvil */}
+            <div className="sm:hidden flex flex-col items-end shrink-0 ml-2 text-right">
+              <span className="text-xs font-bold text-gray-900 bg-slate-100 px-2 py-0.5 rounded">
+                {formatPrice(service.price)}
+              </span>
+              <span className="text-[10px] text-gray-500 mt-0.5">{service.duration} min</span>
+            </div>
+          </div>
+          {service.description && (
+            <p className="text-xs text-gray-500 line-clamp-2 sm:truncate mt-0.5 leading-relaxed pr-4 sm:pr-0">
+              {service.description}
+            </p>
+          )}
+        </div>
       </div>
 
-      {/* Precio y duración */}
-      <div className="hidden sm:flex flex-col items-end gap-0.5 flex-shrink-0">
-        <span
-          className="text-sm font-semibold"
-          style={{ color: "var(--ps-text)" }}
-        >
+      {/* Precio y duración desktop */}
+      <div className="hidden sm:flex flex-col items-end gap-0.5 flex-shrink-0 ml-4 mr-4">
+        <span className="text-sm font-semibold" style={{ color: "var(--ps-text)" }}>
           {formatPrice(service.price)}
         </span>
         <span className="text-xs" style={{ color: "var(--ps-text-mid)" }}>
@@ -294,43 +316,36 @@ function ServiceRow({
       </div>
 
       {/* Acciones */}
-      <div className="flex items-center gap-2 flex-shrink-0">
-        <button
-          onClick={() => onEdit(service)}
-          className="rounded-lg px-3 py-1.5 text-xs font-medium transition-colors hover:bg-gray-100"
-          style={{ color: "var(--ps-text-mid)" }}
-        >
-          Editar
-        </button>
+      <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-gray-100 w-full sm:w-auto justify-end">
         <button
           onClick={() => onToggle(service.id, service.isActive)}
           disabled={isPending}
-          className="rounded-full px-3 py-1.5 text-xs font-semibold transition-all hover:opacity-80 disabled:opacity-50"
-          style={
-            service.isActive
-              ? { backgroundColor: "#fee2e2", color: "#dc2626" }
-              : { backgroundColor: "#dcfce7", color: "#16a34a" }
-          }
+          className={`flex-1 sm:flex-none rounded-lg px-2.5 py-1.5 text-[11px] sm:text-xs font-semibold transition-all hover:opacity-80 disabled:opacity-50 text-center ${
+            service.isActive ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700"
+          }`}
         >
-          {service.isActive ? "Desactivar" : "Activar"}
+          {service.isActive ? "Ocultar" : "Mostrar"}
+        </button>
+
+        <button
+          onClick={() => onEdit(service)}
+          className="flex-1 sm:flex-none rounded-lg px-2.5 py-1.5 text-[11px] sm:text-xs font-medium transition-colors bg-gray-50 hover:bg-gray-100 text-gray-700 text-center"
+        >
+          Editar
         </button>
 
         {confirmDelete ? (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-1 sm:flex-none justify-end">
             <button
-              onClick={() => {
-                onDelete(service.id);
-                setConfirmDelete(false);
-              }}
+              onClick={() => { onDelete(service.id); setConfirmDelete(false); }}
               disabled={isPending}
-              className="rounded-full px-3 py-1.5 text-xs font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+              className="rounded-lg px-2.5 py-1.5 text-[11px] sm:text-xs font-bold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
             >
-              ¿Confirmar?
+              Sí
             </button>
             <button
               onClick={() => setConfirmDelete(false)}
-              className="rounded-full px-2 py-1.5 text-xs font-medium hover:bg-gray-100 transition-colors"
-              style={{ color: "var(--ps-text-mid)" }}
+              className="rounded-lg px-2.5 py-1.5 text-[11px] sm:text-xs font-medium bg-gray-100 hover:bg-gray-200 transition-colors"
             >
               No
             </button>
@@ -339,8 +354,7 @@ function ServiceRow({
           <button
             onClick={() => setConfirmDelete(true)}
             disabled={isPending}
-            className="rounded-lg p-1.5 transition-colors hover:bg-red-50 disabled:opacity-50"
-            style={{ color: "#dc2626" }}
+            className="rounded-lg p-1.5 transition-colors bg-white border border-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 disabled:opacity-50 text-gray-400"
             title="Eliminar servicio"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

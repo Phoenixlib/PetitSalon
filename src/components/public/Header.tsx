@@ -240,8 +240,8 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
             </Link>
           ))}
 
-          {/* Admin nav (solo si autenticado) */}
-          {isAuthenticated && (
+          {/* Admin nav (solo si autenticado y no en admin page) */}
+          {isAuthenticated && !isAdminPage && (
             <>
               <p
                 className="text-[10px] uppercase tracking-[0.2em] mt-4 mb-1 font-semibold"
@@ -297,17 +297,19 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
               Reservar cita
             </Link>
             {isAuthenticated ? (
-              <Link
-                href="/admin"
-                className="text-center font-semibold py-3 rounded-full text-sm border-2"
-                style={{
-                  borderColor: "var(--primary)",
-                  color: "var(--primary)",
-                }}
-                onClick={() => setMenuOpen(false)}
-              >
-                Panel de administración
-              </Link>
+              !isAdminPage && (
+                <Link
+                  href="/admin"
+                  className="text-center font-semibold py-3 rounded-full text-sm border-2"
+                  style={{
+                    borderColor: "var(--primary)",
+                    color: "var(--primary)",
+                  }}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Panel de administración
+                </Link>
+              )
             ) : (
               <Link
                 href="/admin/login"

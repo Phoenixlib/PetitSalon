@@ -70,12 +70,12 @@ export default function CitasClient({ initialAppointments }: Props) {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         {/* Tabs de estado */}
-        <div className="flex overflow-x-auto pb-2 -mb-2 sm:pb-0 sm:mb-0 gap-2">
+        <div className="flex flex-wrap gap-2">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              className={`whitespace-nowrap px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-medium transition-colors ${
                 activeTab === tab.id
                   ? "bg-gray-900 text-white"
                   : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
@@ -113,7 +113,7 @@ export default function CitasClient({ initialAppointments }: Props) {
 
       {/* Tabla */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden lg:block">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-gray-50 text-gray-500 uppercase font-semibold">
               <tr>
@@ -247,6 +247,103 @@ export default function CitasClient({ initialAppointments }: Props) {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="lg:hidden flex flex-col divide-y divide-gray-100">
+          {filteredAppointments.length === 0 ? (
+            <div className="px-6 py-12 text-center text-gray-500 text-sm">
+              No se encontraron citas que coincidan con la búsqueda.
+            </div>
+          ) : (
+            filteredAppointments.map((app) => {
+              const dateObj = new Date(app.date);
+              const dateStr = dateObj.toLocaleDateString("es-CL", {
+                timeZone: "America/Santiago",
+                weekday: "short",
+                day: "2-digit",
+                month: "short",
+              });
+              const timeStr = dateObj.toLocaleTimeString("es-CL", {
+                timeZone: "America/Santiago",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              });
+
+              return (
+                <div key={app.id} className="p-4 flex flex-col gap-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-bold text-gray-900 capitalize">{dateStr}</div>
+                      <div className="text-sm font-medium text-gray-500">{timeStr}</div>
+                    </div>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${STATUS_COLORS[app.status]}`}>
+                      {STATUS_LABELS[app.status]}
+                    </span>
+                  </div>
+
+                  <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 flex flex-col gap-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Mascota:</span>
+                      <span className="font-medium text-gray-900">{app.dog.name} <span className="text-gray-500 font-normal">({app.dog.breed})</span></span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Dueño:</span>
+                      <div className="text-right">
+                        <span className="font-medium text-gray-900 block">{app.dog.owner.name}</span>
+                        <a href={`tel:${app.dog.owner.phone}`} className="text-blue-500 hover:underline">{app.dog.owner.phone}</a>
+                      </div>
+                    </div>
+                    <div className="flex justify-between pt-2 border-t border-gray-200 mt-1">
+                      <span className="text-gray-500">Servicio:</span>
+                      <span className="font-medium text-gray-900 truncate pl-2" title={app.service.name}>{app.service.name}</span>
+                    </div>
+                  </div>
+
+                  {/* Mobile Actions */}
+                  <div className="flex gap-2 pt-1">
+                    {app.status === "PENDING" && (
+                      <>
+                        <button
+                          onClick={() => handleStatusChange(app.id, "CONFIRMED")}
+                          disabled={isPending}
+                          className="flex-1 text-sm font-semibold text-blue-700 bg-blue-100 hover:bg-blue-200 py-2.5 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                          Confirmar
+                        </button>
+                        <button
+                          onClick={() => handleStatusChange(app.id, "CANCELLED")}
+                          disabled={isPending}
+                          className="flex-1 text-sm font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 py-2.5 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                          Cancelar
+                        </button>
+                      </>
+                    )}
+                    {app.status === "CONFIRMED" && (
+                      <>
+                        <button
+                          onClick={() => handleStatusChange(app.id, "DONE")}
+                          disabled={isPending}
+                          className="flex-1 text-sm font-semibold text-green-700 bg-green-100 hover:bg-green-200 py-2.5 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                          Completar
+                        </button>
+                        <button
+                          onClick={() => handleStatusChange(app.id, "CANCELLED")}
+                          disabled={isPending}
+                          className="flex-1 text-sm font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 py-2.5 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                          Cancelar
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     </div>

@@ -152,7 +152,7 @@ export default function AdminSidebar({ userName, pendingReviewsCount = 0 }: Admi
     <>
       {/* Desktop sidebar */}
       <aside
-        className="hidden md:flex flex-col w-56 shrink-0 sticky top-16 h-[calc(100vh-4rem)] border-r overflow-y-auto"
+        className="hidden lg:flex flex-col w-56 shrink-0 sticky top-16 h-[calc(100vh-4rem)] border-r overflow-y-auto"
         style={{
           backgroundColor: "var(--ps-lila-base)",
           borderColor: "var(--ps-lila-light)",
@@ -163,30 +163,29 @@ export default function AdminSidebar({ userName, pendingReviewsCount = 0 }: Admi
 
       {/* Mobile: fixed secondary bar (below public header at top-16) */}
       <div
-        className="md:hidden fixed top-16 left-0 right-0 z-40 flex items-center justify-between px-4 h-14 border-b"
+        className="lg:hidden fixed top-16 left-0 right-0 z-40 h-14 border-b flex justify-center items-center"
         style={{
           backgroundColor: "var(--ps-lila-base)",
           borderColor: "var(--ps-lila-light)",
         }}
       >
-        <span
-          className="font-semibold"
-          style={{
-            fontFamily: "var(--font-display)",
-            color: "var(--ps-lila-deep)",
-          }}
-        >
-          Petit Salón
-        </span>
         <button
           onClick={() => {
             setOpen(true);
           }}
-          className="p-1.5 rounded-md"
+          className="flex items-center gap-2 p-2 rounded-md transition-opacity hover:opacity-80"
           aria-label="Abrir menú"
-          style={{ color: "var(--ps-text-mid)" }}
         >
-          <Menu className="size-5" />
+          <span
+            className="font-semibold"
+            style={{
+              fontFamily: "var(--font-display)",
+              color: "var(--ps-lila-deep)",
+            }}
+          >
+            Admin
+          </span>
+          <PawPrint className="size-5 text-yellow-500" />
         </button>
       </div>
 
@@ -194,13 +193,13 @@ export default function AdminSidebar({ userName, pendingReviewsCount = 0 }: Admi
       {open && (
         <>
           <div
-            className="md:hidden fixed inset-0 z-50 bg-black/40"
+            className="lg:hidden fixed inset-0 z-50 bg-black/40"
             onClick={() => {
               setOpen(false);
             }}
           />
           <aside
-            className="md:hidden fixed inset-y-0 left-0 z-50 flex flex-col w-56 border-r overflow-y-auto"
+            className="lg:hidden fixed inset-y-0 left-0 z-50 flex flex-col w-56 border-r overflow-y-auto"
             style={{
               backgroundColor: "var(--ps-lila-base)",
               borderColor: "var(--ps-lila-light)",
