@@ -6,7 +6,7 @@ import { env } from "@/env";
 
 const DOG_SIZE_VALUES: readonly string[] = ["XS", "S", "M", "L", "XL"];
 
-function parseDogSize(value: string | undefined): DogSize | null {
+function parseDogSize(value: string | undefined | null): DogSize | null {
   if (!value) return null;
   const upper = String(value).toUpperCase().trim();
   if (DOG_SIZE_VALUES.includes(upper)) return upper as DogSize;
