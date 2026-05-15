@@ -186,6 +186,15 @@ export default function AdminSidebar({ userName, pendingReviewsCount = 0 }: Admi
             Admin
           </span>
           <PawPrint className="size-5 text-yellow-500" />
+          <span
+            className="font-semibold"
+            style={{
+              fontFamily: "var(--font-display)",
+              color: "var(--ps-lila-deep)",
+            }}
+          >
+            Menú
+          </span>
         </button>
       </div>
 

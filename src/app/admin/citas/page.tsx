@@ -33,10 +33,10 @@ export default async function CitasPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1
-            className="text-3xl font-bold tracking-tight"
+            className="text-2xl lg:text-3xl font-bold tracking-tight"
             style={{ color: "var(--ps-text)" }}
           >
             Citas
@@ -47,7 +47,7 @@ export default async function CitasPage() {
         </div>
         <Link
           href="/admin/citas/nueva"
-          className="bg-[var(--primary)] text-white px-4 py-2 rounded-lg font-medium hover:opacity-90 transition-opacity"
+          className="bg-[var(--primary)] text-white px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-all shadow-md text-center sm:px-4 sm:py-2 sm:rounded-lg sm:font-medium sm:shadow-sm"
         >
           + Nueva Cita
         </Link>

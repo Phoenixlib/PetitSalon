@@ -24,28 +24,29 @@ export default async function PerrosPage(props: { searchParams: Promise<{ q?: st
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Perros Registrados</h1>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Perros</h1>
+          <Link
+            href="/admin/clientes/nuevo"
+            className="bg-[var(--primary)] text-white px-4 py-2 rounded-lg font-medium hover:opacity-90 transition-opacity text-sm lg:text-base whitespace-nowrap"
+          >
+            + <span className="hidden sm:inline">Nuevo Registro</span><span className="sm:hidden">Registro</span>
+          </Link>
+        </div>
         
-        <form method="GET" className="flex items-center relative mx-4 flex-1 max-w-md">
+        <form method="GET" className="flex items-center relative w-full lg:max-w-md lg:mx-0">
           <input
             type="text"
             name="q"
             defaultValue={q}
             placeholder="Buscar por nombre, raza o dueño..."
-            className="w-full px-4 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+            className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] shadow-sm"
           />
           <button type="submit" className="absolute right-3 text-neutral-400">
             🔍
           </button>
         </form>
-
-        <Link
-          href="/admin/clientes/nuevo"
-          className="bg-[var(--primary)] text-white px-4 py-2 rounded-lg font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
-        >
-          + Nuevo Registro
-        </Link>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">

@@ -65,15 +65,17 @@ export default function ContenidoClient({ config, faqs: initialFaqs }: Contenido
   );
 }
 
-function SaveButton({ isSaving, saved }: { isSaving: boolean; saved: boolean }) {
+function SaveButton({ isSaving, saved, disabled }: { isSaving: boolean; saved: boolean; disabled?: boolean }) {
   return (
     <button
       type="submit"
-      disabled={isSaving}
+      disabled={disabled || isSaving}
       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
         saved
           ? "bg-green-100 text-green-700"
-          : "bg-[var(--ps-lila)] text-white hover:opacity-90"
+          : disabled
+            ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+            : "bg-[var(--ps-lila)] text-white hover:opacity-90"
       } disabled:opacity-50`}
     >
       {saved ? (
@@ -103,15 +105,21 @@ function ConfigField({
   multiline?: boolean 
 }) {
   const [value, setValue] = useState(initialValue);
+  const [lastSavedValue, setLastSavedValue] = useState(initialValue);
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  const hasChanged = value !== lastSavedValue;
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    if (!hasChanged) return;
+    
     setIsSaving(true);
     const res = await updateSiteConfigAction(configKey, value);
     setIsSaving(false);
     if (res.success) {
+      setLastSavedValue(value);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } else {
@@ -138,7 +146,7 @@ function ConfigField({
             className="flex-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--ps-lila)] focus:border-transparent"
           />
         )}
-        <SaveButton isSaving={isSaving} saved={saved} />
+        <SaveButton isSaving={isSaving} saved={saved} disabled={!hasChanged} />
       </div>
     </form>
   );
