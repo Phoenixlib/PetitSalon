@@ -6,6 +6,7 @@ import DogModal from "@/components/admin/DogModal";
 import AttendanceModal from "@/components/admin/AttendanceModal";
 import AppointmentModal from "@/components/admin/AppointmentModal";
 import { DogSize } from "@prisma/client";
+import { AnimatePresence } from "framer-motion";
 
 type ServiceInfo = { id: string; name: string };
 type DogWithDetails = {
@@ -175,9 +176,15 @@ export default function DogDetailClient({
         </div>
       </div>
 
-      <DogModal dog={dog} isOpen={isDogModalOpen} onClose={() => setIsDogModalOpen(false)} />
-      <AttendanceModal dogId={dog.id} dogName={dog.name} isOpen={isAttendanceModalOpen} onClose={() => setIsAttendanceModalOpen(false)} />
-      <AppointmentModal dogId={dog.id} dogName={dog.name} services={services} isOpen={isAppointmentModalOpen} onClose={() => setIsAppointmentModalOpen(false)} />
+      <AnimatePresence>
+        {isDogModalOpen && <DogModal dog={dog} isOpen={isDogModalOpen} onClose={() => setIsDogModalOpen(false)} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {isAttendanceModalOpen && <AttendanceModal dogId={dog.id} dogName={dog.name} isOpen={isAttendanceModalOpen} onClose={() => setIsAttendanceModalOpen(false)} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {isAppointmentModalOpen && <AppointmentModal dogId={dog.id} dogName={dog.name} services={services} isOpen={isAppointmentModalOpen} onClose={() => setIsAppointmentModalOpen(false)} />}
+      </AnimatePresence>
     </>
   );
 }

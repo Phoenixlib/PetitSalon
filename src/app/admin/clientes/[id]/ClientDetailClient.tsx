@@ -5,6 +5,7 @@ import Link from "next/link";
 import OwnerModal from "@/components/admin/OwnerModal";
 import AddDogModal from "@/components/admin/AddDogModal";
 import { Dog } from "@prisma/client";
+import { AnimatePresence } from "framer-motion";
 
 export default function ClientDetailClient({
   owner,
@@ -121,8 +122,12 @@ export default function ClientDetailClient({
         </div>
       </div>
 
-      <OwnerModal owner={owner} isOpen={isOwnerOpen} onClose={() => setIsOwnerOpen(false)} />
-      <AddDogModal ownerId={owner.id} isOpen={isAddDogOpen} onClose={() => setIsAddDogOpen(false)} />
+      <AnimatePresence>
+        {isOwnerOpen && <OwnerModal owner={owner} isOpen={isOwnerOpen} onClose={() => setIsOwnerOpen(false)} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {isAddDogOpen && <AddDogModal ownerId={owner.id} isOpen={isAddDogOpen} onClose={() => setIsAddDogOpen(false)} />}
+      </AnimatePresence>
     </>
   );
 }

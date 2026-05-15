@@ -240,19 +240,23 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
         )}
       </div>
 
-      <ServiceModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        service={editingService}
-        categories={allCategoriesForSelect}
-        defaultCategoryId={defaultCatId}
-      />
+      {modalOpen && (
+        <ServiceModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          service={editingService}
+          categories={allCategoriesForSelect}
+          defaultCategoryId={defaultCatId}
+        />
+      )}
       
-      <CategoryModal
-        open={categoryModalOpen}
-        onClose={() => setCategoryModalOpen(false)}
-        category={editingCategory}
-      />
+      {categoryModalOpen && (
+        <CategoryModal
+          open={categoryModalOpen}
+          onClose={() => setCategoryModalOpen(false)}
+          category={editingCategory}
+        />
+      )}
     </>
   );
 }

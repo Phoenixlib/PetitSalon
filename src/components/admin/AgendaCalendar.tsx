@@ -9,6 +9,7 @@ import esLocale from "@fullcalendar/core/locales/es";
 import { EventClickArg, EventInput } from "@fullcalendar/core";
 import type { AppointmentWithRelations, AppointmentStatus } from "@/types";
 import AppointmentDetailModal from "./AppointmentDetailModal";
+import { AnimatePresence } from "framer-motion";
 
 interface Props {
   initialAppointments: AppointmentWithRelations[];
@@ -134,11 +135,15 @@ export default function AgendaCalendar({ initialAppointments }: Props) {
         allDaySlot={false}
       />
 
-      <AppointmentDetailModal
-        appointment={selectedAppointment}
-        onClose={() => setSelectedAppointment(null)}
-        onStatusChange={handleStatusChange}
-      />
+      <AnimatePresence>
+        {selectedAppointment && (
+          <AppointmentDetailModal
+            appointment={selectedAppointment}
+            onClose={() => setSelectedAppointment(null)}
+            onStatusChange={handleStatusChange}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
