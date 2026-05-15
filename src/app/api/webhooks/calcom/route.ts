@@ -8,8 +8,15 @@ const DOG_SIZE_VALUES: readonly string[] = ["XS", "S", "M", "L", "XL"];
 
 function parseDogSize(value: string | undefined): DogSize | null {
   if (!value) return null;
-  const upper = value.toUpperCase();
+  const upper = String(value).toUpperCase().trim();
   if (DOG_SIZE_VALUES.includes(upper)) return upper as DogSize;
+  
+  // Buscar si empieza con la letra o tiene el formato "S - Pequeño"
+  for (const size of ["XL", "XS", "L", "M", "S"]) { // Orden importa (XL antes de L)
+    const regex = new RegExp(`(^|\\s|\\()${size}(\\s|-|\\)|$)`);
+    if (regex.test(upper)) return size as DogSize;
+  }
+  
   return null;
 }
 
@@ -112,18 +119,50 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
   if (!attendee) throw new Error("Reserva sin asistente");
 
   const responses = payload.responses ?? {};
-  const ownerName = responses.name?.value ?? attendee.name;
-  const ownerEmail = responses.email?.value ?? attendee.email ?? null;
-  const ownerPhone =
-    responses.attendeePhoneNumber?.value ?? attendee.phoneNumber ?? "";
-  const dogName = responses.nombre_perro?.value ?? "Sin nombre";
-  const dogBreed = responses.raza_perro?.value ?? "Sin raza";
-  const dogSize = parseDogSize(responses.dog_size?.value);
-  const dogNotes = responses.dog_notes?.value ?? null;
-  const dogAge = responses.edad?.value ?? null;
-  const dogWeight = responses.peso?.value ?? null;
-  const passedService = responses.servicio?.value ?? null;
-  const notes = responses.notes?.value ?? null;
+  let ownerName = attendee.name;
+  let ownerEmail = attendee.email ?? null;
+  let ownerPhone = attendee.phoneNumber ?? "";
+  let dogName = "Sin nombre";
+  let dogBreed = "Sin raza";
+  let dogSizeRaw: string | null = null;
+  let dogNotes: string | null = null;
+  let dogAge: string | null = null;
+  let dogWeight: string | null = null;
+  let passedService: string | null = null;
+  let notes: string | null = null;
+
+  for (const [key, field] of Object.entries(responses)) {
+    if (!field || typeof field.value !== "string") continue;
+    const k = key.toLowerCase();
+    const val = field.value.trim();
+    if (!val) continue;
+
+    if (k.includes("nombre_perro") || k.includes("nombre del perro") || k === "perro") {
+      dogName = val;
+    } else if (k.includes("raza")) {
+      dogBreed = val;
+    } else if (k.includes("tamaño") || k.includes("tamano") || k.includes("size")) {
+      dogSizeRaw = val;
+    } else if (k.includes("peso") || k.includes("weight")) {
+      dogWeight = val;
+    } else if (k.includes("edad") || k.includes("age")) {
+      dogAge = val;
+    } else if (k.includes("dog_notes") || k.includes("alergia") || k.includes("temperamento")) {
+      dogNotes = val;
+    } else if (k.includes("servicio")) {
+      passedService = val;
+    } else if (k.includes("tel") || k.includes("phone") || k.includes("whatsapp")) {
+      ownerPhone = val;
+    } else if (k === "name" || k === "nombre" || k === "nombre completo") {
+      ownerName = val;
+    } else if (k === "email" || k === "correo") {
+      ownerEmail = val;
+    } else if (k === "notes" || k === "notas") {
+      notes = val;
+    }
+  }
+
+  const dogSize = parseDogSize(dogSizeRaw);
 
   // 1. Upsert Service
   let service = null;
@@ -199,11 +238,11 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
     dog = await prisma.dog.update({
       where: { id: dog.id },
       data: {
-        breed: dogBreed || dog.breed,
-        ...(dogSize !== null && { size: dogSize }),
-        ...(dogAge !== null && { age: dogAge }),
-        ...(dogWeight !== null && { weight: dogWeight }),
-        ...(dogNotes !== null && { notes: dogNotes }),
+        ...(dogBreed && dogBreed !== "Sin raza" ? { breed: dogBreed } : {}),
+        ...(dogSize ? { size: dogSize } : {}),
+        ...(dogAge ? { age: dogAge } : {}),
+        ...(dogWeight ? { weight: dogWeight } : {}),
+        ...(dogNotes ? { notes: dogNotes } : {}),
       },
     });
   }
