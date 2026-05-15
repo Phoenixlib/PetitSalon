@@ -113,8 +113,22 @@ export default function BookingFlow({ calLink, servicio }: BookingFlowProps) {
     setStep("embed");
   };
 
+  const [isSuccess, setIsSuccess] = useState(false);
+
   return (
     <div className="w-full relative min-h-[400px]">
+      {!isSuccess && (
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold tracking-tight mb-2">
+            Reserva tu Cita
+          </h1>
+          <p className="text-muted-foreground">
+            Elige el servicio, día y hora que más te acomode. Recibirás una
+            confirmación por correo.
+          </p>
+        </div>
+      )}
+
       <AnimatePresence mode="wait">
         {step === "lookup" && (
           <motion.div
@@ -277,7 +291,11 @@ export default function BookingFlow({ calLink, servicio }: BookingFlowProps) {
             transition={{ duration: 0.3 }}
             className="w-full bg-white rounded-3xl shadow-[0_2px_16px_rgba(0,0,0,0.06)] border border-[var(--ps-border,neutral-200)] p-4 sm:p-8"
           >
-            <CalComEmbed calLink={calLink} prefill={prefill} />
+            <CalComEmbed 
+              calLink={calLink} 
+              prefill={prefill} 
+              onSuccess={() => setIsSuccess(true)} 
+            />
           </motion.div>
         )}
       </AnimatePresence>

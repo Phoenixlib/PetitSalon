@@ -18,9 +18,10 @@ export interface CalComPrefill {
 interface CalComEmbedProps {
   calLink: string;
   prefill?: CalComPrefill;
+  onSuccess?: () => void;
 }
 
-export default function CalComEmbed({ calLink, prefill }: CalComEmbedProps) {
+export default function CalComEmbed({ calLink, prefill, onSuccess }: CalComEmbedProps) {
   useEffect(() => {
     (async function () {
       const cal = await getCalApi({ namespace: "petitsalon" });
@@ -43,8 +44,17 @@ export default function CalComEmbed({ calLink, prefill }: CalComEmbedProps) {
           },
         },
       });
+
+      if (onSuccess) {
+        cal("on", {
+          action: "bookingSuccessful",
+          callback: () => {
+            onSuccess();
+          },
+        });
+      }
     })();
-  }, []);
+  }, [onSuccess]);
 
   // Construimos The query string if prefill data exists
   let finalCalLink = calLink;
