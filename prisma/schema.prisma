@@ -80,6 +80,7 @@ model Service {
   duration     Int
   description  String?
   isActive     Boolean          @default(true)
+  order        Int              @default(0)
   calComLink   String?          @map("cal_com_link")
   categoryId   String?
   category     ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)

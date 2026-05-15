@@ -116,27 +116,6 @@ export default function CategoryModal({ open, onClose, category }: Props) {
             )}
           </div>
 
-          {/* Orden */}
-          <div>
-            <label
-              htmlFor="order"
-              className="mb-1 block text-sm font-medium"
-              style={{ color: "var(--ps-text)" }}
-            >
-              Orden de visualización
-            </label>
-            <input
-              id="order"
-              name="order"
-              type="number"
-              defaultValue={category?.order ?? 0}
-              className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
-              style={{ borderColor: "var(--border)" }}
-            />
-            <p className="mt-1 text-xs text-neutral-500">
-              Menor número aparece primero.
-            </p>
-          </div>
 
           {/* Descripción */}
           <div>

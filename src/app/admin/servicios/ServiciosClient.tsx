@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { toggleServiceAction, deleteServiceAction, deleteCategoryAction } from "./actions";
+import { toggleServiceAction, deleteServiceAction, deleteCategoryAction, reorderCategoriesAction, reorderServicesAction } from "./actions";
 import ServiceModal from "@/components/admin/ServiceModal";
 import CategoryModal from "@/components/admin/CategoryModal";
 
@@ -12,6 +12,7 @@ type Service = {
   duration: number;
   description: string | null;
   isActive: boolean;
+  order: number;
   categoryId: string | null;
 };
 
@@ -94,7 +95,53 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
     });
   };
 
-  const allCategoriesForSelect = categories.map(c => ({ id: c.id, name: c.name }));
+  const handleMoveCategory = (index: number, direction: "up" | "down") => {
+    if (direction === "up" && index === 0) return;
+    if (direction === "down" && index === categories.length - 1) return;
+
+    const newCategories = [...categories];
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+
+    // Swap elements
+    [newCategories[index], newCategories[targetIndex]] = [
+      newCategories[targetIndex],
+      newCategories[index],
+    ];
+
+    const categoryIds = newCategories.map((c) => c.id);
+
+    startTransition(async () => {
+      const result = await reorderCategoriesAction(categoryIds);
+      if (!result.success && result.error) setErrorMsg(result.error);
+    });
+  };
+
+  const handleMoveService = (
+    categoryServices: Service[],
+    serviceIndex: number,
+    direction: "up" | "down",
+  ) => {
+    if (direction === "up" && serviceIndex === 0) return;
+    if (direction === "down" && serviceIndex === categoryServices.length - 1)
+      return;
+
+    const newServices = [...categoryServices];
+    const targetIndex = direction === "up" ? serviceIndex - 1 : serviceIndex + 1;
+
+    [newServices[serviceIndex], newServices[targetIndex]] = [
+      newServices[targetIndex],
+      newServices[serviceIndex],
+    ];
+
+    const serviceIds = newServices.map((s) => s.id);
+
+    startTransition(async () => {
+      const result = await reorderServicesAction(serviceIds);
+      if (!result.success && result.error) setErrorMsg(result.error);
+    });
+  };
+
+  const allCategoriesForSelect = categories.map((c) => ({ id: c.id, name: c.name }));
 
   return (
     <>
@@ -146,13 +193,32 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
 
       {/* Categories */}
       <div className="space-y-6">
-        {categories.map((category) => (
+        {categories.map((category, index) => (
           <div key={category.id} className="rounded-2xl overflow-hidden shadow-sm" style={{ border: "1px solid var(--border)" }}>
             <div className="px-4 py-3 lg:px-5 lg:py-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3" style={{ backgroundColor: "var(--ps-lila-pale)", borderBottom: "1px solid var(--border)" }}>
               <div className="flex-1">
                 <div className="flex items-center justify-between lg:justify-start gap-2">
-                  <h2 className="text-base lg:text-lg font-semibold" style={{ color: "var(--ps-text)" }}>📁 {category.name}</h2>
+                  <h2 className="text-base lg:text-lg font-semibold flex items-center gap-2" style={{ color: "var(--ps-text)" }}>
+                    📁 {category.name}
+                  </h2>
                   <div className="flex items-center gap-1 lg:hidden">
+                    <button
+                      onClick={() => handleMoveCategory(index, "up")}
+                      disabled={isPending || index === 0}
+                      className="rounded-lg p-1.5 text-xs font-medium bg-white border border-neutral-200 hover:bg-neutral-50 disabled:opacity-30 shadow-sm"
+                      title="Mover Arriba"
+                    >
+                      ▲
+                    </button>
+                    <button
+                      onClick={() => handleMoveCategory(index, "down")}
+                      disabled={isPending || index === categories.length - 1}
+                      className="rounded-lg p-1.5 text-xs font-medium bg-white border border-neutral-200 hover:bg-neutral-50 disabled:opacity-30 shadow-sm mr-2"
+                      title="Mover Abajo"
+                    >
+                      ▼
+                    </button>
+
                     <button
                       onClick={() => handleEditCategory(category)}
                       className="rounded-lg p-1.5 text-xs font-medium bg-white border border-neutral-200 hover:bg-neutral-50 shadow-sm"
@@ -175,6 +241,25 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
                 )}
               </div>
               <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center border-r border-neutral-300 pr-2 mr-1">
+                  <button
+                    onClick={() => handleMoveCategory(index, "up")}
+                    disabled={isPending || index === 0}
+                    className="rounded-lg p-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-200 disabled:opacity-30 transition-colors"
+                    title="Mover Arriba"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    onClick={() => handleMoveCategory(index, "down")}
+                    disabled={isPending || index === categories.length - 1}
+                    className="rounded-lg p-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-200 disabled:opacity-30 transition-colors"
+                    title="Mover Abajo"
+                  >
+                    ▼
+                  </button>
+                </div>
+
                 <button
                   onClick={() => handleEditCategory(category)}
                   className="rounded-lg px-3 py-1.5 text-xs font-medium bg-white border border-neutral-200 hover:bg-neutral-50"
@@ -192,13 +277,21 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
             </div>
 
             <div className="bg-white divide-y" style={{ borderColor: "var(--border)" }}>
-              {category.services.map((s) => (
+              {category.services.map((s, serviceIndex) => (
                 <ServiceRow
                   key={s.id}
                   service={s}
+                  serviceIndex={serviceIndex}
+                  totalServices={category.services.length}
                   onEdit={handleEditService}
                   onToggle={handleToggleService}
                   onDelete={handleDeleteService}
+                  onMoveUp={() =>
+                    handleMoveService(category.services, serviceIndex, "up")
+                  }
+                  onMoveDown={() =>
+                    handleMoveService(category.services, serviceIndex, "down")
+                  }
                   isPending={isPending}
                 />
               ))}
@@ -225,13 +318,21 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
               <h2 className="text-lg font-semibold" style={{ color: "var(--ps-text)" }}>📂 Sin Categoría</h2>
             </div>
             <div className="bg-white divide-y" style={{ borderColor: "var(--border)" }}>
-              {uncategorized.map((s) => (
+              {uncategorized.map((s, serviceIndex) => (
                 <ServiceRow
                   key={s.id}
                   service={s}
+                  serviceIndex={serviceIndex}
+                  totalServices={uncategorized.length}
                   onEdit={handleEditService}
                   onToggle={handleToggleService}
                   onDelete={handleDeleteService}
+                  onMoveUp={() =>
+                    handleMoveService(uncategorized, serviceIndex, "up")
+                  }
+                  onMoveDown={() =>
+                    handleMoveService(uncategorized, serviceIndex, "down")
+                  }
                   isPending={isPending}
                 />
               ))}
@@ -263,15 +364,23 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
 
 function ServiceRow({
   service,
+  serviceIndex,
+  totalServices,
   onEdit,
   onToggle,
   onDelete,
+  onMoveUp,
+  onMoveDown,
   isPending,
 }: {
   service: Service;
+  serviceIndex: number;
+  totalServices: number;
   onEdit: (s: Service) => void;
   onToggle: (id: string, current: boolean) => void;
   onDelete: (id: string) => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
   isPending: boolean;
 }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -321,6 +430,26 @@ function ServiceRow({
 
       {/* Acciones */}
       <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-gray-100 w-full sm:w-auto justify-end">
+        {/* Flechas de orden */}
+        <div className="flex flex-col gap-0.5 mr-1">
+          <button
+            onClick={onMoveUp}
+            disabled={isPending || serviceIndex === 0}
+            className="rounded p-0.5 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 disabled:opacity-25 transition-colors leading-none text-[10px]"
+            title="Mover arriba"
+          >
+            ▲
+          </button>
+          <button
+            onClick={onMoveDown}
+            disabled={isPending || serviceIndex === totalServices - 1}
+            className="rounded p-0.5 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 disabled:opacity-25 transition-colors leading-none text-[10px]"
+            title="Mover abajo"
+          >
+            ▼
+          </button>
+        </div>
+
         <button
           onClick={() => onToggle(service.id, service.isActive)}
           disabled={isPending}

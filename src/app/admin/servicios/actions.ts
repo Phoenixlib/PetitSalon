@@ -139,14 +139,12 @@ export async function deleteServiceAction(
 const CategorySchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio").max(100),
   description: z.string().max(3000).optional().nullable(),
-  order: z.coerce.number().int().min(0).default(0),
 });
 
 export type CategoryFormState = {
   errors?: {
     name?: string[];
     description?: string[];
-    order?: string[];
     _form?: string[];
   };
   success?: boolean;
@@ -162,7 +160,6 @@ export async function createCategoryAction(
     const raw = {
       name: formData.get("name") as string,
       description: (formData.get("description") as string) || null,
-      order: Number(formData.get("order") || 0),
     };
 
     const parsed = CategorySchema.safeParse(raw);
@@ -170,7 +167,15 @@ export async function createCategoryAction(
       return { errors: parsed.error.flatten().fieldErrors };
     }
 
-    await prisma.serviceCategory.create({ data: parsed.data });
+    // Assign the next available order
+    const maxOrder = await prisma.serviceCategory.aggregate({
+      _max: { order: true }
+    });
+    const nextOrder = (maxOrder._max.order ?? -1) + 1;
+
+    await prisma.serviceCategory.create({ 
+      data: { ...parsed.data, order: nextOrder } 
+    });
     revalidatePath("/admin/servicios");
     revalidatePath("/");
     return { success: true };
@@ -192,7 +197,6 @@ export async function updateCategoryAction(
     const raw = {
       name: formData.get("name") as string,
       description: (formData.get("description") as string) || null,
-      order: Number(formData.get("order") || 0),
     };
 
     const parsed = CategorySchema.safeParse(raw);
@@ -206,6 +210,30 @@ export async function updateCategoryAction(
     return { success: true };
   } catch {
     return { errors: { _form: ["Error al actualizar la categoría."] } };
+  }
+}
+
+export async function reorderCategoriesAction(
+  categoryIds: string[]
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAdmin();
+    
+    // Run all updates in a transaction
+    await prisma.$transaction(
+      categoryIds.map((id, index) => 
+        prisma.serviceCategory.update({
+          where: { id },
+          data: { order: index }
+        })
+      )
+    );
+    
+    revalidatePath("/admin/servicios");
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Error al reordenar las categorías" };
   }
 }
 
@@ -232,5 +260,28 @@ export async function deleteCategoryAction(
     return { success: true };
   } catch {
     return { error: "Error al eliminar la categoría." };
+  }
+}
+
+export async function reorderServicesAction(
+  serviceIds: string[],
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAdmin();
+
+    await prisma.$transaction(
+      serviceIds.map((id, index) =>
+        prisma.service.update({
+          where: { id },
+          data: { order: index },
+        }),
+      ),
+    );
+
+    revalidatePath("/admin/servicios");
+    revalidatePath("/");
+    return { success: true };
+  } catch {
+    return { success: false, error: "Error al reordenar los servicios" };
   }
 }
