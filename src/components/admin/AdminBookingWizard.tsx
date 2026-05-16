@@ -7,14 +7,14 @@ import Link from "next/link";
 
 type Step = "search" | "select-dog" | "select-service" | "embed";
 
-interface DogResult {
+export interface DogResult {
   id: string;
   name: string;
   breed: string;
   size: string | null;
 }
 
-interface OwnerResult {
+export interface OwnerResult {
   id: string;
   name: string;
   phone: string;
@@ -22,7 +22,7 @@ interface OwnerResult {
   dogs: DogResult[];
 }
 
-interface ServiceResult {
+export interface ServiceResult {
   id: string;
   name: string;
   price: number;
@@ -38,22 +38,48 @@ function formatPrice(price: number) {
   }).format(price);
 }
 
-export default function AdminBookingWizard() {
-  const [step, setStep] = useState<Step>("search");
-  
+interface AdminBookingWizardProps {
+  initialOwner?: OwnerResult;
+  initialDog?: DogResult;
+  onClose?: () => void;
+  className?: string;
+}
+
+export default function AdminBookingWizard({
+  initialOwner,
+  initialDog,
+  onClose,
+  className = "bg-white rounded-xl shadow-sm border border-neutral-200 p-6 max-w-2xl mx-auto",
+}: AdminBookingWizardProps) {
+  const [step, setStep] = useState<Step>(
+    initialOwner && initialDog ? "select-service" : "search"
+  );
+
   // Paso 1: Search
   const [query, setQuery] = useState("");
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [owners, setOwners] = useState<OwnerResult[]>([]);
-  const [selectedOwner, setSelectedOwner] = useState<OwnerResult | null>(null);
+  const [selectedOwner, setSelectedOwner] = useState<OwnerResult | null>(
+    initialOwner || null
+  );
 
   // Paso 2: Dog
-  const [selectedDog, setSelectedDog] = useState<DogResult | null>(null);
+  const [selectedDog, setSelectedDog] = useState<DogResult | null>(
+    initialDog || null
+  );
 
   // Paso 3: Service
   const [services, setServices] = useState<ServiceResult[]>([]);
   const [loadingServices, setLoadingServices] = useState(false);
-  const [selectedService, setSelectedService] = useState<ServiceResult | null>(null);
+  const [selectedService, setSelectedService] = useState<ServiceResult | null>(
+    null
+  );
+
+  useEffect(() => {
+    if (initialOwner && initialDog) {
+      loadServices();
+    }
+  }, [initialOwner, initialDog]);
 
   useEffect(() => {
     if (!query.trim()) {
@@ -124,16 +150,31 @@ export default function AdminBookingWizard() {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6 max-w-2xl mx-auto">
-      {/* Breadcrumbs */}
-      <div className="flex gap-2 text-sm text-neutral-500 mb-8 overflow-x-auto pb-2">
-        <span className={step === "search" ? "font-semibold text-[var(--primary)]" : ""}>1. Buscar Cliente</span>
-        <span>→</span>
-        <span className={step === "select-dog" ? "font-semibold text-[var(--primary)]" : ""}>2. Elegir Mascota</span>
-        <span>→</span>
-        <span className={step === "select-service" ? "font-semibold text-[var(--primary)]" : ""}>3. Servicio</span>
-        <span>→</span>
-        <span className={step === "embed" ? "font-semibold text-[var(--primary)]" : ""}>4. Agendar</span>
+    <div className={className}>
+      {/* Breadcrumbs & Close */}
+      <div className="flex justify-between items-center mb-8">
+        <div className="flex gap-2 text-sm text-neutral-500 overflow-x-auto">
+          {(!initialOwner || !initialDog) && (
+            <>
+              <span className={step === "search" ? "font-semibold text-[var(--primary)]" : ""}>1. Buscar Cliente</span>
+              <span>→</span>
+              <span className={step === "select-dog" ? "font-semibold text-[var(--primary)]" : ""}>2. Elegir Mascota</span>
+              <span>→</span>
+            </>
+          )}
+          <span className={step === "select-service" ? "font-semibold text-[var(--primary)]" : ""}>
+            {initialOwner && initialDog ? "1. Elegir Servicio" : "3. Servicio"}
+          </span>
+          <span>→</span>
+          <span className={step === "embed" ? "font-semibold text-[var(--primary)]" : ""}>
+            {initialOwner && initialDog ? "2. Agendar" : "4. Agendar"}
+          </span>
+        </div>
+        {onClose && (
+          <button onClick={onClose} className="text-neutral-400 hover:text-black p-1">
+            ✕
+          </button>
+        )}
       </div>
 
       <AnimatePresence mode="wait">
@@ -199,7 +240,9 @@ export default function AdminBookingWizard() {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.25 }}
           >
-            <button onClick={() => setStep("search")} className="text-sm text-neutral-500 hover:text-black mb-4">← Volver</button>
+            {!initialDog && (
+              <button onClick={() => setStep("search")} className="text-sm text-neutral-500 hover:text-black mb-4">← Volver</button>
+            )}
             <h2 className="text-xl font-semibold mb-4">¡Hola {selectedOwner.name.split(" ")[0]}! ¿Cuál perrito viene hoy?</h2>
             <div className="space-y-3">
               {selectedOwner.dogs.map((dog) => (
@@ -240,7 +283,9 @@ export default function AdminBookingWizard() {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.25 }}
           >
-            <button onClick={() => setStep("select-dog")} className="text-sm text-neutral-500 hover:text-black mb-4">← Volver</button>
+            {!initialDog && (
+              <button onClick={() => setStep("select-dog")} className="text-sm text-neutral-500 hover:text-black mb-4">← Volver</button>
+            )}
             <h2 className="text-xl font-semibold mb-4">Elige un servicio para {selectedDog.name}</h2>
             {loadingServices ? (
               <p className="text-neutral-500">Cargando servicios...</p>

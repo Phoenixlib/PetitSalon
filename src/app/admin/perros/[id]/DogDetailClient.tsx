@@ -5,6 +5,7 @@ import Link from "next/link";
 import DogModal from "@/components/admin/DogModal";
 import AttendanceModal from "@/components/admin/AttendanceModal";
 import AppointmentModal from "@/components/admin/AppointmentModal";
+import AdminBookingModal from "@/components/admin/AdminBookingModal";
 import { DogSize } from "@prisma/client";
 import { AnimatePresence } from "framer-motion";
 
@@ -183,7 +184,30 @@ export default function DogDetailClient({
         {isAttendanceModalOpen && <AttendanceModal dogId={dog.id} dogName={dog.name} isOpen={isAttendanceModalOpen} onClose={() => setIsAttendanceModalOpen(false)} />}
       </AnimatePresence>
       <AnimatePresence>
-        {isAppointmentModalOpen && <AppointmentModal dogId={dog.id} dogName={dog.name} services={services} isOpen={isAppointmentModalOpen} onClose={() => setIsAppointmentModalOpen(false)} />}
+        {isAppointmentModalOpen && (
+          <AdminBookingModal 
+            isOpen={isAppointmentModalOpen} 
+            onClose={() => setIsAppointmentModalOpen(false)}
+            initialOwner={{
+              id: dog.ownerId,
+              name: dog.owner.name,
+              phone: dog.owner.phone,
+              email: dog.owner.email,
+              dogs: [{
+                id: dog.id,
+                name: dog.name,
+                breed: dog.breed,
+                size: dog.size
+              }]
+            }}
+            initialDog={{
+              id: dog.id,
+              name: dog.name,
+              breed: dog.breed,
+              size: dog.size
+            }}
+          />
+        )}
       </AnimatePresence>
     </>
   );
