@@ -92,18 +92,7 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
               {label}
             </Link>
           ))}
-          {isAuthenticated && (
-            <Link
-              href="/admin"
-              className="text-sm font-medium transition-colors duration-200 hover:opacity-70"
-              style={{
-                color: isAdminPage ? "var(--primary)" : "var(--ps-text-mid)",
-                fontWeight: isAdminPage ? 600 : 400,
-              }}
-            >
-              Admin
-            </Link>
-          )}
+
         </nav>
 
         {/* Desktop CTAs */}
