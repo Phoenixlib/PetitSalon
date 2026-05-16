@@ -3,6 +3,8 @@
 import { useState, useTransition, useMemo } from "react";
 import type { AppointmentWithRelations, AppointmentStatus } from "@/types";
 import { updateAppointmentStatusAction } from "./actions";
+import AppointmentDetailModal from "@/components/admin/AppointmentDetailModal";
+import { AnimatePresence } from "framer-motion";
 
 interface Props {
   initialAppointments: AppointmentWithRelations[];
@@ -35,6 +37,9 @@ export default function CitasClient({ initialAppointments }: Props) {
   const [activeTab, setActiveTab] = useState<"ALL" | AppointmentStatus>("ALL");
   const [search, setSearch] = useState("");
   const [isPending, startTransition] = useTransition();
+
+  const [selectedApp, setSelectedApp] = useState<AppointmentWithRelations | null>(null);
+  const [modalStep, setModalStep] = useState<"detail" | "done-form" | "review-prompt">("detail");
 
   const handleStatusChange = (id: string, newStatus: AppointmentStatus) => {
     startTransition(async () => {
@@ -163,10 +168,18 @@ export default function CitasClient({ initialAppointments }: Props) {
                         <div className="text-gray-500">{timeStr}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="font-medium text-gray-900">
-                          {app.dog.name}
-                        </div>
-                        <div className="text-gray-500">{app.dog.breed}</div>
+                        <button
+                          onClick={() => {
+                            setSelectedApp(app);
+                            setModalStep("detail");
+                          }}
+                          className="text-left hover:opacity-70 transition-opacity"
+                        >
+                          <div className="font-medium text-gray-900">
+                            {app.dog.name}
+                          </div>
+                          <div className="text-gray-500">{app.dog.breed}</div>
+                        </button>
                       </td>
                       <td className="px-6 py-4">
                         <div className="font-medium text-gray-900">
@@ -220,9 +233,10 @@ export default function CitasClient({ initialAppointments }: Props) {
                           {app.status === "CONFIRMED" && (
                             <>
                               <button
-                                onClick={() =>
-                                  handleStatusChange(app.id, "DONE")
-                                }
+                                onClick={() => {
+                                  setSelectedApp(app);
+                                  setModalStep("done-form");
+                                }}
                                 disabled={isPending}
                                 className="text-xs font-medium text-green-600 hover:text-green-800 bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
                               >
@@ -272,7 +286,14 @@ export default function CitasClient({ initialAppointments }: Props) {
               });
 
               return (
-                <div key={app.id} className="p-4 flex flex-col gap-3">
+                <div
+                  key={app.id}
+                  className="p-4 flex flex-col gap-3 active:bg-gray-50 transition-colors"
+                  onClick={() => {
+                    setSelectedApp(app);
+                    setModalStep("detail");
+                  }}
+                >
                   <div className="flex justify-between items-start">
                     <div>
                       <div className="font-bold text-gray-900 capitalize">{dateStr}</div>
@@ -302,7 +323,7 @@ export default function CitasClient({ initialAppointments }: Props) {
                   </div>
 
                   {/* Mobile Actions */}
-                  <div className="flex gap-2 pt-1">
+                  <div className="flex gap-2 pt-1" onClick={(e) => e.stopPropagation()}>
                     {app.status === "PENDING" && (
                       <>
                         <button
@@ -324,7 +345,10 @@ export default function CitasClient({ initialAppointments }: Props) {
                     {app.status === "CONFIRMED" && (
                       <>
                         <button
-                          onClick={() => handleStatusChange(app.id, "DONE")}
+                          onClick={() => {
+                            setSelectedApp(app);
+                            setModalStep("done-form");
+                          }}
                           disabled={isPending}
                           className="flex-1 text-sm font-semibold text-green-700 bg-green-100 hover:bg-green-200 py-2.5 rounded-lg transition-colors disabled:opacity-50"
                         >
@@ -346,6 +370,21 @@ export default function CitasClient({ initialAppointments }: Props) {
           )}
         </div>
       </div>
+
+      <AnimatePresence>
+        {selectedApp && (
+          <AppointmentDetailModal
+            appointment={selectedApp}
+            initialStep={modalStep}
+            onClose={() => setSelectedApp(null)}
+            onStatusChange={(id, newStatus) => {
+              setAppointments((prev) =>
+                prev.map((a) => (a.id === id ? { ...a, status: newStatus } : a)),
+              );
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

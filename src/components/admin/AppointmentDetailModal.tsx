@@ -13,6 +13,7 @@ interface Props {
   appointment: AppointmentWithRelations | null;
   onClose: () => void;
   onStatusChange: (id: string, newStatus: AppointmentStatus) => void;
+  initialStep?: "detail" | "done-form" | "review-prompt";
 }
 
 const STATUS_LABELS: Record<AppointmentStatus, string> = {
@@ -41,11 +42,12 @@ export default function AppointmentDetailModal({
   appointment,
   onClose,
   onStatusChange,
+  initialStep = "detail",
 }: Props) {
   const [isPending, startTransition] = useTransition();
 
   type Step = "detail" | "done-form" | "review-prompt";
-  const [step, setStep] = useState<Step>("detail");
+  const [step, setStep] = useState<Step>(initialStep);
   const [pendingFormData, setPendingFormData] = useState<{
     service: string;
     notes: string | null;
@@ -58,11 +60,11 @@ export default function AppointmentDetailModal({
 
   useEffect(() => {
     if (appointment) {
-      setStep("detail");
+      setStep(initialStep);
       setPhotos([]);
       setPhotoPreviews([]);
     }
-  }, [appointment?.id]);
+  }, [appointment?.id, initialStep]);
 
   useEffect(() => {
     const urls = photos.map((f) => URL.createObjectURL(f));
@@ -122,7 +124,7 @@ export default function AppointmentDetailModal({
   };
 
   const handleConfirmDone = (sendReview: boolean) => {
-    if (!appointment || !pendingFormData) return;
+    if (!appointment) return;
     startTransition(async () => {
       const result = await markDoneWithAttendanceAction(
         appointment.id,
@@ -483,7 +485,10 @@ export default function AppointmentDetailModal({
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleStatusChange("DONE")}
+                  onClick={() => {
+                    setPendingFormData(null);
+                    setStep("review-prompt");
+                  }}
                   disabled={isPending || uploading}
                   className="w-full rounded-full py-2.5 font-semibold text-gray-700 bg-gray-200 transition-opacity hover:bg-gray-300 disabled:opacity-50"
                 >

@@ -59,20 +59,20 @@ export type MarkDoneState = {
 
 export async function markDoneWithAttendanceAction(
   appointmentId: string,
-  input: MarkDoneInput,
+  input: MarkDoneInput | null,
   sendReviewLink: boolean,
 ): Promise<MarkDoneState> {
   try {
     await requireAdmin();
 
-    if (!input.service || input.service.trim().length === 0) {
+    if (input && (!input.service || input.service.trim().length === 0)) {
       return { errors: { _form: ["El nombre del servicio es obligatorio"] } };
     }
 
     // Validar que las URLs de fotos sean de Cloudinary
-    const validPhotos = input.photos.filter((url) =>
+    const validPhotos = input?.photos.filter((url) =>
       url.startsWith("https://res.cloudinary.com/"),
-    );
+    ) ?? [];
 
     // Buscar la cita para obtener dogId y datos del dueño
     const appointment = await prisma.appointment.findUnique({
@@ -93,22 +93,29 @@ export async function markDoneWithAttendanceAction(
       return { errors: { _form: ["Cita no encontrada"] } };
     }
 
-    // Transacción: cambiar estado + crear registro de atención
-    await prisma.$transaction([
+    // Transacción: cambiar estado + crear registro de atención (si existe input)
+    const operations = [
       prisma.appointment.update({
         where: { id: appointmentId },
         data: { status: "DONE" },
       }),
-      prisma.attendance.create({
-        data: {
-          service: input.service.trim(),
-          date: appointment.date,
-          notes: input.notes,
-          photos: validPhotos,
-          dogId: appointment.dogId,
-        },
-      }),
-    ]);
+    ];
+
+    if (input) {
+      operations.push(
+        prisma.attendance.create({
+          data: {
+            service: input.service.trim(),
+            date: appointment.date,
+            notes: input.notes,
+            photos: validPhotos,
+            dogId: appointment.dogId,
+          },
+        }),
+      );
+    }
+
+    await prisma.$transaction(operations);
 
     // Crear reseña y enviar email si se solicitó y el dueño tiene email
     if (sendReviewLink) {
