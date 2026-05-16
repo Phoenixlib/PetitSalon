@@ -7,9 +7,12 @@ import { usePathname } from "next/navigation";
 
 
 const NAV_LINKS = [
+  { href: "/#nosotros", label: "Quiénes somos" },
   { href: "/#servicios", label: "Servicios" },
   { href: "/#galeria", label: "Galería" },
-  { href: "/contacto", label: "Contacto" },
+  { href: "/#resenas", label: "Reseñas" },
+  { href: "/#faqs", label: "FAQs" },
+  { href: "/#ubicacion", label: "Ubicación" },
 ];
 
 const ADMIN_NAV = [

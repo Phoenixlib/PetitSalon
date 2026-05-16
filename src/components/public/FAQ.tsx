@@ -19,7 +19,7 @@ export default function FAQ({ items, whatsapp }: FAQProps) {
   const [abierto, setAbierto] = useState<string | null>(null);
 
   return (
-    <section className="py-20 px-4 bg-white">
+    <section id="faqs" className="py-20 px-4 bg-white">
       <div className="max-w-3xl mx-auto">
         {/* Título */}
         <div className="text-center mb-12">

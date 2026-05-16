@@ -17,6 +17,7 @@ export default function AcercaDeNosotros({
 }: AcercaDeNosotrosProps) {
   return (
     <section
+      id="nosotros"
       className="py-20 px-4"
       style={{ backgroundColor: "var(--ps-lila-pale)" }}
     >

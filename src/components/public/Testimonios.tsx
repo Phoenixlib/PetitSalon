@@ -49,6 +49,7 @@ export default function Testimonios({ reviews = [] }: Props) {
 
   return (
     <section
+      id="resenas"
       className="py-28 lg:py-36"
       style={{
         background: "linear-gradient(160deg, #f0fafa 0%, #ffffff 50%, #fef4cc 100%)",

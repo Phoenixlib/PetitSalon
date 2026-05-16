@@ -7,7 +7,7 @@ interface UbicacionProps {
 export default function Ubicacion({ address }: UbicacionProps) {
   const mapUrl = `https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`;
   return (
-    <section className="py-20 px-4 bg-white relative">
+    <section id="ubicacion" className="py-20 px-4 bg-white relative">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-12">
           <span
