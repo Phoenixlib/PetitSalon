@@ -94,7 +94,7 @@ export async function markDoneWithAttendanceAction(
     }
 
     // Transacción: cambiar estado + crear registro de atención (si existe input)
-    const operations = [
+    const operations: any[] = [
       prisma.appointment.update({
         where: { id: appointmentId },
         data: { status: "DONE" },
