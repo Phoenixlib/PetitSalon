@@ -13,7 +13,7 @@ export default async function ReservarPage({ searchParams }: Props) {
   const calLink = linkParam || process.env.NEXT_PUBLIC_CALCOM_LINK || "";
 
   return (
-    <section className="container mx-auto py-12 px-4">
+    <section className="container mx-auto pt-32 pb-20 px-4">
       <div className="max-w-4xl mx-auto">
 
 

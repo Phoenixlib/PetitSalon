@@ -1,13 +1,22 @@
 import Link from "next/link";
 
 const NAV = [
+  { href: "/#nosotros", label: "Quiénes somos" },
   { href: "/#servicios", label: "Servicios" },
   { href: "/#galeria", label: "Galería" },
-  { href: "/contacto", label: "Contacto" },
-  { href: "/reservar", label: "Reservar cita" },
+  { href: "/#resenas", label: "Reseñas" },
+  { href: "/#faqs", label: "FAQs" },
+  { href: "/#ubicacion", label: "Ubicación" },
+  { href: "/reservar", label: "Reservar Cita" },
 ];
 
-const SERVICIOS_LIST = ["Baño y Secado", "Corte", "Corte de Uñas"];
+const SERVICIOS_LIST = [
+  "Baño y Spa Premium",
+  "Corte de Raza",
+  "Deslanado",
+  "Corte de Uñas y Limpieza",
+  "Limpieza de Oídos",
+];
 
 export default function Footer({ whatsapp }: { whatsapp: string }) {
   const year = new Date().getFullYear();
@@ -104,9 +113,13 @@ export default function Footer({ whatsapp }: { whatsapp: string }) {
 
         {/* Bottom */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs" style={{ color: "oklch(1 0 0 / 0.35)" }}>
-            © {year} Petit Salón. Todos los derechos reservados.
-          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-xs" style={{ color: "oklch(1 0 0 / 0.35)" }}>
+            <p>© {year} Petit Salón. Todos los derechos reservados.</p>
+            <span className="hidden sm:inline">•</span>
+            <Link href="/admin/login" className="hover:text-white transition-colors">
+              Acceso Administrativo
+            </Link>
+          </div>
           <a
             href={`https://wa.me/${whatsapp}`}
             target="_blank"
