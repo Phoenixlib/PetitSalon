@@ -75,6 +75,8 @@ export default function AdminBookingWizard({
     null
   );
 
+  const [isBooked, setIsBooked] = useState(false);
+
   useEffect(() => {
     if (initialOwner && initialDog) {
       loadServices();
@@ -152,30 +154,46 @@ export default function AdminBookingWizard({
   return (
     <div className={className}>
       {/* Breadcrumbs & Close */}
-      <div className="flex justify-between items-center mb-8">
-        <div className="flex gap-2 text-sm text-neutral-500 overflow-x-auto">
-          {(!initialOwner || !initialDog) && (
-            <>
-              <span className={step === "search" ? "font-semibold text-[var(--primary)]" : ""}>1. Buscar Cliente</span>
-              <span>→</span>
-              <span className={step === "select-dog" ? "font-semibold text-[var(--primary)]" : ""}>2. Elegir Mascota</span>
-              <span>→</span>
-            </>
+      {!isBooked && (
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex gap-2 text-sm text-neutral-500 overflow-x-auto">
+            {(!initialOwner || !initialDog) && (
+              <>
+                <span className={step === "search" ? "font-semibold text-[var(--primary)]" : ""}>1. Buscar Cliente</span>
+                <span>→</span>
+                <span className={step === "select-dog" ? "font-semibold text-[var(--primary)]" : ""}>2. Elegir Mascota</span>
+                <span>→</span>
+              </>
+            )}
+            <span className={step === "select-service" ? "font-semibold text-[var(--primary)]" : ""}>
+              {initialOwner && initialDog ? "1. Elegir Servicio" : "3. Servicio"}
+            </span>
+            <span>→</span>
+            <span className={step === "embed" ? "font-semibold text-[var(--primary)]" : ""}>
+              {initialOwner && initialDog ? "2. Agendar" : "4. Agendar"}
+            </span>
+          </div>
+          {onClose && (
+            <button onClick={onClose} className="text-neutral-400 hover:text-black p-1">
+              ✕
+            </button>
           )}
-          <span className={step === "select-service" ? "font-semibold text-[var(--primary)]" : ""}>
-            {initialOwner && initialDog ? "1. Elegir Servicio" : "3. Servicio"}
-          </span>
-          <span>→</span>
-          <span className={step === "embed" ? "font-semibold text-[var(--primary)]" : ""}>
-            {initialOwner && initialDog ? "2. Agendar" : "4. Agendar"}
-          </span>
         </div>
-        {onClose && (
-          <button onClick={onClose} className="text-neutral-400 hover:text-black p-1">
-            ✕
-          </button>
-        )}
-      </div>
+      )}
+
+      {isBooked && (
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center gap-2 text-green-600 font-semibold">
+            <span className="text-xl">✅</span>
+            <span>Cita Agendada con Éxito</span>
+          </div>
+          {onClose && (
+            <button onClick={onClose} className="bg-neutral-100 hover:bg-neutral-200 text-neutral-700 px-4 py-1.5 rounded-full text-sm font-bold transition-colors">
+              Cerrar Finalizar
+            </button>
+          )}
+        </div>
+      )}
 
       <AnimatePresence mode="wait">
         {step === "search" && (
@@ -332,21 +350,27 @@ export default function AdminBookingWizard({
             transition={{ duration: 0.25 }}
             className="flex flex-col gap-4"
           >
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <h2 className="text-lg font-semibold">📋 Agendando: {selectedService.name}</h2>
-                <p className="text-neutral-500">para <strong>{selectedDog.name}</strong> ({selectedOwner.name})</p>
+            {!isBooked && (
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <h2 className="text-lg font-semibold">📋 Agendando: {selectedService.name}</h2>
+                  <p className="text-neutral-500">para <strong>{selectedDog.name}</strong> ({selectedOwner.name})</p>
+                </div>
+                <button 
+                  onClick={() => setStep("select-service")} 
+                  className="border border-neutral-200 rounded-full px-4 py-1.5 text-sm font-medium hover:bg-neutral-50 transition-colors"
+                >
+                  ← Cambiar
+                </button>
               </div>
-              <button 
-                onClick={() => setStep("select-service")} 
-                className="border border-neutral-200 rounded-full px-4 py-1.5 text-sm font-medium hover:bg-neutral-50 transition-colors"
-              >
-                ← Cambiar
-              </button>
-            </div>
+            )}
             
             <div className="w-full bg-white rounded-3xl overflow-hidden border border-neutral-200">
-              <CalComEmbed calLink={selectedService.calComLink!} prefill={prefillData} />
+              <CalComEmbed 
+                calLink={selectedService.calComLink!} 
+                prefill={prefillData} 
+                onSuccess={() => setIsBooked(true)}
+              />
             </div>
           </motion.div>
         )}
