@@ -169,12 +169,35 @@ export default function Servicios({
                       {category.name}
                     </h3>
                     {category.description && (
-                      <p
-                        className="text-sm"
-                        style={{ color: "var(--ps-text-mid)", whiteSpace: "pre-line" }}
-                      >
-                        {category.description}
-                      </p>
+                      <div className="space-y-3.5 mt-2.5">
+                        <span
+                          className="block text-[11px] font-bold uppercase tracking-[0.18em]"
+                          style={{ color: "var(--ps-gold)" }}
+                        >
+                          Este servicio incluye:
+                        </span>
+                        <div className="flex flex-wrap gap-2.5">
+                          {category.description
+                            .split(/[.\n]+/)
+                            .map((item) => item.trim())
+                            .filter((item) => item.length > 0)
+                            .map((feature, idx) => (
+                              <div
+                                key={idx}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 border shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:scale-[1.02] transition-transform duration-300"
+                                style={{ borderColor: "var(--ps-lila-light)" }}
+                              >
+                                <span className="text-[10px]" style={{ color: "var(--ps-gold)" }}>✦</span>
+                                <span
+                                  className="text-[11px] font-semibold uppercase tracking-wider"
+                                  style={{ color: "var(--ps-text)" }}
+                                >
+                                  {feature}
+                                </span>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
                     )}
                   </div>
                   <motion.div
