@@ -157,56 +157,33 @@ export default function NuevoClientePage() {
             </div>
             <div>
               <label
-                htmlFor="dogSize"
+                htmlFor="dogAge"
                 className="block text-sm font-medium text-neutral-700 mb-1"
               >
-                Tamaño
+                Edad
               </label>
-              <select
-                id="dogSize"
-                name="dogSize"
-                className="w-full p-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent bg-white"
-              >
-                <option value="XS">Extra Pequeño (XS)</option>
-                <option value="S">Pequeño (S)</option>
-                <option value="M" defaultValue="M">
-                  Mediano (M)
-                </option>
-                <option value="L">Grande (L)</option>
-                <option value="XL">Extra Grande (XL)</option>
-              </select>
+              <input
+                id="dogAge"
+                name="dogAge"
+                type="text"
+                placeholder="ej. 2 años"
+                className="w-full p-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
+              />
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label
-                  htmlFor="dogAge"
-                  className="block text-sm font-medium text-neutral-700 mb-1"
-                >
-                  Edad
-                </label>
-                <input
-                  id="dogAge"
-                  name="dogAge"
-                  type="text"
-                  placeholder="ej. 2 años"
-                  className="w-full p-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="dogWeight"
-                  className="block text-sm font-medium text-neutral-700 mb-1"
-                >
-                  Peso
-                </label>
-                <input
-                  id="dogWeight"
-                  name="dogWeight"
-                  type="text"
-                  placeholder="ej. 5 kg"
-                  className="w-full p-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
-                />
-              </div>
+            <div>
+              <label
+                htmlFor="dogWeight"
+                className="block text-sm font-medium text-neutral-700 mb-1"
+              >
+                Peso
+              </label>
+              <input
+                id="dogWeight"
+                name="dogWeight"
+                type="text"
+                placeholder="ej. 5 kg"
+                className="w-full p-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
+              />
             </div>
             <div className="md:col-span-2">
               <label

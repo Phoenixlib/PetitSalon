@@ -1,20 +1,19 @@
 import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { type DogSize } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/env";
 
 const DOG_SIZE_VALUES: readonly string[] = ["XS", "S", "M", "L", "XL"];
 
-function parseDogSize(value: string | undefined | null): DogSize | null {
+function parseDogSize(value: string | undefined | null): string | null {
   if (!value) return null;
   const upper = String(value).toUpperCase().trim();
-  if (DOG_SIZE_VALUES.includes(upper)) return upper as DogSize;
+  if (DOG_SIZE_VALUES.includes(upper)) return upper;
   
   // Buscar si empieza con la letra o tiene el formato "S - Pequeño"
   for (const size of ["XL", "XS", "L", "M", "S"]) { // Orden importa (XL antes de L)
     const regex = new RegExp(`(^|\\s|\\()${size}(\\s|-|\\)|$)`);
-    if (regex.test(upper)) return size as DogSize;
+    if (regex.test(upper)) return size;
   }
   
   return null;
@@ -52,7 +51,7 @@ interface CalComResponses {
   // "Servicio Específico" con slug "servicio" (para pasarlo por parámetro)
   servicio?: { value: string };
   notes?: { value: string };
-  [key: string]: { value: string } | undefined;
+  [key: string]: { value: any; label?: string } | undefined;
 }
 
 interface CalComBookingPayload {
@@ -132,33 +131,36 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
   let notes: string | null = null;
 
   for (const [key, field] of Object.entries(responses)) {
-    if (!field || typeof field.value !== "string") continue;
+    if (!field || (typeof field.value !== "string" && typeof field.value !== "number")) continue;
     const k = key.toLowerCase();
-    const val = field.value.trim();
+    const label = field.label?.toLowerCase() ?? "";
+    const val = String(field.value).trim();
     if (!val) continue;
 
-    if (k.includes("nombre_perro") || k.includes("nombre del perro") || k === "perro") {
+    const isMatch = (term: string) => k.includes(term) || label.includes(term);
+
+    if (isMatch("nombre_perro") || isMatch("nombre del perro") || k === "perro" || label === "perro") {
       dogName = val;
-    } else if (k.includes("raza")) {
+    } else if (isMatch("raza")) {
       dogBreed = val;
-    } else if (k.includes("tamaño") || k.includes("tamano") || k.includes("size")) {
+    } else if (isMatch("tamaño") || isMatch("tamano") || isMatch("size")) {
       dogSizeRaw = val;
-    } else if (k.includes("peso") || k.includes("weight")) {
+    } else if (isMatch("peso") || isMatch("weight")) {
       dogWeight = val;
-    } else if (k.includes("edad") || k.includes("age")) {
+    } else if (isMatch("edad") || isMatch("age")) {
       dogAge = val;
-    } else if (k.includes("dog_notes") || k.includes("alergia") || k.includes("temperamento")) {
+    } else if (isMatch("dog_notes") || isMatch("alergia") || isMatch("temperamento")) {
       dogNotes = val;
-    } else if (k.includes("servicio")) {
+    } else if (isMatch("servicio")) {
       passedService = val;
-    } else if (k.includes("tel") || k.includes("phone") || k.includes("whatsapp")) {
+    } else if (isMatch("tel") || isMatch("phone") || isMatch("whatsapp")) {
       ownerPhone = val;
-    } else if (k === "name" || k === "nombre" || k === "nombre completo") {
-      ownerName = val;
-    } else if (k === "email" || k === "correo") {
+    } else if (isMatch("email") || isMatch("correo")) {
       ownerEmail = val;
-    } else if (k === "notes" || k === "notas") {
+    } else if (isMatch("notes") || isMatch("notas")) {
       notes = val;
+    } else if (k === "name" || k === "nombre" || label === "nombre completo" || label === "nombre") {
+      ownerName = val;
     }
   }
 
@@ -235,7 +237,6 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
         name: dogName,
         breed: dogBreed,
         ownerId: owner.id,
-        ...(dogSize !== null && { size: dogSize }),
         ...(dogAge !== null && { age: dogAge }),
         ...(dogWeight !== null && { weight: dogWeight }),
         ...(dogNotes !== null && { notes: dogNotes }),
@@ -247,7 +248,6 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
       where: { id: dog.id },
       data: {
         ...(dogBreed && dogBreed !== "Sin raza" ? { breed: dogBreed } : {}),
-        ...(dogSize ? { size: dogSize } : {}),
         ...(dogAge ? { age: dogAge } : {}),
         ...(dogWeight ? { weight: dogWeight } : {}),
         ...(dogNotes ? { notes: dogNotes } : {}),

@@ -6,7 +6,6 @@ import DogModal from "@/components/admin/DogModal";
 import AttendanceModal from "@/components/admin/AttendanceModal";
 import AppointmentModal from "@/components/admin/AppointmentModal";
 import AdminBookingModal from "@/components/admin/AdminBookingModal";
-import { DogSize } from "@prisma/client";
 import { AnimatePresence } from "framer-motion";
 
 type ServiceInfo = { id: string; name: string };
@@ -14,7 +13,6 @@ type DogWithDetails = {
   id: string;
   name: string;
   breed: string;
-  size: DogSize | null;
   age: string | null;
   weight: string | null;
   notes: string | null;
@@ -65,10 +63,6 @@ export default function DogDetailClient({
               <p className="text-neutral-600 mb-6">{dog.breed}</p>
               
               <dl className="grid grid-cols-2 gap-y-4 gap-x-2 text-sm">
-                <div>
-                  <dt className="text-neutral-500 font-medium">Tamaño</dt>
-                  <dd className="font-medium">{dog.size || "-"}</dd>
-                </div>
                 <div>
                   <dt className="text-neutral-500 font-medium">Peso</dt>
                   <dd className="font-medium">{dog.weight || "-"}</dd>
@@ -197,14 +191,16 @@ export default function DogDetailClient({
                 id: dog.id,
                 name: dog.name,
                 breed: dog.breed,
-                size: dog.size
+                age: dog.age,
+                weight: dog.weight
               }]
             }}
             initialDog={{
               id: dog.id,
               name: dog.name,
               breed: dog.breed,
-              size: dog.size
+              age: dog.age,
+              weight: dog.weight
             }}
           />
         )}

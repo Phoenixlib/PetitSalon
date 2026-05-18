@@ -3,14 +3,14 @@
 import { useEffect, useActionState } from "react";
 import { updateDogAction, DogFormState } from "@/app/admin/perros/actions";
 import { motion, AnimatePresence } from "framer-motion";
-import { DogSize } from "@prisma/client";
+
 
 export default function DogModal({
   dog,
   isOpen,
   onClose,
 }: {
-  dog: { id: string; name: string; breed: string; size: DogSize | null; age: string | null; weight: string | null; notes: string | null };
+  dog: { id: string; name: string; breed: string; age: string | null; weight: string | null; notes: string | null };
   isOpen: boolean;
   onClose: () => void;
 }) {
@@ -52,19 +52,7 @@ export default function DogModal({
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-1">
-                <label className="text-sm font-medium" style={{ color: "var(--ps-text-mid)" }}>Tamaño</label>
-                <select name="size" defaultValue={dog.size || ""} className="w-full rounded-lg px-4 py-2 border focus:ring-2 focus:ring-[var(--primary)] bg-white" style={{ borderColor: "var(--border)" }}>
-                  <option value="">Seleccione</option>
-                  <option value="XS">Extra Pequeño (XS)</option>
-                  <option value="S">Pequeño (S)</option>
-                  <option value="M">Mediano (M)</option>
-                  <option value="L">Grande (L)</option>
-                  <option value="XL">Extra Grande (XL)</option>
-                </select>
-              </div>
-              
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-sm font-medium" style={{ color: "var(--ps-text-mid)" }}>Edad</label>
                 <input name="age" type="text" defaultValue={dog.age || ""} placeholder="ej. 2 años" className="w-full rounded-lg px-4 py-2 border focus:ring-2 focus:ring-[var(--primary)]" style={{ borderColor: "var(--border)" }} />

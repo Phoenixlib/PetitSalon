@@ -7,7 +7,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { DogSize } from "@prisma/client";
+
 
 
 async function requireAdmin() {
@@ -23,7 +23,6 @@ export async function createClientWithDog(formData: FormData) {
 
   const dogName = formData.get("dogName") as string;
   const dogBreed = formData.get("dogBreed") as string;
-  const dogSize = formData.get("dogSize") as string;
   const dogAge = formData.get("dogAge") as string;
   const dogWeight = formData.get("dogWeight") as string;
   const dogNotes = formData.get("dogNotes") as string;
@@ -63,7 +62,6 @@ export async function createClientWithDog(formData: FormData) {
         data: {
           name: dogName,
           breed: dogBreed,
-          size: dogSize ? (dogSize as DogSize) : null,
           age: dogAge || null,
           weight: dogWeight || null,
           notes: dogNotes || null,
@@ -139,14 +137,13 @@ export async function updateOwnerAction(id: string, _prev: OwnerFormState, formD
 const DogSchema = z.object({
   name:   z.string().min(1, "El nombre es obligatorio").max(100),
   breed:  z.string().min(1, "La raza es obligatoria").max(100),
-  size:   z.enum(["XS","S","M","L","XL"]).optional().nullable().or(z.literal("")),
   age:    z.string().max(50).optional().nullable(),
   weight: z.string().max(50).optional().nullable(),
   notes:  z.string().max(2000).optional().nullable(),
 });
 
 export type DogFormState = {
-  errors?: { name?: string[]; breed?: string[]; size?: string[]; _form?: string[] };
+  errors?: { name?: string[]; breed?: string[]; _form?: string[] };
   success?: boolean;
 };
 
@@ -156,7 +153,6 @@ export async function addDogAction(ownerId: string, _prev: DogFormState, formDat
     const raw = {
       name: formData.get("name") as string,
       breed: formData.get("breed") as string,
-      size: (formData.get("size") as string) || null,
       age: (formData.get("age") as string) || null,
       weight: (formData.get("weight") as string) || null,
       notes: (formData.get("notes") as string) || null,
@@ -171,7 +167,6 @@ export async function addDogAction(ownerId: string, _prev: DogFormState, formDat
       data: {
         name: parsed.data.name,
         breed: parsed.data.breed,
-        size: parsed.data.size ? (parsed.data.size as DogSize) : null,
         age: parsed.data.age || null,
         weight: parsed.data.weight || null,
         notes: parsed.data.notes || null,

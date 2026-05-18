@@ -51,19 +51,7 @@ export default function AddDogModal({
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-1">
-                <label className="text-sm font-medium" style={{ color: "var(--ps-text-mid)" }}>Tamaño</label>
-                <select name="size" className="w-full rounded-lg px-4 py-2 border focus:ring-2 focus:ring-[var(--primary)] bg-white" style={{ borderColor: "var(--border)" }}>
-                  <option value="">Seleccione</option>
-                  <option value="XS">Extra Pequeño (XS)</option>
-                  <option value="S">Pequeño (S)</option>
-                  <option value="M">Mediano (M)</option>
-                  <option value="L">Grande (L)</option>
-                  <option value="XL">Extra Grande (XL)</option>
-                </select>
-              </div>
-              
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-sm font-medium" style={{ color: "var(--ps-text-mid)" }}>Edad</label>
                 <input name="age" type="text" placeholder="ej. 2 años" className="w-full rounded-lg px-4 py-2 border focus:ring-2 focus:ring-[var(--primary)]" style={{ borderColor: "var(--border)" }} />

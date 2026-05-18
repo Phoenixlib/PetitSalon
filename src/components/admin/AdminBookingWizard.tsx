@@ -11,7 +11,8 @@ export interface DogResult {
   id: string;
   name: string;
   breed: string;
-  size: string | null;
+  age?: string | null;
+  weight?: string | null;
 }
 
 export interface OwnerResult {
@@ -146,7 +147,9 @@ export default function AdminBookingWizard({
       attendeePhoneNumber: selectedOwner.phone,
       nombre_perro: selectedDog.name,
       raza_perro: selectedDog.breed,
-      dog_size: selectedDog.size ?? "",
+      dog_size: "",
+      edad: selectedDog.age ?? "",
+      peso: selectedDog.weight ?? "",
       servicio: selectedService.name,
     };
   }
@@ -272,7 +275,7 @@ export default function AdminBookingWizard({
                   <div>
                     <span className="font-medium block">{dog.name}</span>
                     <span className="text-sm text-neutral-500 block">
-                      {dog.breed} {dog.size ? `(${dog.size})` : ""}
+                      {dog.breed}
                     </span>
                   </div>
                   <span className="text-[var(--primary)]">→</span>

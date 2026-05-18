@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { DogSize } from "@prisma/client";
+
 
 async function requireAdmin() {
   const session = await auth();
@@ -14,11 +14,6 @@ async function requireAdmin() {
 const DogSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio").max(100),
   breed: z.string().min(1, "La raza es obligatoria").max(100),
-  size: z
-    .enum(["XS", "S", "M", "L", "XL"])
-    .optional()
-    .nullable()
-    .or(z.literal("")),
   age: z.string().max(50).optional().nullable(),
   weight: z.string().max(50).optional().nullable(),
   notes: z.string().max(2000).optional().nullable(),
@@ -28,7 +23,6 @@ export type DogFormState = {
   errors?: {
     name?: string[];
     breed?: string[];
-    size?: string[];
     _form?: string[];
   };
   success?: boolean;
@@ -44,7 +38,6 @@ export async function updateDogAction(
     const raw = {
       name: formData.get("name") as string,
       breed: formData.get("breed") as string,
-      size: (formData.get("size") as string) || null,
       age: (formData.get("age") as string) || null,
       weight: (formData.get("weight") as string) || null,
       notes: (formData.get("notes") as string) || null,
@@ -66,7 +59,6 @@ export async function updateDogAction(
       data: {
         name: parsed.data.name,
         breed: parsed.data.breed,
-        size: parsed.data.size ? (parsed.data.size as DogSize) : null,
         age: parsed.data.age || null,
         weight: parsed.data.weight || null,
         notes: parsed.data.notes || null,

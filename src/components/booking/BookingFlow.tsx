@@ -10,7 +10,8 @@ interface Dog {
   id: string;
   name: string;
   breed: string;
-  size?: string | null;
+  age?: string | null;
+  weight?: string | null;
 }
 
 interface Owner {
@@ -39,7 +40,7 @@ export default function BookingFlow({ calLink, servicio }: BookingFlowProps) {
 
   // New dog form
   const [showNewDogForm, setShowNewDogForm] = useState(false);
-  const [newDog, setNewDog] = useState({ name: "", breed: "", size: "M" });
+  const [newDog, setNewDog] = useState({ name: "", breed: "", age: "", weight: "" });
 
   const handleLookup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,7 +91,9 @@ export default function BookingFlow({ calLink, servicio }: BookingFlowProps) {
       attendeePhoneNumber: owner?.phone || "",
       nombre_perro: dog.name,
       raza_perro: dog.breed,
-      dog_size: dog.size || "",
+      dog_size: "",
+      edad: dog.age || "",
+      peso: dog.weight || "",
       servicio: servicio || "",
     });
     setStep("embed");
@@ -107,7 +110,9 @@ export default function BookingFlow({ calLink, servicio }: BookingFlowProps) {
       attendeePhoneNumber: owner?.phone || "",
       nombre_perro: newDog.name,
       raza_perro: newDog.breed,
-      dog_size: newDog.size,
+      dog_size: "",
+      edad: newDog.age,
+      peso: newDog.weight,
       servicio: servicio || "",
     });
     setStep("embed");
@@ -210,7 +215,7 @@ export default function BookingFlow({ calLink, servicio }: BookingFlowProps) {
                   <div>
                     <span className="block font-medium">{dog.name}</span>
                     <span className="block text-sm text-[var(--ps-text-mid)]">
-                      {dog.breed} {dog.size ? `(${dog.size})` : ""}
+                      {dog.breed}
                     </span>
                   </div>
                   <span className="text-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity">
@@ -249,19 +254,24 @@ export default function BookingFlow({ calLink, servicio }: BookingFlowProps) {
                     }
                     className="w-full p-3 rounded-xl border border-[var(--ps-border)] text-sm"
                   />
-                  <select
-                    value={newDog.size}
+                  <input
+                    type="text"
+                    placeholder="Edad (ej: 3 años)"
+                    value={newDog.age}
                     onChange={(e) =>
-                      setNewDog({ ...newDog, size: e.target.value })
+                      setNewDog({ ...newDog, age: e.target.value })
                     }
-                    className="w-full p-3 rounded-xl border border-[var(--ps-border)] text-sm bg-white"
-                  >
-                    <option value="XS">Extra Pequeño (XS)</option>
-                    <option value="S">Pequeño (S)</option>
-                    <option value="M">Mediano (M)</option>
-                    <option value="L">Grande (L)</option>
-                    <option value="XL">Extra Grande (XL)</option>
-                  </select>
+                    className="w-full p-3 rounded-xl border border-[var(--ps-border)] text-sm"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Peso (ej: 8 kg)"
+                    value={newDog.weight}
+                    onChange={(e) =>
+                      setNewDog({ ...newDog, weight: e.target.value })
+                    }
+                    className="w-full p-3 rounded-xl border border-[var(--ps-border)] text-sm"
+                  />
                   {error && <p className="text-red-500 text-xs">{error}</p>}
                   <div className="flex gap-2">
                     <button

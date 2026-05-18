@@ -88,11 +88,7 @@ export default function ClientDetailClient({
                     </Link>
                   </div>
 
-                  <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <span className="text-neutral-500 block mb-1">Tamaño</span>
-                      <span className="font-medium bg-neutral-100 px-2 py-1 rounded-md">{dog.size || "-"}</span>
-                    </div>
+                  <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="text-neutral-500 block mb-1">Peso</span>
                       <span className="font-medium">{dog.weight || "-"}</span>

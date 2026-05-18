@@ -55,7 +55,7 @@ export default async function PerrosPage(props: { searchParams: Promise<{ q?: st
           <thead className="bg-neutral-50 border-b border-neutral-200">
             <tr>
               <th className="p-4 font-semibold text-neutral-600">Perro</th>
-              <th className="p-4 font-semibold text-neutral-600">Raza/Tamaño</th>
+              <th className="p-4 font-semibold text-neutral-600">Raza/Peso</th>
               <th className="p-4 font-semibold text-neutral-600">Dueño</th>
               <th className="p-4 font-semibold text-neutral-600 text-center">Atenciones</th>
               <th className="p-4 font-semibold text-neutral-600 text-right">Acciones</th>
@@ -85,7 +85,7 @@ export default async function PerrosPage(props: { searchParams: Promise<{ q?: st
                   </td>
                   <td className="p-4">
                     <span className="block font-medium">{dog.breed}</span>
-                    <span className="text-xs text-neutral-500">{dog.size || "-"} | {dog.weight || "-"}</span>
+                    <span className="text-xs text-neutral-500">Peso: {dog.weight || "-"}</span>
                   </td>
                   <td className="p-4">
                     <Link href={`/admin/clientes/${dog.owner.id}`} className="text-[var(--primary)] hover:underline font-medium">
@@ -133,7 +133,7 @@ export default async function PerrosPage(props: { searchParams: Promise<{ q?: st
                       </span>
                     </div>
                     <p className="text-sm font-medium text-neutral-700 truncate">{dog.breed}</p>
-                    <p className="text-xs text-neutral-500 mt-0.5">Tamaño: {dog.size || "-"} | Peso: {dog.weight || "-"}</p>
+                    <p className="text-xs text-neutral-500 mt-0.5">Peso: {dog.weight || "-"}</p>
                   </div>
                 </div>
 
