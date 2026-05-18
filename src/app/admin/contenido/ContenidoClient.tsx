@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useActionState, startTransition } from "react";
+import { useState, useActionState, startTransition, useEffect } from "react";
 import { type FaqItem } from "@prisma/client";
 import { ChevronDown, ChevronUp, Pencil, Trash2, Check, Plus, X } from "lucide-react";
 import { 
@@ -239,9 +239,6 @@ function LocationTab({ config }: { config: Record<string, string> }) {
 function FaqTab({ faqs }: { faqs: FaqItem[] }) {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  
-  const initialState: FaqFormState = {};
-  const [state, action, isPending] = useActionState(createFaqAction, initialState);
 
   async function handleMove(index: number, direction: -1 | 1) {
     const newIndex = index + direction;
@@ -270,57 +267,10 @@ function FaqTab({ faqs }: { faqs: FaqItem[] }) {
       </div>
 
       {isAdding && (
-        <form action={action} className="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-6 space-y-4">
-          <div className="flex justify-between items-center mb-2">
-            <h4 className="font-medium text-slate-800">Agregar Pregunta</h4>
-            <button type="button" onClick={() => setIsAdding(false)} className="text-slate-400 hover:text-slate-600">
-              <X className="size-5" />
-            </button>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Pregunta</label>
-            <input 
-              name="question" 
-              required 
-              maxLength={500}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--ps-lila)] focus:border-transparent" 
-            />
-            {state.errors?.question && <p className="text-red-500 text-xs mt-1">{state.errors.question[0]}</p>}
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Respuesta</label>
-            <textarea 
-              name="answer" 
-              required 
-              rows={3}
-              maxLength={2000}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--ps-lila)] focus:border-transparent" 
-            />
-            {state.errors?.answer && <p className="text-red-500 text-xs mt-1">{state.errors.answer[0]}</p>}
-          </div>
-
-          {state.errors?._form && <p className="text-red-500 text-sm">{state.errors._form[0]}</p>}
-          {state.success && <p className="text-green-600 text-sm">Pregunta creada. Puedes cerrar este formulario.</p>}
-
-          <div className="flex justify-end gap-3 pt-2">
-            <button 
-              type="button" 
-              onClick={() => setIsAdding(false)}
-              className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-            >
-              Cancelar
-            </button>
-            <button 
-              type="submit" 
-              disabled={isPending}
-              className="px-4 py-2 text-sm font-medium bg-[var(--ps-lila)] text-white rounded-lg hover:opacity-90 transition-colors disabled:opacity-50"
-            >
-              {isPending ? "Guardando..." : "Guardar Pregunta"}
-            </button>
-          </div>
-        </form>
+        <CreateFaqForm 
+          onCancel={() => setIsAdding(false)} 
+          onSuccess={() => setIsAdding(false)} 
+        />
       )}
 
       <div className="space-y-3">
@@ -410,10 +360,87 @@ function FaqTab({ faqs }: { faqs: FaqItem[] }) {
   );
 }
 
+function CreateFaqForm({ onCancel, onSuccess }: { onCancel: () => void; onSuccess: () => void }) {
+  const initialState: FaqFormState = {};
+  const [state, action, isPending] = useActionState(createFaqAction, initialState);
+
+  useEffect(() => {
+    if (state.success) {
+      const timer = setTimeout(() => {
+        onSuccess();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [state.success, onSuccess]);
+
+  return (
+    <form action={action} className="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-6 space-y-4">
+      <div className="flex justify-between items-center mb-2">
+        <h4 className="font-medium text-slate-800">Agregar Pregunta</h4>
+        <button type="button" onClick={onCancel} className="text-slate-400 hover:text-slate-600">
+          <X className="size-5" />
+        </button>
+      </div>
+      
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Pregunta</label>
+        <input 
+          name="question" 
+          required 
+          maxLength={500}
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--ps-lila)] focus:border-transparent" 
+        />
+        {state.errors?.question && <p className="text-red-500 text-xs mt-1">{state.errors.question[0]}</p>}
+      </div>
+      
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Respuesta</label>
+        <textarea 
+          name="answer" 
+          required 
+          rows={3}
+          maxLength={2000}
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--ps-lila)] focus:border-transparent" 
+        />
+        {state.errors?.answer && <p className="text-red-500 text-xs mt-1">{state.errors.answer[0]}</p>}
+      </div>
+
+      {state.errors?._form && <p className="text-red-500 text-sm">{state.errors._form[0]}</p>}
+      {state.success && <p className="text-green-600 text-sm font-medium">✓ ¡Pregunta creada con éxito!</p>}
+
+      <div className="flex justify-end gap-3 pt-2">
+        <button 
+          type="button" 
+          onClick={onCancel}
+          className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+        >
+          Cancelar
+        </button>
+        <button 
+          type="submit" 
+          disabled={isPending}
+          className="px-4 py-2 text-sm font-medium bg-[var(--ps-lila)] text-white rounded-lg hover:opacity-90 transition-colors disabled:opacity-50"
+        >
+          {isPending ? "Guardando..." : "Guardar Pregunta"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 function EditFaqForm({ faq, onCancel }: { faq: FaqItem; onCancel: () => void }) {
   const updateActionWithId = updateFaqAction.bind(null, faq.id);
   const initialState: FaqFormState = {};
   const [state, action, isPending] = useActionState(updateActionWithId, initialState);
+
+  useEffect(() => {
+    if (state.success) {
+      const timer = setTimeout(() => {
+        onCancel();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [state.success, onCancel]);
 
   return (
     <form action={action} className="space-y-3">
@@ -440,7 +467,7 @@ function EditFaqForm({ faq, onCancel }: { faq: FaqItem; onCancel: () => void }) 
       </div>
       
       {state.errors?._form && <p className="text-red-500 text-sm">{state.errors._form[0]}</p>}
-      {state.success && <p className="text-green-600 text-sm">Actualizado. Puedes cancelar para cerrar.</p>}
+      {state.success && <p className="text-green-600 text-sm font-medium">✓ ¡Cambios guardados con éxito!</p>}
 
       <div className="flex gap-2 mt-2">
         <button 
