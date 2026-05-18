@@ -34,7 +34,7 @@ export default async function AdminLayout({
   return (
     <>
       <HeaderWithAuth whatsapp={whatsapp} />
-      <div className="flex min-h-screen pt-16">
+      <div className="flex min-h-screen pt-16 lg:pt-0">
         <AdminSidebar userName={userName} pendingReviewsCount={pendingReviewsCount} />
         <main className="flex-1 min-w-0">
           <div className="p-4 md:p-6">{children}</div>

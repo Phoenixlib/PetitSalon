@@ -16,6 +16,7 @@ import {
   Star,
   Mail,
   Image as ImageIcon,
+  Home,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/app/admin/actions";
@@ -126,9 +127,17 @@ export default function AdminSidebar({ userName, pendingReviewsCount = 0 }: Admi
       </nav>
 
       <div
-        className="px-2 py-4 border-t"
+        className="px-2 py-4 border-t space-y-1"
         style={{ borderColor: "var(--ps-lila-light)" }}
       >
+        <Link
+          href="/"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium w-full transition-colors hover:bg-surface"
+          style={{ color: "var(--ps-text-mid)" }}
+        >
+          <Home className="size-4 shrink-0" />
+          Volver al Inicio
+        </Link>
         <form action={logoutAction}>
           <button
             type="submit"
@@ -145,7 +154,7 @@ export default function AdminSidebar({ userName, pendingReviewsCount = 0 }: Admi
 
   return (
     <aside
-      className="hidden lg:flex flex-col w-56 shrink-0 sticky top-16 h-[calc(100vh-4rem)] border-r overflow-y-auto"
+      className="hidden lg:flex flex-col w-56 shrink-0 sticky top-0 h-screen border-r overflow-y-auto"
       style={{
         backgroundColor: "var(--ps-lila-base)",
         borderColor: "var(--ps-lila-light)",

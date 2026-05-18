@@ -52,7 +52,9 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
 
   return (
     <header
-      className="fixed top-0 inset-x-0 z-50 h-16 flex flex-col justify-center transition-all duration-500"
+      className={`fixed top-0 inset-x-0 z-50 h-16 flex flex-col justify-center transition-all duration-500 ${
+        isAdminPage ? "lg:hidden" : ""
+      }`}
       style={{
         backgroundColor:
           scrolled || isAdminPage ? "rgba(255,255,255,0.96)" : "transparent",
