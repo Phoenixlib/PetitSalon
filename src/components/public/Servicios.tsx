@@ -113,12 +113,12 @@ export default function Servicios({
       >
         {/* Blobs decorativos */}
         <div
-          className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-20 pointer-events-none"
+          className="absolute -top-32 -right-32 w-96 h-96 rounded-full filter blur-3xl opacity-45 pointer-events-none animate-pulse"
           style={{ backgroundColor: "var(--pastel-cyan)" }}
         />
         <div
-          className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full opacity-15 pointer-events-none"
-          style={{ backgroundColor: "var(--pastel-pink)" }}
+          className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full filter blur-3xl opacity-40 pointer-events-none animate-pulse"
+          style={{ backgroundColor: "var(--pastel-pink)", animationDelay: "2s" }}
         />
 
         <div className="max-w-6xl mx-auto relative z-10">
@@ -155,10 +155,10 @@ export default function Servicios({
                   key={category.id}
                   className="rounded-3xl p-7 md:p-10"
                   style={{
-                    backgroundColor: "rgba(255, 255, 255, 0.65)",
-                    backdropFilter: "blur(8px)",
-                    border: "1px solid rgba(182, 230, 230, 0.35)",
-                    boxShadow: "0 4px 24px rgba(0,0,0,0.04)",
+                    background: "linear-gradient(160deg, rgba(240, 250, 250, 0.85) 0%, rgba(255, 255, 255, 0.95) 50%, rgba(254, 244, 204, 0.85) 100%)",
+                    backdropFilter: "blur(12px)",
+                    border: "1px solid rgba(182, 230, 230, 0.45)",
+                    boxShadow: "0 10px 30px rgba(66, 194, 237, 0.05)",
                   }}
                 >
                   <div className="mb-6">

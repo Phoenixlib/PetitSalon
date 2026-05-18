@@ -68,16 +68,16 @@ export default function Hero({ whatsapp }: HeroProps) {
       {/* Background blobs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div
-          className="absolute -top-32 -right-32 w-[560px] h-[560px] rounded-full opacity-50"
-          style={{ backgroundColor: "var(--ps-lila-pale)" }}
+          className="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full filter blur-[120px] opacity-65 animate-pulse"
+          style={{ backgroundColor: "var(--pastel-cyan)" }}
         />
         <div
-          className="absolute -bottom-24 -left-24 w-[360px] h-[360px] rounded-full opacity-35"
-          style={{ backgroundColor: "var(--ps-lila-pale)" }}
+          className="absolute -bottom-24 -left-24 w-[450px] h-[450px] rounded-full filter blur-[100px] opacity-55 animate-pulse"
+          style={{ backgroundColor: "var(--pastel-pink)", animationDelay: "2s" }}
         />
         {/* Subtle gold grain dot */}
         <div
-          className="absolute top-1/3 left-1/2 w-1 h-1 rounded-full opacity-60"
+          className="absolute top-1/3 left-1/2 w-1.5 h-1.5 rounded-full opacity-80"
           style={{ backgroundColor: "var(--ps-gold)" }}
         />
       </div>

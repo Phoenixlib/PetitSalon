@@ -82,8 +82,8 @@ export default function Galeria({ photos }: Props) {
       style={{ backgroundColor: "var(--ps-lila-base)" }}
     >
       {/* Elementos decorativos sutiles de fondo */}
-      <div className="absolute top-0 left-0 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse pointer-events-none" style={{ backgroundColor: "var(--ps-lila-light)" }} />
-      <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse pointer-events-none" style={{ backgroundColor: "var(--ps-gold)" }} />
+      <div className="absolute -top-12 -left-12 w-[450px] h-[450px] rounded-full mix-blend-multiply filter blur-3xl opacity-45 animate-pulse pointer-events-none" style={{ backgroundColor: "var(--ps-lila-light)" }} />
+      <div className="absolute -bottom-12 -right-12 w-[400px] h-[400px] rounded-full mix-blend-multiply filter blur-3xl opacity-35 animate-pulse pointer-events-none" style={{ backgroundColor: "var(--ps-gold)", animationDelay: "1.5s" }} />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
         {/* Header */}
