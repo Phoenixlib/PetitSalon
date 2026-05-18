@@ -26,6 +26,11 @@ const ADMIN_NAV = [
   { href: "/admin/galeria", label: "Galería" },
   { href: "/admin/resenas", label: "Reseñas" },
   { href: "/admin/campanas", label: "Campañas" },
+  {
+    href: "https://app.cal.com/availability",
+    label: "Horarios Cal.com",
+    external: true,
+  },
 ];
 
 type Props = {
@@ -226,12 +231,15 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
               >
                 Navegación Admin
               </p>
-              {ADMIN_NAV.map(({ href, label }) => {
-                const isActive = href === "/admin" ? pathname === href : pathname.startsWith(href);
+              {ADMIN_NAV.map(({ href, label, external }) => {
+                const isActive = !external && (href === "/admin" ? pathname === href : pathname.startsWith(href));
+                const Comp = external ? "a" : Link;
+                const extraProps = external ? { target: "_blank", rel: "noopener noreferrer" } : {};
                 return (
-                  <Link
+                  <Comp
                     key={href}
                     href={href}
+                    {...extraProps}
                     className="text-base font-medium py-2.5 border-b flex items-center justify-between"
                     style={{
                       color: isActive ? "var(--primary)" : "var(--ps-text)",
@@ -239,14 +247,19 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
                     }}
                     onClick={() => setMenuOpen(false)}
                   >
-                    {label}
+                    <span>{label}</span>
                     {isActive && (
                       <span
                         className="w-1.5 h-1.5 rounded-full"
                         style={{ backgroundColor: "var(--primary)" }}
                       />
                     )}
-                  </Link>
+                    {external && (
+                      <span className="text-[10px] uppercase font-bold text-[var(--ps-gold-dark)] bg-[var(--pastel-peach)]/30 px-1.5 py-0.5 rounded tracking-wider size-fit shrink-0">
+                        Cal.com ↗
+                      </span>
+                    )}
+                  </Comp>
                 );
               })}
 
