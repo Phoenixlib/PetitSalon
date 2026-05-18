@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 
 const container = {
   hidden: { opacity: 0 },
@@ -177,64 +178,57 @@ export default function Hero({ whatsapp }: HeroProps) {
 
         {/* RIGHT — Decoration */}
         <motion.div
-          className="relative hidden lg:flex items-center justify-center"
+          className="relative flex items-center justify-center w-full mt-12 lg:mt-0"
           initial={{ opacity: 0, scale: 0.88 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
         >
-          {/* Main circle */}
-          <div className="relative w-[420px] h-[420px]">
-            <div
-              className="absolute inset-0 rounded-full"
-              style={{
-                backgroundColor: "var(--ps-lila-pale)",
-                border: "1px solid oklch(0.80 0.05 295 / 0.5)",
+          {/* Staggered Photo Grid Container */}
+          <div className="relative w-[300px] h-[260px] sm:w-[380px] sm:h-[320px] lg:w-[460px] lg:h-[400px]">
+            {/* Foto 1 (Perro 1) - Foreground / Left */}
+            <motion.div
+              animate={{ y: [0, -8, 0], rotate: [-2, -1, -2] }}
+              transition={{
+                repeat: Infinity,
+                duration: 5,
+                ease: "easeInOut",
               }}
-            />
-            {/* Inner ring (gold) */}
-            <div
-              className="absolute inset-[28px] rounded-full"
-              style={{
-                border: "1px solid oklch(0.72 0.12 78 / 0.18)",
+              className="absolute left-2 bottom-4 w-[160px] h-[213px] sm:w-[200px] sm:h-[267px] lg:w-[260px] lg:h-[347px] rounded-2xl lg:rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white z-20 aspect-[3/4]"
+            >
+              <Image
+                src="/images/hero/perro1.jpeg"
+                alt="Peluquería Canina - Perro 1"
+                fill
+                sizes="(max-width: 640px) 160px, (max-width: 1024px) 200px, 260px"
+                className="object-cover"
+                priority
+              />
+            </motion.div>
+
+            {/* Foto 2 (Perro 2) - Background / Right */}
+            <motion.div
+              animate={{ y: [0, 8, 0], rotate: [3, 4, 3] }}
+              transition={{
+                repeat: Infinity,
+                duration: 6,
+                ease: "easeInOut",
+                delay: 0.5,
               }}
-            />
-
-            {/* Image instead of Paw */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{
-                  repeat: Infinity,
-                  duration: 4,
-                  ease: "easeInOut",
-                }}
-                className="relative w-64 h-64 rounded-full overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.15)] border-4 border-white z-20 aspect-square"
-              >
-                <img
-                  src="/images/brand/logo.jpeg"
-                  alt="Petit Salon Logo"
-                  className="w-full h-full object-cover scale-[1.02]"
-                />
-              </motion.div>
-            </div>
-
-            {/* Gold dots */}
-            <div
-              className="absolute top-10 right-20 w-3 h-3 rounded-full"
-              style={{ backgroundColor: "var(--ps-gold)" }}
-            />
-            <div
-              className="absolute bottom-20 left-10 w-2 h-2 rounded-full opacity-60"
-              style={{ backgroundColor: "var(--ps-gold)" }}
-            />
-            <div
-              className="absolute top-28 left-6 w-1.5 h-1.5 rounded-full"
-              style={{ backgroundColor: "var(--ps-lila-mid)" }}
-            />
+              className="absolute right-2 top-4 w-[135px] h-[180px] sm:w-[170px] sm:h-[227px] lg:w-[220px] lg:h-[293px] rounded-2xl lg:rounded-[2rem] overflow-hidden shadow-xl border-4 border-white z-10 aspect-[3/4]"
+            >
+              <Image
+                src="/images/hero/perro2.jpeg"
+                alt="Peluquería Canina - Perro 2"
+                fill
+                sizes="(max-width: 640px) 135px, (max-width: 1024px) 170px, 220px"
+                className="object-cover"
+                priority
+              />
+            </motion.div>
 
             {/* Floating stat card */}
             <motion.div
-              className="absolute -bottom-5 -right-6 rounded-2xl p-4 shadow-xl"
+              className="absolute -bottom-4 right-0 lg:-bottom-6 lg:-right-4 rounded-2xl p-3 sm:p-4 shadow-xl z-30"
               style={{
                 backgroundColor: "white",
                 border: "1px solid var(--ps-lila-pale)",
@@ -245,44 +239,19 @@ export default function Hero({ whatsapp }: HeroProps) {
               transition={{ delay: 1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             >
               <p
-                className="text-[10px] font-semibold uppercase tracking-wider"
+                className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider"
                 style={{ color: "var(--ps-text-mid)" }}
               >
-                Perros felices
+                Perritos felices
               </p>
               <p
-                className="text-3xl font-semibold mt-0.5"
+                className="text-2xl sm:text-3xl font-semibold mt-0.5"
                 style={{
                   fontFamily: "var(--font-display)",
                   color: "var(--ps-lila)",
                 }}
               >
-                +200
-              </p>
-            </motion.div>
-
-            {/* Floating love card */}
-            <motion.div
-              className="absolute -top-5 -left-6 rounded-2xl p-3.5 shadow-xl"
-              style={{
-                backgroundColor: "white",
-                border: "1px solid var(--ps-lila-pale)",
-                boxShadow: "0 8px 32px oklch(0.52 0.10 295 / 0.12)",
-              }}
-              initial={{ opacity: 0, y: -16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                delay: 1.2,
-                duration: 0.6,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-            >
-              <span className="text-2xl">🐾</span>
-              <p
-                className="text-[10px] font-semibold uppercase tracking-wider mt-1"
-                style={{ color: "var(--ps-text-mid)" }}
-              >
-                Con amor
+                +100
               </p>
             </motion.div>
           </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 
 
@@ -59,28 +60,15 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex flex-col leading-none">
-          <span
-            className="text-[1.5rem] font-light tracking-tight"
-            style={{
-              fontFamily: "var(--font-display)",
-              color: "var(--ps-text)",
-            }}
-          >
-            Petit{" "}
-            <em
-              className="not-italic font-semibold"
-              style={{ color: "var(--ps-gold)" }}
-            >
-              Salón
-            </em>
-          </span>
-          <span
-            className="text-[8px] uppercase tracking-[0.25em]"
-            style={{ color: "var(--ps-text-mid)" }}
-          >
-            Peluquería Canina
-          </span>
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/images/logo-petitsalon.png"
+            alt="Petit Salón"
+            width={1397}
+            height={512}
+            className="h-10 md:h-12 w-auto object-contain"
+            priority
+          />
         </Link>
 
         {/* Desktop nav */}
