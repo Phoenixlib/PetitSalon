@@ -17,7 +17,7 @@ interface Props {
 }
 
 const STATUS_LABELS: Record<AppointmentStatus, string> = {
-  PENDING: "Pendiente",
+  PENDING: "Agendada",
   CONFIRMED: "Confirmada",
   DONE: "Realizada",
   CANCELLED: "Cancelada",

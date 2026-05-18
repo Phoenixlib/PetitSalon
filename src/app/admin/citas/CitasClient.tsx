@@ -12,14 +12,14 @@ interface Props {
 
 const TABS: { id: "ALL" | AppointmentStatus; label: string }[] = [
   { id: "ALL", label: "Todas" },
-  { id: "PENDING", label: "Pendientes" },
+  { id: "PENDING", label: "Agendadas" },
   { id: "CONFIRMED", label: "Confirmadas" },
   { id: "DONE", label: "Realizadas" },
   { id: "CANCELLED", label: "Canceladas" },
 ];
 
 const STATUS_LABELS: Record<AppointmentStatus, string> = {
-  PENDING: "Pendiente",
+  PENDING: "Agendada",
   CONFIRMED: "Confirmada",
   DONE: "Realizada",
   CANCELLED: "Cancelada",

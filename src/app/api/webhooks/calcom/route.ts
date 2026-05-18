@@ -261,7 +261,7 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
     create: {
       calComUid: payload.uid,
       date: new Date(payload.startTime),
-      status: "CONFIRMED",
+      status: "PENDING",
       serviceId: service.id,
       dogId: dog.id,
       notes: notes,

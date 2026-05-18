@@ -19,7 +19,7 @@ interface ContenidoClientProps {
 }
 
 export default function ContenidoClient({ config, faqs: initialFaqs }: ContenidoClientProps) {
-  const [tab, setTab] = useState<"about" | "faq" | "location">("about");
+  const [tab, setTab] = useState<"about" | "faq" | "location" | "bank">("about");
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -54,12 +54,23 @@ export default function ContenidoClient({ config, faqs: initialFaqs }: Contenido
         >
           Cómo Llegar
         </button>
+        <button
+          onClick={() => setTab("bank")}
+          className={`px-6 py-4 text-sm font-medium whitespace-nowrap transition-colors text-left lg:text-center ${
+            tab === "bank"
+              ? "bg-[var(--ps-lila-pale)] border-l-4 lg:border-l-0 lg:border-b-2 border-[var(--ps-lila)] text-[var(--ps-lila-deep)]"
+              : "border-l-4 lg:border-l-0 lg:border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+          }`}
+        >
+          Datos Bancarios
+        </button>
       </div>
 
       <div className="p-4 lg:p-6 xl:p-8">
         {tab === "about" && <AboutTab config={config} />}
         {tab === "faq" && <FaqTab faqs={initialFaqs} />}
         {tab === "location" && <LocationTab config={config} />}
+        {tab === "bank" && <BankTab config={config} />}
       </div>
     </div>
   );
@@ -566,3 +577,50 @@ function ConfirmDeleteModal({
     </div>
   );
 }
+
+function BankTab({ config }: { config: Record<string, string> }) {
+  return (
+    <div className="space-y-6 max-w-3xl">
+      <div>
+        <h3 className="text-lg font-semibold text-slate-800 mb-2">Datos de Transferencia Bancaria</h3>
+        <p className="text-sm text-slate-500 mb-6">
+          Estos datos se mostrarán a los clientes al finalizar el agendamiento para que realicen la transferencia del abono de la reserva.
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        <ConfigField
+          label="Nombre del Titular"
+          configKey="bank_owner_name"
+          initialValue={config.bank_owner_name || ""}
+        />
+        <ConfigField
+          label="RUT"
+          configKey="bank_rut"
+          initialValue={config.bank_rut || ""}
+        />
+        <ConfigField
+          label="Banco"
+          configKey="bank_name"
+          initialValue={config.bank_name || ""}
+        />
+        <ConfigField
+          label="Tipo de Cuenta (ej: Corriente, Vista, Ahorro)"
+          configKey="bank_account_type"
+          initialValue={config.bank_account_type || ""}
+        />
+        <ConfigField
+          label="Número de Cuenta"
+          configKey="bank_account_number"
+          initialValue={config.bank_account_number || ""}
+        />
+        <ConfigField
+          label="Correo Electrónico (para comprobantes)"
+          configKey="bank_email"
+          initialValue={config.bank_email || ""}
+        />
+      </div>
+    </div>
+  );
+}
+
