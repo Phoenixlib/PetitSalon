@@ -199,78 +199,132 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
   if (!service)
     throw new Error("No hay servicios configurados en la base de datos");
 
-  // 2. Upsert Owner por email o por nombre+teléfono
+  // 2. Upsert Owner resiliente
   let owner = null;
+  
+  // Buscar primero por email si viene
   if (ownerEmail) {
     owner = await prisma.owner.findUnique({ where: { email: ownerEmail } });
   }
+  
+  // Si no se encuentra por email, buscar por teléfono si viene
   if (!owner && ownerPhone) {
     owner = await prisma.owner.findUnique({ where: { phone: ownerPhone } });
   }
 
   if (!owner) {
-    owner = await prisma.owner.create({
-      data: { name: ownerName, email: ownerEmail, phone: ownerPhone },
-    });
+    try {
+      owner = await prisma.owner.create({
+        data: { name: ownerName, email: ownerEmail, phone: ownerPhone },
+      });
+    } catch (createErr: any) {
+      console.warn("[calcom-webhook] Error al crear dueño, reintentando recuperar por colisión:", createErr.message);
+      // Si falló por restricción de unicidad, intentamos recuperarlo por email o teléfono nuevamente
+      if (ownerEmail) {
+        owner = await prisma.owner.findUnique({ where: { email: ownerEmail } });
+      }
+      if (!owner && ownerPhone) {
+        owner = await prisma.owner.findUnique({ where: { phone: ownerPhone } });
+      }
+      // Si aún así no existe (raro), creamos un dueño temporal sin datos únicos para que no falle la cita
+      if (!owner) {
+        owner = await prisma.owner.create({
+          data: { 
+            name: ownerName,
+            phone: ownerPhone || `fallback-${Date.now()}` 
+          },
+        });
+      }
+    }
   } else {
-    // Actualizar teléfono/email si llegó con más datos (y evitar conflictos de unicidad si el otro dato ya existe en otro lado)
-    // Es más seguro solo actualizar si no lo tenía.
-    owner = await prisma.owner.update({
-      where: { id: owner.id },
-      data: { 
-        ...(ownerPhone && !owner.phone ? { phone: ownerPhone } : {}),
-        ...(ownerEmail && !owner.email ? { email: ownerEmail } : {})
-      },
-    });
+    // Si existe, intentar actualizar los campos faltantes de forma segura (sin pisar campos únicos de otros dueños)
+    try {
+      owner = await prisma.owner.update({
+        where: { id: owner.id },
+        data: { 
+          ...(ownerPhone && !owner.phone ? { phone: ownerPhone } : {}),
+          ...(ownerEmail && !owner.email ? { email: ownerEmail } : {})
+        },
+      });
+    } catch (updateErr: any) {
+      console.warn("[calcom-webhook] Conflicto de unicidad al actualizar dueño (ignorado para no bloquear la cita):", updateErr.message);
+      // No lanzamos el error para que continúe la ejecución y se guarde la cita
+    }
   }
 
-  // 3. Upsert Dog por nombre dentro del mismo owner
+  // 3. Upsert Dog por nombre dentro del mismo owner de forma segura
   let dog = await prisma.dog.findFirst({
     where: {
       ownerId: owner.id,
       name: { equals: dogName, mode: "insensitive" },
     },
   });
+
   if (!dog) {
-    dog = await prisma.dog.create({
-      data: {
-        name: dogName,
-        breed: dogBreed,
-        ownerId: owner.id,
-        ...(dogAge !== null && { age: dogAge }),
-        ...(dogWeight !== null && { weight: dogWeight }),
-        ...(dogNotes !== null && { notes: dogNotes }),
-      },
-    });
+    try {
+      dog = await prisma.dog.create({
+        data: {
+          name: dogName,
+          breed: dogBreed,
+          ownerId: owner.id,
+          ...(dogAge !== null && { age: dogAge }),
+          ...(dogWeight !== null && { weight: dogWeight }),
+          ...(dogNotes !== null && { notes: dogNotes }),
+        },
+      });
+    } catch (dogCreateErr: any) {
+      console.warn("[calcom-webhook] Error al crear mascota, reintentando recuperar:", dogCreateErr.message);
+      // Recuperar de todos modos si ya existe en la base de datos
+      dog = await prisma.dog.findFirst({
+        where: {
+          ownerId: owner.id,
+          name: { equals: dogName, mode: "insensitive" },
+        },
+      });
+      if (!dog) {
+        // Crear de forma minimalista para no bloquear la cita
+        dog = await prisma.dog.create({
+          data: { name: dogName, ownerId: owner.id, breed: dogBreed },
+        });
+      }
+    }
   } else {
-    // Actualizar campos que podrían llegar con más detalle en reservas posteriores
-    dog = await prisma.dog.update({
-      where: { id: dog.id },
-      data: {
-        ...(dogBreed && dogBreed !== "Sin raza" ? { breed: dogBreed } : {}),
-        ...(dogAge ? { age: dogAge } : {}),
-        ...(dogWeight ? { weight: dogWeight } : {}),
-        ...(dogNotes ? { notes: dogNotes } : {}),
-      },
-    });
+    try {
+      dog = await prisma.dog.update({
+        where: { id: dog.id },
+        data: {
+          ...(dogBreed && dogBreed !== "Sin raza" ? { breed: dogBreed } : {}),
+          ...(dogAge ? { age: dogAge } : {}),
+          ...(dogWeight ? { weight: dogWeight } : {}),
+          ...(dogNotes ? { notes: dogNotes } : {}),
+        },
+      });
+    } catch (dogUpdateErr: any) {
+      console.warn("[calcom-webhook] Error al actualizar mascota (ignorado para no bloquear la cita):", dogUpdateErr.message);
+    }
   }
 
-  // 4. Crear Appointment (idempotente vía calComUid)
-  await prisma.appointment.upsert({
-    where: { calComUid: payload.uid },
-    create: {
-      calComUid: payload.uid,
-      date: new Date(payload.startTime),
-      status: "PENDING",
-      serviceId: service.id,
-      dogId: dog.id,
-      notes: notes,
-    },
-    update: {
-      // Si Cal.com reenvía el evento, no sobreescribimos nada crítico
-      date: new Date(payload.startTime),
-    },
-  });
+  // 4. Crear Appointment (idempotente vía calComUid) de forma segura con logs detallados
+  try {
+    const appointment = await prisma.appointment.upsert({
+      where: { calComUid: payload.uid },
+      create: {
+        calComUid: payload.uid,
+        date: new Date(payload.startTime),
+        status: "PENDING",
+        serviceId: service.id,
+        dogId: dog.id,
+        notes: notes,
+      },
+      update: {
+        date: new Date(payload.startTime),
+      },
+    });
+    console.info(`[calcom-webhook] Cita procesada exitosamente en la base de datos. ID: ${appointment.id}`);
+  } catch (appErr: any) {
+    console.error("[calcom-webhook] Error crítico al insertar/actualizar la cita en la base de datos:", appErr);
+    throw appErr; // Lanzamos este error ya que si la cita no se puede crear, queremos que Cal.com sepa del fallo
+  }
 }
 
 async function handleBookingCancelled(payload: CalComBookingPayload) {

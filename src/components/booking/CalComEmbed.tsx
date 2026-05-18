@@ -56,7 +56,7 @@ export default function CalComEmbed({ calLink, prefill, onSuccess }: CalComEmbed
     })();
   }, [onSuccess]);
 
-  // Construimos la URL con parámetros nativos si existen
+  // Construimos la URL con parámetros si existen (nativos y personalizados)
   let finalCalLink = calLink;
   if (prefill) {
     const params = new URLSearchParams();
@@ -64,25 +64,18 @@ export default function CalComEmbed({ calLink, prefill, onSuccess }: CalComEmbed
     if (prefill.email) params.append("email", prefill.email);
     if (prefill.attendeePhoneNumber)
       params.append("attendeePhoneNumber", prefill.attendeePhoneNumber);
+    if (prefill.nombre_perro)
+      params.append("nombre_perro", prefill.nombre_perro);
+    if (prefill.raza_perro) params.append("raza_perro", prefill.raza_perro);
+    if (prefill.dog_size) params.append("dog_size", prefill.dog_size);
+    if (prefill.edad) params.append("edad", prefill.edad);
+    if (prefill.peso) params.append("peso", prefill.peso);
+    if (prefill.servicio) params.append("servicio", prefill.servicio);
 
     const queryString = params.toString();
     if (queryString) {
       finalCalLink = `${calLink}?${queryString}`;
     }
-  }
-
-  // Construimos la configuración para campos personalizados
-  const calConfig: Record<string, string> = {
-    layout: "month_view",
-  };
-
-  if (prefill) {
-    if (prefill.nombre_perro) calConfig["nombre_perro"] = prefill.nombre_perro;
-    if (prefill.raza_perro) calConfig["raza_perro"] = prefill.raza_perro;
-    if (prefill.dog_size) calConfig["dog_size"] = prefill.dog_size;
-    if (prefill.edad) calConfig["edad"] = prefill.edad;
-    if (prefill.peso) calConfig["peso"] = prefill.peso;
-    if (prefill.servicio) calConfig["servicio"] = prefill.servicio;
   }
 
   return (
@@ -91,7 +84,9 @@ export default function CalComEmbed({ calLink, prefill, onSuccess }: CalComEmbed
         namespace="petitsalon"
         calLink={finalCalLink}
         style={{ width: "100%", height: "100%" }}
-        config={calConfig}
+        config={{
+          layout: "month_view",
+        }}
       />
     </div>
   );
