@@ -4,8 +4,177 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Placeholder from "@tiptap/extension-placeholder";
+import { TextStyle } from "@tiptap/extension-text-style";
+import Color from "@tiptap/extension-color";
+import FontFamily from "@tiptap/extension-font-family";
+import Subscript from "@tiptap/extension-subscript";
+import Superscript from "@tiptap/extension-superscript";
+import Highlight from "@tiptap/extension-highlight";
+import { Extension } from "@tiptap/core";
 import { useActionState, useState, useCallback } from "react";
 import { sendCampaignAction, type CampaignState } from "./actions";
+import {
+  Bold as BoldIcon,
+  Italic as ItalicIcon,
+  Underline as UnderlineIcon,
+  Strikethrough as StrikeIcon,
+  Subscript as SubIcon,
+  Superscript as SuperIcon,
+  Heading2,
+  List,
+  Eraser,
+} from "lucide-react";
+
+// Extensiones TipTap personalizadas para soporte de tamaño de letra, transformaciones y efectos
+const FontSize = Extension.create({
+  name: "fontSize",
+  addOptions() {
+    return {
+      types: ["textStyle"],
+    };
+  },
+  addGlobalAttributes() {
+    return [
+      {
+        types: this.options.types,
+        attributes: {
+          fontSize: {
+            default: null,
+            parseHTML: (element) => element.style.fontSize?.replace(/['"]+/g, ""),
+            renderHTML: (attributes) => {
+              if (!attributes.fontSize) {
+                return {};
+              }
+              return {
+                style: `font-size: ${attributes.fontSize}`,
+              };
+            },
+          },
+        },
+      },
+    ];
+  },
+  addCommands() {
+    return {
+      setFontSize:
+        (fontSize: string) =>
+        ({ chain }: any) => {
+          return chain().setMark("textStyle", { fontSize }).run();
+        },
+      unsetFontSize:
+        () =>
+        ({ chain }: any) => {
+          return chain().setMark("textStyle", { fontSize: null }).run();
+        },
+    } as any;
+  },
+});
+
+const TextTransform = Extension.create({
+  name: "textTransform",
+  addOptions() {
+    return {
+      types: ["textStyle"],
+    };
+  },
+  addGlobalAttributes() {
+    return [
+      {
+        types: this.options.types,
+        attributes: {
+          textTransform: {
+            default: null,
+            parseHTML: (element) => element.style.textTransform,
+            renderHTML: (attributes) => {
+              if (!attributes.textTransform) {
+                return {};
+              }
+              return {
+                style: `text-transform: ${attributes.textTransform}`,
+              };
+            },
+          },
+        },
+      },
+    ];
+  },
+  addCommands() {
+    return {
+      setTextTransform:
+        (textTransform: string) =>
+        ({ chain }: any) => {
+          return chain().setMark("textStyle", { textTransform }).run();
+        },
+      unsetTextTransform:
+        () =>
+        ({ chain }: any) => {
+          return chain().setMark("textStyle", { textTransform: null }).run();
+        },
+    } as any;
+  },
+});
+
+const TextShadow = Extension.create({
+  name: "textShadow",
+  addOptions() {
+    return {
+      types: ["textStyle"],
+    };
+  },
+  addGlobalAttributes() {
+    return [
+      {
+        types: this.options.types,
+        attributes: {
+          textShadow: {
+            default: null,
+            parseHTML: (element) => element.style.textShadow,
+            renderHTML: (attributes) => {
+              if (!attributes.textShadow) {
+                return {};
+              }
+              return {
+                style: `text-shadow: ${attributes.textShadow}`,
+              };
+            },
+          },
+        },
+      },
+    ];
+  },
+  addCommands() {
+    return {
+      setTextShadow:
+        (textShadow: string) =>
+        ({ chain }: any) => {
+          return chain().setMark("textStyle", { textShadow }).run();
+        },
+      unsetTextShadow:
+        () =>
+        ({ chain }: any) => {
+          return chain().setMark("textStyle", { textShadow: null }).run();
+        },
+    } as any;
+  },
+});
+
+// Declaración de módulos de TypeScript para TipTap
+declare module "@tiptap/core" {
+  interface Commands<ReturnType> {
+    fontSize: {
+      setFontSize: (fontSize: string) => ReturnType;
+      unsetFontSize: () => ReturnType;
+    };
+    textTransform: {
+      setTextTransform: (transform: string) => ReturnType;
+      unsetTextTransform: () => ReturnType;
+    };
+    textShadow: {
+      setTextShadow: (shadow: string) => ReturnType;
+      unsetTextShadow: () => ReturnType;
+    };
+  }
+}
 
 interface Client {
   id: string;
@@ -19,9 +188,9 @@ interface Props {
 }
 
 const TOOLBAR_BTN =
-  "px-2 py-1 rounded text-sm font-medium transition-colors hover:bg-gray-200 disabled:opacity-40";
+  "p-1.5 rounded transition-colors hover:bg-neutral-200 disabled:opacity-40 text-neutral-700";
 
-const ACTIVE_BTN = "bg-gray-200";
+const ACTIVE_BTN = "bg-neutral-250 font-bold text-purple-700 bg-purple-100";
 
 export default function CampanaComposer({ clients }: Props) {
   const [selected, setSelected] = useState<Set<string>>(
@@ -35,6 +204,15 @@ export default function CampanaComposer({ clients }: Props) {
     extensions: [
       StarterKit,
       Underline,
+      TextStyle,
+      Color,
+      FontFamily,
+      Subscript,
+      Superscript,
+      Highlight.configure({ multicolor: true }),
+      FontSize,
+      TextTransform,
+      TextShadow,
       Placeholder.configure({ placeholder: "Escribe tu mensaje aquí…" }),
     ],
     onUpdate: ({ editor }) => {
@@ -43,7 +221,7 @@ export default function CampanaComposer({ clients }: Props) {
     editorProps: {
       attributes: {
         class:
-          "min-h-[220px] px-4 py-3 focus:outline-none prose prose-sm max-w-none",
+          "min-h-[300px] px-6 py-4 focus:outline-none prose prose-sm max-w-none shadow-inner rounded-b-xl border-t-0 border-neutral-200",
       },
     },
   });
@@ -138,70 +316,242 @@ export default function CampanaComposer({ clients }: Props) {
           Mensaje *
         </label>
         <div
-          className="rounded-xl border overflow-hidden"
+          className="rounded-xl border overflow-hidden bg-neutral-50 shadow-sm"
           style={{ borderColor: "var(--border)" }}
         >
           {/* Toolbar */}
           <div
-            className="flex flex-wrap gap-1 px-3 py-2 border-b"
+            className="flex flex-col gap-2 p-3 border-b bg-neutral-100"
             style={{
-              backgroundColor: "var(--ps-lila-base)",
               borderColor: "var(--border)",
             }}
           >
-            <button
-              type="button"
-              onClick={() => editor?.chain().focus().toggleBold().run()}
-              className={`${TOOLBAR_BTN} ${editor?.isActive("bold") ? ACTIVE_BTN : ""}`}
-              title="Negrita"
-            >
-              <strong>B</strong>
-            </button>
-            <button
-              type="button"
-              onClick={() => editor?.chain().focus().toggleItalic().run()}
-              className={`${TOOLBAR_BTN} ${editor?.isActive("italic") ? ACTIVE_BTN : ""}`}
-              title="Cursiva"
-            >
-              <em>I</em>
-            </button>
-            <button
-              type="button"
-              onClick={() => editor?.chain().focus().toggleUnderline().run()}
-              className={`${TOOLBAR_BTN} ${editor?.isActive("underline") ? ACTIVE_BTN : ""}`}
-              title="Subrayado"
-            >
-              <u>S</u>
-            </button>
-            <span
-              className="w-px mx-1 self-stretch"
-              style={{ backgroundColor: "var(--border)" }}
-            />
-            <button
-              type="button"
-              onClick={() =>
-                editor?.chain().focus().toggleHeading({ level: 2 }).run()
-              }
-              className={`${TOOLBAR_BTN} ${editor?.isActive("heading", { level: 2 }) ? ACTIVE_BTN : ""}`}
-              title="Título"
-            >
-              H2
-            </button>
-            <button
-              type="button"
-              onClick={() => editor?.chain().focus().toggleBulletList().run()}
-              className={`${TOOLBAR_BTN} ${editor?.isActive("bulletList") ? ACTIVE_BTN : ""}`}
-              title="Lista"
-            >
-              ≡
-            </button>
-            <span
-              className="w-px mx-1 self-stretch"
-              style={{ backgroundColor: "var(--border)" }}
-            />
-            <span className="text-xs self-center text-gray-500 select-none">
-              💡 Pega emojis directamente en el texto
-            </span>
+            {/* Fila 1: Estilos Básicos */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => editor?.chain().focus().toggleBold().run()}
+                className={`${TOOLBAR_BTN} ${editor?.isActive("bold") ? ACTIVE_BTN : ""}`}
+                title="Negrita (Ctrl+B)"
+              >
+                <BoldIcon className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => editor?.chain().focus().toggleItalic().run()}
+                className={`${TOOLBAR_BTN} ${editor?.isActive("italic") ? ACTIVE_BTN : ""}`}
+                title="Cursiva (Ctrl+I)"
+              >
+                <ItalicIcon className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => editor?.chain().focus().toggleUnderline().run()}
+                className={`${TOOLBAR_BTN} ${editor?.isActive("underline") ? ACTIVE_BTN : ""}`}
+                title="Subrayado (Ctrl+U)"
+              >
+                <UnderlineIcon className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => editor?.chain().focus().toggleStrike().run()}
+                className={`${TOOLBAR_BTN} ${editor?.isActive("strike") ? ACTIVE_BTN : ""}`}
+                title="Tachado"
+              >
+                <StrikeIcon className="w-4 h-4" />
+              </button>
+
+              <span className="w-px h-5 bg-neutral-300 mx-1" />
+
+              <button
+                type="button"
+                onClick={() => editor?.chain().focus().toggleSubscript().run()}
+                className={`${TOOLBAR_BTN} ${editor?.isActive("subscript") ? ACTIVE_BTN : ""}`}
+                title="Subíndice"
+              >
+                <SubIcon className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => editor?.chain().focus().toggleSuperscript().run()}
+                className={`${TOOLBAR_BTN} ${editor?.isActive("superscript") ? ACTIVE_BTN : ""}`}
+                title="Superíndice"
+              >
+                <SuperIcon className="w-4 h-4" />
+              </button>
+
+              <span className="w-px h-5 bg-neutral-300 mx-1" />
+
+              <button
+                type="button"
+                onClick={() =>
+                  editor?.chain().focus().toggleHeading({ level: 2 }).run()
+                }
+                className={`${TOOLBAR_BTN} ${editor?.isActive("heading", { level: 2 }) ? ACTIVE_BTN : ""}`}
+                title="Título H2"
+              >
+                <Heading2 className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => editor?.chain().focus().toggleBulletList().run()}
+                className={`${TOOLBAR_BTN} ${editor?.isActive("bulletList") ? ACTIVE_BTN : ""}`}
+                title="Lista"
+              >
+                <List className="w-4 h-4" />
+              </button>
+
+              <span className="w-px h-5 bg-neutral-300 mx-1" />
+
+              <button
+                type="button"
+                onClick={() => {
+                  editor?.chain().focus()
+                    .unsetBold()
+                    .unsetItalic()
+                    .unsetUnderline()
+                    .unsetStrike()
+                    .unsetFontFamily()
+                    .unsetFontSize()
+                    .unsetColor()
+                    .unsetHighlight()
+                    .unsetTextTransform()
+                    .unsetTextShadow()
+                    .run();
+                }}
+                className="px-2 py-1 rounded text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors flex items-center gap-1 border border-transparent hover:border-red-200"
+                title="Limpiar todo el formato seleccionado"
+              >
+                <Eraser className="w-3.5 h-3.5" /> Limpiar
+              </button>
+            </div>
+
+            {/* Fila 2: Apariencia, Colores y Efectos Avanzados */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Familia de fuente */}
+              <select
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) {
+                    editor?.chain().focus().setFontFamily(val).run();
+                  } else {
+                    editor?.chain().focus().unsetFontFamily().run();
+                  }
+                }}
+                className="bg-white border border-neutral-300 rounded-lg px-2 py-1 text-xs focus:ring-1 focus:ring-[var(--primary)] focus:outline-none text-neutral-700 font-medium"
+              >
+                <option value="">Fuente: Predeterminada</option>
+                <option value="Georgia, serif">Georgia (Elegante)</option>
+                <option value="Courier New, monospace">Courier New (Monospacio)</option>
+                <option value="system-ui, -apple-system, sans-serif">Moderno (System)</option>
+                <option value="Trebuchet MS, sans-serif">Trebuchet MS (Redonda)</option>
+              </select>
+
+              {/* Tamaño de fuente */}
+              <select
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) {
+                    editor?.chain().focus().setFontSize(val).run();
+                  } else {
+                    editor?.chain().focus().unsetFontSize().run();
+                  }
+                }}
+                className="bg-white border border-neutral-300 rounded-lg px-2 py-1 text-xs focus:ring-1 focus:ring-[var(--primary)] focus:outline-none text-neutral-700 font-medium"
+              >
+                <option value="">Tamaño: Predeterminado</option>
+                <option value="12px">12px (Chico)</option>
+                <option value="14px">14px (Mediano)</option>
+                <option value="16px">16px (Normal)</option>
+                <option value="18px">18px (Grande)</option>
+                <option value="20px">20px (Muy Grande)</option>
+                <option value="24px">24px (Subtítulo)</option>
+                <option value="30px">30px (Título)</option>
+                <option value="36px">36px (Gigante)</option>
+              </select>
+
+              {/* Color de Texto */}
+              <select
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) {
+                    editor?.chain().focus().setColor(val).run();
+                  } else {
+                    editor?.chain().focus().unsetColor().run();
+                  }
+                }}
+                className="bg-white border border-neutral-300 rounded-lg px-2 py-1 text-xs focus:ring-1 focus:ring-[var(--primary)] focus:outline-none text-neutral-700 font-medium"
+              >
+                <option value="">Color: Predeterminado</option>
+                <option value="#000000">Negro</option>
+                <option value="#4b5563">Gris Oscuro</option>
+                <option value="#c17b5c">Petit Salon Marrón</option>
+                <option value="#7c3aed">Lila Primario</option>
+                <option value="#ef4444">Rojo Intenso</option>
+                <option value="#f97316">Naranja Cálido</option>
+                <option value="#10b981">Verde Vital</option>
+                <option value="#3b82f6">Azul Eléctrico</option>
+                <option value="#ec4899">Rosa Chicle</option>
+              </select>
+
+              {/* Resaltado / Fondo */}
+              <select
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) {
+                    editor?.chain().focus().setHighlight({ color: val }).run();
+                  } else {
+                    editor?.chain().focus().unsetHighlight().run();
+                  }
+                }}
+                className="bg-white border border-neutral-300 rounded-lg px-2 py-1 text-xs focus:ring-1 focus:ring-[var(--primary)] focus:outline-none text-neutral-700 font-medium"
+              >
+                <option value="">Fondo: Sin resaltar</option>
+                <option value="#fef08a">Resaltar Amarillo</option>
+                <option value="#bbf7d0">Resaltar Verde</option>
+                <option value="#bfdbfe">Resaltar Azul</option>
+                <option value="#e9d5ff">Resaltar Lila</option>
+                <option value="#fbcfe8">Resaltar Rosa</option>
+              </select>
+
+              {/* Mayúsculas/Minúsculas */}
+              <select
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) {
+                    editor?.chain().focus().setTextTransform(val).run();
+                  } else {
+                    editor?.chain().focus().unsetTextTransform().run();
+                  }
+                }}
+                className="bg-white border border-neutral-300 rounded-lg px-2 py-1 text-xs focus:ring-1 focus:ring-[var(--primary)] focus:outline-none text-neutral-700 font-medium"
+              >
+                <option value="">Caja: Normal</option>
+                <option value="uppercase">MAYÚSCULAS</option>
+                <option value="lowercase">minúsculas</option>
+                <option value="capitalize">Capitalizar Palabras</option>
+              </select>
+
+              {/* Efectos Avanzados (Sombra/Contorno) */}
+              <select
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) {
+                    editor?.chain().focus().setTextShadow(val).run();
+                  } else {
+                    editor?.chain().focus().unsetTextShadow().run();
+                  }
+                }}
+                className="bg-white border border-neutral-300 rounded-lg px-2 py-1 text-xs focus:ring-1 focus:ring-[var(--primary)] focus:outline-none text-neutral-700 font-medium"
+              >
+                <option value="">Efectos: Ninguno</option>
+                <option value="1px 1px 2px rgba(0,0,0,0.15)">Sombra Suave</option>
+                <option value="3px 3px 0px rgba(193,123,92,0.3)">Sombra Retro</option>
+                <option value="0 0 5px rgba(124,58,237,0.6)">Neón Resplandor Lila</option>
+                <option value="0 0 5px rgba(193,123,92,0.6)">Neón Resplandor Marrón</option>
+                <option value="1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000">Contorno Negro</option>
+              </select>
+            </div>
           </div>
 
           {/* Content area */}
