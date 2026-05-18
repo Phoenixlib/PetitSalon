@@ -37,8 +37,6 @@ export default async function AdminLayout({
       <div className="flex min-h-screen pt-16">
         <AdminSidebar userName={userName} pendingReviewsCount={pendingReviewsCount} />
         <main className="flex-1 min-w-0">
-          {/* Espaciador para la top bar fija del sidebar en móvil */}
-          <div className="h-14 md:hidden" />
           <div className="p-4 md:p-6">{children}</div>
         </main>
       </div>

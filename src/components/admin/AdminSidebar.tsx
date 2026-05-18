@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
@@ -27,7 +26,6 @@ interface AdminSidebarProps {
 }
 
 export default function AdminSidebar({ userName, pendingReviewsCount = 0 }: AdminSidebarProps) {
-  const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
   const NAV_ITEMS = [
@@ -105,9 +103,6 @@ export default function AdminSidebar({ userName, pendingReviewsCount = 0 }: Admi
             <Link
               key={href}
               href={href}
-              onClick={() => {
-                setOpen(false);
-              }}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                 !isActive && "hover:bg-surface",
@@ -149,90 +144,14 @@ export default function AdminSidebar({ userName, pendingReviewsCount = 0 }: Admi
   );
 
   return (
-    <>
-      {/* Desktop sidebar */}
-      <aside
-        className="hidden lg:flex flex-col w-56 shrink-0 sticky top-16 h-[calc(100vh-4rem)] border-r overflow-y-auto"
-        style={{
-          backgroundColor: "var(--ps-lila-base)",
-          borderColor: "var(--ps-lila-light)",
-        }}
-      >
-        {navLinks}
-      </aside>
-
-      {/* Mobile: fixed secondary bar (below public header at top-16) */}
-      <div
-        className="lg:hidden fixed top-16 left-0 right-0 z-40 h-14 border-b flex justify-center items-center"
-        style={{
-          backgroundColor: "var(--ps-lila-base)",
-          borderColor: "var(--ps-lila-light)",
-        }}
-      >
-        <button
-          onClick={() => {
-            setOpen(true);
-          }}
-          className="flex items-center gap-2 p-2 rounded-md transition-opacity hover:opacity-80"
-          aria-label="Abrir menú"
-        >
-          <span
-            className="font-semibold"
-            style={{
-              fontFamily: "var(--font-display)",
-              color: "var(--ps-lila-deep)",
-            }}
-          >
-            Admin
-          </span>
-          <PawPrint className="size-5 text-yellow-500" />
-          <span
-            className="font-semibold"
-            style={{
-              fontFamily: "var(--font-display)",
-              color: "var(--ps-lila-deep)",
-            }}
-          >
-            Menú
-          </span>
-        </button>
-      </div>
-
-      {/* Mobile: drawer */}
-      {open && (
-        <>
-          <div
-            className="lg:hidden fixed inset-0 z-50 bg-black/40"
-            onClick={() => {
-              setOpen(false);
-            }}
-          />
-          <aside
-            className="lg:hidden fixed inset-y-0 left-0 z-50 flex flex-col w-56 border-r overflow-y-auto"
-            style={{
-              backgroundColor: "var(--ps-lila-base)",
-              borderColor: "var(--ps-lila-light)",
-            }}
-          >
-            <div
-              className="flex items-center justify-end px-4 h-14 border-b shrink-0"
-              style={{ borderColor: "var(--ps-lila-light)" }}
-            >
-              <button
-                onClick={() => {
-                  setOpen(false);
-                }}
-                className="p-1.5 rounded-md"
-                aria-label="Cerrar menú"
-                style={{ color: "var(--ps-text-mid)" }}
-              >
-                <X className="size-5" />
-              </button>
-            </div>
-            {navLinks}
-          </aside>
-        </>
-      )}
-    </>
+    <aside
+      className="hidden lg:flex flex-col w-56 shrink-0 sticky top-16 h-[calc(100vh-4rem)] border-r overflow-y-auto"
+      style={{
+        backgroundColor: "var(--ps-lila-base)",
+        borderColor: "var(--ps-lila-light)",
+      }}
+    >
+      {navLinks}
+    </aside>
   );
 }
