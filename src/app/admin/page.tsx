@@ -3,6 +3,8 @@ import { CalendarDays, Users, PawPrint, Clock } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import type { AppointmentWithRelations } from "@/types";
 
+export const dynamic = "force-dynamic";
+
 // ---------------------------------------------------------------------------
 // Helpers de fecha  (UTC — la dueña verá las citas en su zona local al
 // abrir el calendario. Para el dashboard usamos UTC como aproximación.)

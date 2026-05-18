@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/env";
 
@@ -131,12 +132,20 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
   let notes: string | null = null;
 
   for (const [key, field] of Object.entries(responses)) {
-    if (!field || (typeof field.value !== "string" && typeof field.value !== "number")) continue;
-    const k = key.toLowerCase();
-    const label = field.label?.toLowerCase() ?? "";
-    const val = String(field.value).trim();
-    if (!val) continue;
+    let val = "";
+    let label = "";
 
+    if (field && typeof field === "object" && "value" in field) {
+      if (typeof field.value === "string" || typeof field.value === "number") {
+        val = String(field.value).trim();
+        label = (field as any).label?.toLowerCase() ?? "";
+      }
+    } else if (typeof field === "string" || typeof field === "number") {
+      val = String(field).trim();
+    }
+
+    if (!val) continue;
+    const k = key.toLowerCase();
     const isMatch = (term: string) => k.includes(term) || label.includes(term);
 
     if (isMatch("nombre_perro") || isMatch("nombre del perro") || k === "perro" || label === "perro") {
@@ -376,6 +385,13 @@ export async function POST(request: NextRequest) {
         // Evento no gestionado — responder 200 para que Cal.com no reintente
         console.info(`[calcom-webhook] Evento ignorado: ${body.triggerEvent}`);
     }
+
+    // Revalidar las rutas del panel administrativo para borrar la caché
+    revalidatePath("/admin");
+    revalidatePath("/admin/agenda");
+    revalidatePath("/admin/citas");
+    revalidatePath("/admin/clientes");
+    revalidatePath("/admin/perros");
   } catch (err) {
     console.error("[calcom-webhook] Error procesando evento:", err);
     return NextResponse.json({ error: "Error interno" }, { status: 500 });

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import AgendaCalendar from "@/components/admin/AgendaCalendar";
 import type { AppointmentWithRelations } from "@/types";
 
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Agenda — Petit Salón Admin" };
 
 export default async function AgendaPage() {
