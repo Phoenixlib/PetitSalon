@@ -155,10 +155,10 @@ export default function Servicios({
                   key={category.id}
                   className="rounded-3xl p-7 md:p-10"
                   style={{
-                    background: "linear-gradient(135deg, rgba(182, 230, 230, 0.45) 0%, rgba(255, 255, 255, 0.85) 50%, rgba(254, 244, 204, 0.45) 100%)",
+                    background: "linear-gradient(135deg, #f0fafa 0%, #ffffff 50%, #fef4cc 100%)",
                     backdropFilter: "blur(12px)",
-                    border: "1px solid rgba(182, 230, 230, 0.55)",
-                    boxShadow: "0 10px 30px rgba(66, 194, 237, 0.06)",
+                    border: "1px solid rgba(182, 230, 230, 0.6)",
+                    boxShadow: "0 12px 32px rgba(66, 194, 237, 0.08)",
                   }}
                 >
                   <div className="mb-6">

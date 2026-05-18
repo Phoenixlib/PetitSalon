@@ -140,7 +140,7 @@ Correo: ${bankConfig.bank_email || ""}`;
   const whatsappPhone = bankConfig.whatsapp || "";
   const cleanPhone = whatsappPhone.replace(/\D/g, "");
   const whatsappMessage = encodeURIComponent(
-    `¡Hola! Acabo de agendar una cita en Petit Salón para mi perrito y aquí te adjunto el comprobante del abono de la reserva.`
+    `¡Hola! Acabo de agendar una cita en Petit Salón para mi perrito y aquí te adjunto el comprobante del abono de $10.000 CLP de la reserva.`
   );
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${whatsappMessage}`;
 
@@ -353,7 +353,7 @@ Correo: ${bankConfig.bank_email || ""}`;
               ¡Cita Agendada! 🎉
             </h2>
             <p className="text-slate-600 mb-8 max-w-md mx-auto text-sm leading-relaxed">
-              Tu hora en <strong>Petit Salón</strong> ha sido reservada con éxito. Para asegurar tu reserva, por favor realiza el abono y envía el comprobante de transferencia a continuación.
+              Tu hora en <strong>Petit Salón</strong> ha sido reservada con éxito. Para asegurar tu reserva, por favor realiza el abono de <strong>$10.000 CLP</strong> y envía el comprobante de transferencia a continuación.
             </p>
 
             <div className="bg-slate-50 border border-slate-100 rounded-2xl p-6 mb-6 text-left relative overflow-hidden">
