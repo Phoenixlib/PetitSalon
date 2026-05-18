@@ -3,6 +3,8 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { sendReviewRequestEmail } from "@/lib/email";
+import { env } from "@/env";
 
 export async function updateReviewStatusAction(reviewId: string, status: "APPROVED" | "REJECTED") {
   const session = await auth();
@@ -27,4 +29,46 @@ export async function deleteReviewAction(reviewId: string) {
 
   revalidatePath("/admin/resenas");
   revalidatePath("/");
+}
+
+export async function resendReviewRequestAction(reviewId: string) {
+  const session = await auth();
+  if (!session?.user) throw new Error("No autorizado");
+
+  const review = await prisma.review.findUnique({
+    where: { id: reviewId },
+    include: {
+      appointment: {
+        select: {
+          dog: {
+            select: {
+              name: true,
+              owner: {
+                select: {
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!review) throw new Error("Reseña no encontrada");
+
+  const ownerEmail = review.appointment?.dog?.owner?.email;
+  if (!ownerEmail) {
+    throw new Error("El cliente no tiene un correo electrónico registrado.");
+  }
+
+  const baseUrl = env.APP_URL ?? env.NEXTAUTH_URL ?? "";
+  const reviewUrl = `${baseUrl}/resena/${review.token}`;
+
+  await sendReviewRequestEmail(ownerEmail, {
+    ownerName: review.ownerName,
+    petName: review.petName,
+    reviewUrl,
+  });
 }

@@ -12,7 +12,21 @@ export default async function AdminResenasPage() {
     orderBy: { createdAt: "desc" },
     include: {
       appointment: {
-        select: { date: true, service: { select: { name: true } } },
+        select: {
+          date: true,
+          service: { select: { name: true } },
+          dog: {
+            select: {
+              name: true,
+              owner: {
+                select: {
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
       },
     },
   });
