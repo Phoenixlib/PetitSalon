@@ -116,6 +116,10 @@ export default function Footer({ whatsapp }: { whatsapp: string }) {
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-xs" style={{ color: "oklch(1 0 0 / 0.35)" }}>
             <p>© {year} Petit Salón. Todos los derechos reservados.</p>
             <span className="hidden sm:inline">•</span>
+            <Link href="/politicas" className="hover:text-white transition-colors">
+              Políticas de Servicio
+            </Link>
+            <span className="hidden sm:inline">•</span>
             <Link href="/admin/login" className="hover:text-white transition-colors">
               Acceso Administrativo
             </Link>
