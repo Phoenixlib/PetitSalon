@@ -15,20 +15,37 @@ interface Props {
 }
 
 export default function Galeria({ photos }: Props) {
-  const [selectedPhoto, setSelectedPhoto] = useState<GalleryPhotoPublic | null>(null);
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+
+  const selectedPhoto = selectedIdx !== null ? photos[selectedIdx] : null;
 
   const closePreview = useCallback(() => {
-    setSelectedPhoto(null);
+    setSelectedIdx(null);
   }, []);
 
-  // Cerrar modal con la tecla Escape
+  const nextPhoto = useCallback(() => {
+    if (selectedIdx === null || photos.length === 0) return;
+    setSelectedIdx((prev) => (prev === null ? 0 : (prev + 1) % photos.length));
+  }, [selectedIdx, photos]);
+
+  const prevPhoto = useCallback(() => {
+    if (selectedIdx === null || photos.length === 0) return;
+    setSelectedIdx((prev) =>
+      prev === null ? 0 : (prev - 1 + photos.length) % photos.length,
+    );
+  }, [selectedIdx, photos]);
+
+  // Navegación con teclado (Escape, Flechas)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedIdx === null) return;
       if (e.key === "Escape") closePreview();
+      if (e.key === "ArrowRight") nextPhoto();
+      if (e.key === "ArrowLeft") prevPhoto();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [closePreview]);
+  }, [selectedIdx, closePreview, nextPhoto, prevPhoto]);
 
   return (
     <section
@@ -108,11 +125,10 @@ export default function Galeria({ photos }: Props) {
                   borderColor: "var(--ps-lila-light)",
                   backgroundColor: "white",
                 }}
-                onClick={() => setSelectedPhoto(photo)}
+                onClick={() => setSelectedIdx(idx)}
               >
                 {/* Image Wrap */}
                 <div className="relative overflow-hidden w-full h-auto">
-                  {/* Aspect ratios vary for organic masonry feeling. We can use natural vertical/horizontal display flow. */}
                   <img
                     src={photo.photoUrl}
                     alt={photo.caption ?? "Foto de peluquería canina"}
@@ -145,48 +161,106 @@ export default function Galeria({ photos }: Props) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md select-none"
             onClick={closePreview}
           >
-            {/* Close Button */}
+            {/* Botón de Cerrar */}
             <button
               onClick={closePreview}
-              className="absolute top-6 right-6 z-[110] p-3 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300"
+              className="absolute top-6 right-6 z-[120] p-3.5 text-white/75 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300"
               aria-label="Cerrar vista"
             >
-              <span className="text-lg font-light">✕</span>
+              <span className="text-lg font-light block leading-none w-4 h-4 flex items-center justify-center">✕</span>
             </button>
 
+            {/* Flecha Izquierda (Anterior) */}
+            {photos.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  prevPhoto();
+                }}
+                className="absolute left-4 md:left-8 z-[120] p-3.5 md:p-4 text-white/75 hover:text-white bg-white/5 hover:bg-white/15 backdrop-blur-md rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95 border border-white/5"
+                aria-label="Foto anterior"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 md:h-6 md:w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
+
+            {/* Flecha Derecha (Siguiente) */}
+            {photos.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  nextPhoto();
+                }}
+                className="absolute right-4 md:right-8 z-[120] p-3.5 md:p-4 text-white/75 hover:text-white bg-white/5 hover:bg-white/15 backdrop-blur-md rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95 border border-white/5"
+                aria-label="Siguiente foto"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 md:h-6 md:w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            )}
+
+            {/* Container Principal de la Imagen */}
             <motion.div
-              initial={{ scale: 0.95, y: 15 }}
+              initial={{ scale: 0.97, y: 10 }}
               animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 15 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative max-w-4xl max-h-[85vh] w-full flex flex-col items-center justify-center"
+              exit={{ scale: 0.97, y: 10 }}
+              transition={{ type: "spring", damping: 28, stiffness: 320 }}
+              className="relative max-w-4xl max-h-[80vh] w-full flex flex-col items-center justify-center px-4"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Image element (using native img for flexible fluid layout in modal) */}
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-black border border-white/10 flex items-center justify-center">
-                <img
-                  src={selectedPhoto.photoUrl}
-                  alt={selectedPhoto.caption ?? "Resultado"}
-                  className="max-h-[70vh] max-w-full object-contain"
-                />
+              {/* Animación del cambio de imagen usando wait mode */}
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-black/40 border border-white/10 flex items-center justify-center">
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={selectedPhoto.id}
+                    initial={{ opacity: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.97 }}
+                    transition={{ duration: 0.22, ease: "easeInOut" }}
+                    src={selectedPhoto.photoUrl}
+                    alt={selectedPhoto.caption ?? "Resultado"}
+                    className="max-h-[68vh] max-w-full object-contain pointer-events-none"
+                  />
+                </AnimatePresence>
               </div>
 
-              {/* Caption Overlay at the bottom */}
-              {selectedPhoto.caption && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="mt-4 text-center max-w-xl"
-                >
-                  <p className="text-white text-sm font-medium tracking-wide bg-white/10 backdrop-blur-md px-6 py-2 rounded-full inline-block border border-white/5">
-                    {selectedPhoto.caption}
-                  </p>
-                </motion.div>
-              )}
+              {/* Texto explicativo en el footer del modal */}
+              <AnimatePresence mode="wait">
+                {selectedPhoto.caption && (
+                  <motion.div
+                    key={`caption-${selectedPhoto.id}`}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 5 }}
+                    transition={{ duration: 0.2 }}
+                    className="mt-5 text-center max-w-xl"
+                  >
+                    <p className="text-white text-xs md:text-sm font-medium tracking-wide bg-white/10 backdrop-blur-md px-5 py-2 rounded-full inline-block border border-white/5 shadow-md">
+                      {selectedPhoto.caption}
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           </motion.div>
         )}
