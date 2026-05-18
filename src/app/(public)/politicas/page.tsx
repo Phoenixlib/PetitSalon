@@ -9,85 +9,162 @@ export const metadata = {
 const SECTIONS = [
   {
     id: "citas",
-    title: "1. Citas y Cancelaciones",
+    title: "1. Reservas y Citas",
     icon: CalendarRange,
     bgColor: "rgba(182, 230, 230, 0.2)", // Pastel cyan tint
     iconColor: "var(--primary)",
     items: [
       {
+        title: "Agendamiento Previo",
+        text: "Las citas deben agendarse previamente.",
+      },
+      {
+        title: "Abono de Reserva",
+        text: "Para agendar una hora, el cliente deberá realizar un abono de $10.000 CLP por mascota.",
+      },
+      {
+        title: "Cancelación o Reprogramación",
+        text: "En caso de cancelar o reprogramar el servicio con menos de 24 horas de anticipación a la hora agendada, o no asistir al servicio, el abono no será reembolsado.",
+      },
+      {
         title: "Tolerancia de Atraso",
-        text: "Contamos con una tolerancia máxima de 15 minutos. Pasado este tiempo, la cita podría ser reprogramada para no retrasar el cronograma de otros perritos.",
+        text: "El cliente que avise que va atrasado a su cita, se le dará un tiempo máximo de espera de 15 minutos. Pasado este tiempo, podría perder su hora de atención y el abono.",
       },
       {
-        title: "Políticas de Cancelación",
-        text: "Agradecemos notificar cualquier cambio o cancelación con al menos 24 horas de anticipación. Esto nos permite ofrecer el espacio a otra mascota en lista de espera.",
+        title: "Comportamiento del Perro",
+        text: "El comportamiento agresivo del perro debe informarse de antemano. De no poderse realizar el servicio por comportamiento violento, el abono no será reembolsado. Es deber del tutor de la mascota conocer el comportamiento de la misma.",
       },
       {
-        title: "Inasistencias Sin Aviso",
-        text: "Las inasistencias reiteradas sin aviso previo podrían requerir el pago por adelantado del 50% de la tarifa para futuras reservas.",
+        title: "Servicios Parciales",
+        text: "Si se logra realizar parcialmente el servicio de peluquería, pero producto de agresividad no se puede completar, se deberá pagar de igual forma el total del servicio de peluquería.",
+      },
+      {
+        title: "Presencia Durante el Servicio",
+        text: "El cliente debe esperar a que el servicio de peluquería haya finalizado para retirar a su mascota. No se puede acompañar durante el proceso de peluquería.",
+      },
+      {
+        title: "Estacionamiento Exclusivo",
+        text: "Contamos con un estacionamiento gratuito, exclusivo para dejar y retirar a la mascota.",
+      },
+      {
+        title: "Permanencia y Recargos",
+        text: "Una vez finalizado el servicio y notificado el tutor, se otorgarán 30 minutos de permanencia sin costo. Pasado ese tiempo, se aplicará un recargo de $2.000 CLP, más $3.000 CLP por cada 20 minutos adicionales.",
+      },
+      {
+        title: "Pago de Saldo",
+        text: "El cliente deberá cancelar el restante del servicio al momento de retirar a su mascota o antes.",
       },
     ],
   },
   {
     id: "salud",
-    title: "2. Salud y Bienestar",
+    title: "2. Salud y Responsabilidad",
     icon: HeartPulse,
     bgColor: "rgba(249, 206, 223, 0.25)", // Pastel pink tint
     iconColor: "var(--secondary)",
     items: [
       {
-        title: "Vacunas Obligatorias",
-        text: "Por la seguridad de todas las mascotas y nuestro personal, es requisito obligatorio contar con la vacuna antirrábica y octuple/séxtuple al día.",
-      },
-      {
-        title: "Condiciones Médicas y Preexistentes",
-        text: "Es deber del tutor informarnos si la mascota padece de problemas cardíacos, epilepsia, cirugías recientes, alergias cutáneas, dolores articulares o si está preñada.",
+        title: "Estado de Salud Adecuado",
+        text: "La mascota debe estar en condiciones adecuadas de salud: sin síntomas de alguna enfermedad que pueda ser viral, sin heridas abiertas o supurando, sin ácaros, garrapatas o enfermedades de piel que puedan ser contagiosas.",
       },
       {
         title: "Parásitos Activos",
-        text: "Si durante la evaluación inicial detectamos una presencia severa de pulgas o garrapatas, se aplicará obligatoriamente un baño antiparasitario especial con un costo adicional por seguridad del salón.",
+        text: "En caso de detectarse pulgas o garrapatas durante el servicio, PetitSalon podrá aplicar un cobro adicional por sanitización e higiene del espacio.",
+      },
+      {
+        title: "Deber de Informar",
+        text: "Es deber del tutor informar sobre enfermedades, patologías, alergias o sensibilidades de cualquier tipo.",
+      },
+      {
+        title: "Condiciones Preexistentes",
+        text: "PetitSalon no se hace responsable por condiciones médicas preexistentes de la mascota.",
+      },
+      {
+        title: "Emergencias Veterinarias",
+        text: "En caso de emergencia, el cliente autoriza el contacto con un servicio veterinario.",
+      },
+      {
+        title: "Drenaje de Glándulas",
+        text: "En PetitSalon no realizamos drenaje de glándulas anales.",
+      },
+      {
+        title: "Alimentación",
+        text: "PetitSalon no proporcionará ningún tipo de snack a la mascota sin la previa autorización expresa del tutor.",
       },
     ],
   },
   {
-    id: "seguridad",
-    title: "3. Seguridad y Conducta",
+    id: "riesgos",
+    title: "3. Riesgos Asociados",
     icon: ShieldCheck,
     bgColor: "rgba(254, 244, 204, 0.3)", // Pastel yellow tint
     iconColor: "var(--accent)",
     items: [
       {
-        title: "Peluquería Libre de Estrés",
-        text: "No utilizamos sedantes de ningún tipo. Priorizamos el manejo respetuoso y en positivo, respetando los tiempos de adaptación y pausas que requiera cada perro.",
+        title: "Compromiso de Cuidado",
+        text: "PetitSalon se compromete a disminuir al máximo posible cualquier tipo de accidente. Sin embargo, al trabajar con seres vivos, tijeras y otros objetos punzo-cortantes, nos enfrentamos a situaciones de riesgo inherentes al manejo de mascotas.",
       },
       {
-        title: "Agresividad o Miedo Extremo",
-        text: "Es fundamental que nos indiques si tu perro suele reaccionar con agresividad, miedo o si tiene zonas sensibles al tacto. Esto nos ayuda a adaptar nuestro método de trabajo.",
+        title: "Riesgos Probables",
+        text: "Sangrado de uñas, corte por máquina y/o tijeras (más probable en mantos con nudos), lastimado de verrugas por cepillado o corte con cuchilla, e irritación de la piel provocada por motas/nudos.",
       },
       {
-        title: "Límite de Seguridad",
-        text: "Si el nivel de agresividad o estrés pone en riesgo inminente la integridad física de la mascota o del estilista canino, el servicio se suspenderá de inmediato, cobrándose únicamente la proporción del trabajo realizado.",
+        title: "Riesgos Poco Probables",
+        text: "Irritación por alergia, rozaduras con cuchillas, irritación de oídos por depilación, término del ciclo vital por causas preexistentes o ajenas al servicio prestado, alopecia, irritación ocular por shampoo, caídas de la mesa de trabajo u otitis.",
+      },
+      {
+        title: "Cobertura de PetitSalon",
+        text: "En caso de materializarse cualquiera de las situaciones de riesgo que sean atribuibles al servicio, PetitSalon cuenta con profesionales externos que podrán realizar la evaluación y tomar las medidas necesarias. Esto no tendrá costo para el cliente, siempre que no sea una condición preexistente al servicio, no declarada, o producto de fuerza mayor.",
       },
     ],
   },
   {
-    id: "tarifas",
-    title: "4. Tarifas y Servicios Especiales",
-    icon: ReceiptText,
+    id: "servicios",
+    title: "4. De Nuestros Servicios",
+    icon: Sparkles,
     bgColor: "rgba(244, 208, 193, 0.25)", // Pastel peach tint
     iconColor: "#d18910",
     items: [
       {
-        title: "Tarifas Base y Estado del Manto",
-        text: "Los precios publicados corresponden a servicios en mantos con mantenimiento regular y sin nudos severos. El costo final puede variar tras la inspección física inicial.",
+        title: "Peluquería Completa",
+        text: "Incluye baño con cosmética hipoalergénica de alta calidad, secado y brushing profesional, despeje en áreas genitales y almohadillas, corte de pelo de su preferencia, corte de uñas, perfume de larga duración y accesorio de regalo.",
       },
       {
-        title: "Recargo por Nudos y Deslanado",
-        text: "Si el manto presenta nudos compactos que requieran un trabajo de desenredado minucioso o deslanado intensivo, se aplicará un recargo proporcional al tiempo y productos adicionales requeridos.",
+        title: "Baño Estético",
+        text: "Incluye baño con cosmética hipoalergénica de alta calidad, secado profesional, despeje en áreas genitales y almohadillas (si aplica), deslanado (si aplica), corte de uñas, limpieza de oídos, perfume de larga duración y accesorio de regalo.",
       },
       {
-        title: "Cortes de Raza Específicos",
-        text: "Los cortes de raza estándar o de alta complejidad que exigen técnicas avanzadas de tijera y stripping tienen tarifas diferenciadas que se acuerdan al ingresar.",
+        title: "Duración de los Servicios",
+        text: "El tiempo varía según el servicio elegido, el tipo de corte y el comportamiento del perrito. El tiempo promedio de un servicio completo es de 2 horas.",
+      },
+      {
+        title: "Fotografías de Referencia",
+        text: "Las fotografías de referencia son únicamente orientativas. El resultado final puede variar según el tipo de pelaje, estado del manto y comportamiento de la mascota.",
+      },
+      {
+        title: "Uso de Imagen",
+        text: "El cliente autoriza el uso de fotografías o videos de su mascota con fines promocionales en redes sociales y sitio web, salvo que indique lo contrario previamente.",
+      },
+      {
+        title: "Seguridad y Uso de Bozal",
+        text: "En caso de que el perrito muerda durante el proceso de peluquería, se usará un bozal que deja libre el área respiratoria, velando por su seguridad y la nuestra.",
+      },
+      {
+        title: "Expectativas de Resultado",
+        text: "No se hacen devoluciones en caso de que la peluquería no cumpla con tus expectativas. Haremos todo lo posible para lograr el corte deseado, pero es un trabajo artesanal, no exacto, influenciado por múltiples factores.",
+      },
+    ],
+  },
+  {
+    id: "cambios",
+    title: "5. Cambios en Políticas",
+    icon: ReceiptText,
+    bgColor: "rgba(223, 206, 249, 0.25)", // Pastel purple tint
+    iconColor: "#8b5cf6",
+    items: [
+      {
+        title: "Modificación de Términos",
+        text: "PetitSalon se reserva el derecho a modificar y actualizar los presentes Términos y Condiciones, adaptándolos a cualquier novedad legislativa o jurisprudencial, así como de modificar servicios y precios según las necesidades del mercado.",
       },
     ],
   },
