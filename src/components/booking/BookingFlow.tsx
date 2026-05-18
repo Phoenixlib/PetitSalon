@@ -175,12 +175,16 @@ export default function BookingFlow({ calLink, servicio }: BookingFlowProps) {
               </button>
             </form>
 
-            <div className="mt-6 text-center">
+            <div className="mt-8 pt-6 border-t border-[var(--ps-border)] text-center">
+              <p className="text-xs text-[var(--ps-text-mid)] mb-3 font-medium">
+                ¿Es la primera visita de tu perrito?
+              </p>
               <button
+                type="button"
                 onClick={handleSkip}
-                className="text-sm text-[var(--ps-text-mid)] underline hover:text-[var(--ps-text)]"
+                className="w-full bg-[var(--pastel-peach)]/30 hover:bg-[var(--pastel-peach)]/50 text-[var(--ps-text)] border border-[var(--ps-border)] p-3 rounded-full font-semibold text-sm transition-all hover:shadow-xs cursor-pointer active:scale-[0.99] flex items-center justify-center gap-2"
               >
-                Primera vez, quiero reservar directamente
+                Primera vez, quiero reservar directamente 🐾
               </button>
             </div>
           </motion.div>
