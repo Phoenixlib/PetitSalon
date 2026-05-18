@@ -1,40 +1,53 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
-interface GalleryPairPublic {
+interface GalleryPhotoPublic {
   id: string;
-  beforeUrl: string;
-  afterUrl: string;
-  breed: string | null;
+  photoUrl: string;
+  caption: string | null;
 }
 
 interface Props {
-  pairs: GalleryPairPublic[];
+  photos: GalleryPhotoPublic[];
 }
 
-export default function Galeria({ pairs }: Props) {
-  const [selectedPair, setSelectedPair] = useState<GalleryPairPublic | null>(null);
+export default function Galeria({ photos }: Props) {
+  const [selectedPhoto, setSelectedPhoto] = useState<GalleryPhotoPublic | null>(null);
 
   const closePreview = useCallback(() => {
-    setSelectedPair(null);
+    setSelectedPhoto(null);
   }, []);
+
+  // Cerrar modal con la tecla Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closePreview();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [closePreview]);
 
   return (
     <section
       id="galeria"
-      className="py-28 lg:py-36"
+      className="py-28 lg:py-36 relative overflow-hidden"
       style={{ backgroundColor: "var(--ps-lila-base)" }}
     >
-      <div className="max-w-7xl mx-auto px-6 lg:px-12">
+      {/* Elementos decorativos sutiles de fondo */}
+      <div className="absolute top-0 left-0 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse pointer-events-none" style={{ backgroundColor: "var(--ps-lila-light)" }} />
+      <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse pointer-events-none" style={{ backgroundColor: "var(--ps-gold)" }} />
+
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
         {/* Header */}
-        <div className="mb-16">
+        <div className="mb-16 md:mb-20 text-center md:text-left">
           <span
             className="text-xs font-semibold uppercase tracking-[0.25em]"
             style={{ color: "var(--ps-gold)" }}
           >
-            ✦ Resultados
+            ✦ Nuestro Trabajo
           </span>
           <h2
             className="mt-3 font-light leading-tight"
@@ -44,33 +57,33 @@ export default function Galeria({ pairs }: Props) {
               color: "var(--ps-text)",
             }}
           >
-            Antes &{" "}
+            Galería de{" "}
             <em
               className="italic font-medium"
               style={{ color: "var(--ps-lila)" }}
             >
-              después
+              resultados
             </em>
           </h2>
           <div
-            className="mt-5 w-12 h-px"
+            className="mt-5 w-12 h-px mx-auto md:mx-0"
             style={{ backgroundColor: "var(--ps-gold)" }}
           />
           <p
-            className="mt-4 text-sm max-w-md"
+            className="mt-4 text-sm max-w-md mx-auto md:mx-0"
             style={{ color: "var(--ps-text-mid)" }}
           >
-            {pairs.length === 0
-              ? "Las fotos reales del negocio se mostrarán aquí muy pronto."
-              : "Resultados reales de nuestros clientes peludos."}
+            {photos.length === 0
+              ? "Las fotos reales de nuestros consentidos se mostrarán aquí muy pronto."
+              : "Amor y dedicación reflejados en cada detalle. Aquí puedes ver el resultado final de nuestros clientes peluditos."}
           </p>
         </div>
 
-        {pairs.length === 0 ? (
+        {photos.length === 0 ? (
           /* Empty state */
-          <div className="flex justify-center">
+          <div className="flex justify-center py-10">
             <span
-              className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] px-5 py-2.5 rounded-full"
+              className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] px-6 py-3 rounded-full shadow-sm"
               style={{
                 backgroundColor: "white",
                 color: "var(--ps-lila)",
@@ -81,145 +94,103 @@ export default function Galeria({ pairs }: Props) {
             </span>
           </div>
         ) : (
-          /* Dynamic grid */
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-            {pairs.map((pair) => (
-              <div key={pair.id} className="flex flex-col gap-3">
-                <div className="grid grid-cols-2 gap-2">
-                  {/* Before */}
-                  <div 
-                    className="relative aspect-square rounded-2xl overflow-hidden cursor-pointer group"
-                    onClick={() => setSelectedPair(pair)}
-                  >
-                    <Image
-                      src={pair.beforeUrl}
-                      alt={`Antes — ${pair.breed ?? "perrito"}`}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
-                      sizes="(max-width: 768px) 25vw, 12vw"
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                    <div className="absolute inset-0 flex items-end p-1.5 pointer-events-none">
-                      <span className="text-[9px] font-bold uppercase tracking-wide bg-black/50 text-white rounded-full px-1.5 py-0.5">
-                        Antes
-                      </span>
-                    </div>
-                  </div>
-                  {/* After */}
-                  <div 
-                    className="relative aspect-square rounded-2xl overflow-hidden cursor-pointer group"
-                    onClick={() => setSelectedPair(pair)}
-                  >
-                    <Image
-                      src={pair.afterUrl}
-                      alt={`Después — ${pair.breed ?? "perrito"}`}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
-                      sizes="(max-width: 768px) 25vw, 12vw"
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                    <div className="absolute inset-0 flex items-end p-1.5 pointer-events-none">
-                      <span className="text-[9px] font-bold uppercase tracking-wide bg-black/50 text-white rounded-full px-1.5 py-0.5">
-                        Después
-                      </span>
-                    </div>
+          /* Masonry responsive grid using CSS columns */
+          <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6 space-y-6">
+            {photos.map((photo, idx) => (
+              <motion.div
+                key={photo.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: idx * 0.05 }}
+                className="break-inside-avoid relative rounded-3xl overflow-hidden group cursor-pointer border shadow-sm hover:shadow-xl transition-all duration-300 w-full mb-6"
+                style={{
+                  borderColor: "var(--ps-lila-light)",
+                  backgroundColor: "white",
+                }}
+                onClick={() => setSelectedPhoto(photo)}
+              >
+                {/* Image Wrap */}
+                <div className="relative overflow-hidden w-full h-auto">
+                  {/* Aspect ratios vary for organic masonry feeling. We can use natural vertical/horizontal display flow. */}
+                  <img
+                    src={photo.photoUrl}
+                    alt={photo.caption ?? "Foto de peluquería canina"}
+                    className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                  
+                  {/* Subtle Elegant Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-white/80 mb-1">
+                      Ver Resultado ✦
+                    </span>
+                    {photo.caption && (
+                      <p className="text-white text-xs font-medium leading-relaxed line-clamp-2">
+                        {photo.caption}
+                      </p>
+                    )}
                   </div>
                 </div>
-                {pair.breed && (
-                  <p
-                    className="text-xs text-center font-medium"
-                    style={{ color: "var(--ps-text-mid)" }}
-                  >
-                    {pair.breed}
-                  </p>
-                )}
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Modal de Preview */}
-      {selectedPair && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-          onClick={closePreview}
-        >
-          <div
-            className="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row"
-            onClick={(e) => e.stopPropagation()}
+      {/* Fullscreen Lightbox Modal */}
+      <AnimatePresence>
+        {selectedPhoto && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+            onClick={closePreview}
           >
-            {/* Header del modal (mobile) */}
-            <div className="flex md:hidden items-center justify-between p-4 border-b">
-              <h3 className="font-bold text-gray-800">
-                {selectedPair.breed ?? "Resultado"}
-              </h3>
-              <button
-                onClick={closePreview}
-                className="p-1 text-gray-500 hover:bg-gray-100 rounded-full"
-              >
-                ✕
-              </button>
-            </div>
+            {/* Close Button */}
+            <button
+              onClick={closePreview}
+              className="absolute top-6 right-6 z-[110] p-3 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300"
+              aria-label="Cerrar vista"
+            >
+              <span className="text-lg font-light">✕</span>
+            </button>
 
-            {/* Before */}
-            <div className="flex-1 relative flex flex-col bg-gray-50 border-b md:border-b-0 md:border-r border-gray-100">
-              <div className="absolute top-4 left-4 z-10">
-                <span className="text-xs font-bold uppercase tracking-widest bg-white/90 text-gray-800 px-3 py-1 rounded-full shadow-sm">
-                  Antes
-                </span>
-              </div>
-              <div className="relative w-full aspect-square md:aspect-auto md:h-full min-h-[300px]">
-                <Image
-                  src={selectedPair.beforeUrl}
-                  alt="Antes"
-                  fill
-                  className="object-contain"
-                  sizes="(max-width: 768px) 100vw, 50vw"
+            <motion.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative max-w-4xl max-h-[85vh] w-full flex flex-col items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Image element (using native img for flexible fluid layout in modal) */}
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-black border border-white/10 flex items-center justify-center">
+                <img
+                  src={selectedPhoto.photoUrl}
+                  alt={selectedPhoto.caption ?? "Resultado"}
+                  className="max-h-[70vh] max-w-full object-contain"
                 />
               </div>
-            </div>
 
-            {/* After */}
-            <div className="flex-1 relative flex flex-col bg-gray-50">
-              <div className="absolute top-4 left-4 z-10">
-                <span className="text-xs font-bold uppercase tracking-widest bg-white/90 text-gray-800 px-3 py-1 rounded-full shadow-sm">
-                  Después
-                </span>
-              </div>
-              
-              {/* Botón de cerrar (desktop) */}
-              <div className="hidden md:block absolute top-4 right-4 z-10">
-                <button
-                  onClick={closePreview}
-                  className="p-2 text-gray-600 bg-white/90 hover:bg-white rounded-full shadow-sm transition-colors"
+              {/* Caption Overlay at the bottom */}
+              {selectedPhoto.caption && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="mt-4 text-center max-w-xl"
                 >
-                  ✕
-                </button>
-              </div>
-
-              <div className="relative w-full aspect-square md:aspect-auto md:h-full min-h-[300px]">
-                <Image
-                  src={selectedPair.afterUrl}
-                  alt="Después"
-                  fill
-                  className="object-contain"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
-              </div>
-            </div>
-            
-            {/* Pie del modal (desktop) */}
-            {selectedPair.breed && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 hidden md:flex">
-                <span className="text-sm font-medium bg-black/60 text-white px-4 py-1.5 rounded-full backdrop-blur-md">
-                  {selectedPair.breed}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+                  <p className="text-white text-sm font-medium tracking-wide bg-white/10 backdrop-blur-md px-6 py-2 rounded-full inline-block border border-white/5">
+                    {selectedPhoto.caption}
+                  </p>
+                </motion.div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

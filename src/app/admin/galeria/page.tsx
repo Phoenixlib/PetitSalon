@@ -9,13 +9,12 @@ export default async function GaleriaAdminPage() {
   const session = await auth();
   if (!session?.user) redirect("/admin/login");
 
-  const pairs = await prisma.galleryPair.findMany({
+  const photos = await prisma.galleryPhoto.findMany({
     orderBy: { order: "asc" },
     select: {
       id: true,
-      beforeUrl: true,
-      afterUrl: true,
-      breed: true,
+      photoUrl: true,
+      caption: true,
       order: true,
       isVisible: true,
     },
@@ -28,14 +27,14 @@ export default async function GaleriaAdminPage() {
           className="text-3xl font-bold tracking-tight"
           style={{ color: "var(--ps-text)" }}
         >
-          Galería Antes & Después
+          Galería de Trabajos
         </h1>
         <p className="text-sm mt-1" style={{ color: "var(--ps-text-mid)" }}>
-          Administra los pares de fotos que aparecen en el Landing Page.
+          Administra las fotos de resultados de atenciones que aparecen en el Landing Page.
         </p>
       </div>
 
-      <GaleriaAdmin initialPairs={pairs} />
+      <GaleriaAdmin initialPhotos={photos} />
     </div>
   );
 }

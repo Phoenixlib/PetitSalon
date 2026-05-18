@@ -66,11 +66,11 @@ export default async function HomePage() {
     select: { id: true, ownerName: true, petName: true, rating: true, text: true },
   });
 
-  // Leer pares de galería visibles
-  const galleryPairs = await prisma.galleryPair.findMany({
+  // Leer fotos de galería visibles
+  const galleryPhotos = await prisma.galleryPhoto.findMany({
     where: { isVisible: true },
     orderBy: { order: "asc" },
-    select: { id: true, beforeUrl: true, afterUrl: true, breed: true },
+    select: { id: true, photoUrl: true, caption: true },
   });
 
   const defaultConfig = {
@@ -97,7 +97,7 @@ export default async function HomePage() {
         categories={categories}
         uncategorizedServices={uncategorizedServices}
       />
-      <Galeria pairs={galleryPairs} />
+      <Galeria photos={galleryPhotos} />
       <Testimonios reviews={reviews} />
       <FAQ items={faqs} whatsapp={merged.whatsapp} />
       <Ubicacion

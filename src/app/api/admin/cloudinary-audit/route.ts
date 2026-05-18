@@ -44,10 +44,10 @@ export async function GET(request: NextRequest) {
     // -----------------------------------------------------------------
     // 2. Recopilar todas las URLs activas en la base de datos
     // -----------------------------------------------------------------
-    const [attendances, galleryPairs, dogs] = await Promise.all([
+    const [attendances, galleryPhotos, dogs] = await Promise.all([
       prisma.attendance.findMany({ select: { photos: true } }),
-      prisma.galleryPair.findMany({
-        select: { beforeUrl: true, afterUrl: true },
+      prisma.galleryPhoto.findMany({
+        select: { photoUrl: true },
       }),
       prisma.dog.findMany({
         where: { photo: { not: null } },
@@ -64,11 +64,9 @@ export async function GET(request: NextRequest) {
         if (pid) activePublicIds.add(pid);
       }
     }
-    for (const g of galleryPairs) {
-      const pidBefore = publicIdFromUrl(g.beforeUrl);
-      const pidAfter = publicIdFromUrl(g.afterUrl);
-      if (pidBefore) activePublicIds.add(pidBefore);
-      if (pidAfter) activePublicIds.add(pidAfter);
+    for (const g of galleryPhotos) {
+      const pid = publicIdFromUrl(g.photoUrl);
+      if (pid) activePublicIds.add(pid);
     }
     for (const d of dogs) {
       if (d.photo) {

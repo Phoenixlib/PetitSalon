@@ -143,12 +143,11 @@ enum ReviewStatus {
   REJECTED   // descartada
 }
 
-model GalleryPair {
+model GalleryPhoto {
   id        String   @id @default(cuid())
-  beforeUrl String                        // URL Cloudinary del "antes"
-  afterUrl  String                        // URL Cloudinary del "después"
-  breed     String?                       // Etiqueta pública (ej: "Golden Retriever")
-  order     Int      @default(0)          // Orden de aparición en el landing
-  isVisible Boolean  @default(true)       // Si aparece o no en el landing
+  photoUrl  String                          // URL Cloudinary — foto del resultado
+  caption   String?                         // Texto breve (ej: "Golden Retriever, corte de verano")
+  order     Int      @default(0)            // Orden de aparición en el landing
+  isVisible Boolean  @default(true)         // Si aparece en el landing
   createdAt DateTime @default(now())
 }
