@@ -239,6 +239,7 @@ function LocationTab({ config }: { config: Record<string, string> }) {
 function FaqTab({ faqs }: { faqs: FaqItem[] }) {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [faqToDelete, setFaqToDelete] = useState<FaqItem | null>(null);
 
   async function handleMove(index: number, direction: -1 | 1) {
     const newIndex = index + direction;
@@ -338,13 +339,7 @@ function FaqTab({ faqs }: { faqs: FaqItem[] }) {
                       <Pencil className="size-3.5" /> Editar
                     </button>
                     <button
-                      onClick={() => {
-                        if (confirm("¿Seguro que quieres eliminar esta pregunta?")) {
-                          startTransition(() => {
-                            deleteFaqAction(faq.id);
-                          });
-                        }
-                      }}
+                      onClick={() => setFaqToDelete(faq)}
                       className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 transition-colors rounded-lg ml-1"
                     >
                       <Trash2 className="size-3.5" /> Borrar
@@ -356,6 +351,23 @@ function FaqTab({ faqs }: { faqs: FaqItem[] }) {
           ))
         )}
       </div>
+
+      <ConfirmDeleteModal
+        open={faqToDelete !== null}
+        title="¿Eliminar pregunta frecuente?"
+        message={faqToDelete ? `¿Estás seguro de que quieres eliminar la pregunta "${faqToDelete.question}"? Esta acción no se puede deshacer.` : ""}
+        onConfirm={() => {
+          if (faqToDelete) {
+            startTransition(() => {
+              deleteFaqAction(faqToDelete.id);
+            });
+            setFaqToDelete(null);
+          }
+        }}
+        onCancel={() => setFaqToDelete(null)}
+        confirmText="Sí, eliminar"
+        cancelText="No, cancelar"
+      />
     </div>
   );
 }
@@ -486,5 +498,71 @@ function EditFaqForm({ faq, onCancel }: { faq: FaqItem; onCancel: () => void }) 
         </button>
       </div>
     </form>
+  );
+}
+
+interface ConfirmDeleteModalProps {
+  open: boolean;
+  title: string;
+  message: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  confirmText?: string;
+  cancelText?: string;
+}
+
+function ConfirmDeleteModal({
+  open,
+  title,
+  message,
+  onConfirm,
+  onCancel,
+  confirmText = "Eliminar",
+  cancelText = "Cancelar",
+}: ConfirmDeleteModalProps) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300"
+        onClick={onCancel}
+      />
+
+      <div
+        className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl z-10 border border-slate-100 transform scale-100 transition-all duration-300"
+      >
+        <div className="flex items-center gap-3 mb-4 text-red-600">
+          <div className="p-2 bg-red-50 rounded-full">
+            <Trash2 className="size-6" />
+          </div>
+          <h3 className="text-lg font-bold text-slate-800">
+            {title}
+          </h3>
+        </div>
+
+        <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+          {message}
+        </p>
+
+        <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+          >
+            {cancelText}
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-sm"
+          >
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
