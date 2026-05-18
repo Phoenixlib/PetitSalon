@@ -12,7 +12,7 @@ export async function GET() {
         duration: true,
         description: true,
       },
-      orderBy: { name: "asc" },
+      orderBy: { order: "asc" },
     });
     return NextResponse.json(services);
   } catch {

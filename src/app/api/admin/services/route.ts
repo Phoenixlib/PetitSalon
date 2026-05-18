@@ -17,7 +17,7 @@ export async function GET() {
       duration: true,
       calComLink: true,
     },
-    orderBy: { name: "asc" },
+    orderBy: { order: "asc" },
   });
 
   return NextResponse.json({ services });

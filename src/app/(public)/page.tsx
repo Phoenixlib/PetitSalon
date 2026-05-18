@@ -22,7 +22,7 @@ export default async function HomePage() {
     include: {
       services: {
         where: { isActive: true },
-        orderBy: { name: "asc" },
+        orderBy: { order: "asc" },
         select: {
           id: true,
           name: true,
@@ -37,7 +37,7 @@ export default async function HomePage() {
 
   const uncategorizedServices = await prisma.service.findMany({
     where: { isActive: true, categoryId: null },
-    orderBy: { name: "asc" },
+    orderBy: { order: "asc" },
     select: {
       id: true,
       name: true,
