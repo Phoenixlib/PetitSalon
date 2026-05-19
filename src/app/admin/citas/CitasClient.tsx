@@ -220,6 +220,7 @@ export default function CitasClient({
                     <tr
                       key={app.id}
                       className="hover:bg-gray-50/50 transition-colors"
+                      data-testid="cita-row"
                     >
                       <td className="px-6 py-4">
                         <div className="font-medium text-gray-900">
@@ -262,6 +263,7 @@ export default function CitasClient({
                       <td className="px-6 py-4">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${STATUS_COLORS[app.status]}`}
+                          data-testid="estado-badge"
                         >
                           {STATUS_LABELS[app.status]}
                         </span>
@@ -349,6 +351,7 @@ export default function CitasClient({
                 <div
                   key={app.id}
                   className="p-4 flex flex-col gap-3 active:bg-gray-50 transition-colors"
+                  data-testid="cita-row"
                   onClick={() => {
                     setSelectedApp(app);
                     setModalStep("detail");
@@ -359,7 +362,10 @@ export default function CitasClient({
                       <div className="font-bold text-gray-900 capitalize">{dateStr}</div>
                       <div className="text-sm font-medium text-gray-500">{timeStr}</div>
                     </div>
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${STATUS_COLORS[app.status]}`}>
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${STATUS_COLORS[app.status]}`}
+                      data-testid="estado-badge"
+                    >
                       {STATUS_LABELS[app.status]}
                     </span>
                   </div>

@@ -1,5 +1,36 @@
 import nodemailer from "nodemailer";
+import type { Transporter } from "nodemailer";
 import { env } from "@/env";
+
+/**
+ * Crea un transporter Nodemailer compartido.
+ *
+ * IMPORTANTE — Puerto 587 (STARTTLS) en lugar de 465 (SSL implícito):
+ * Vercel (y AWS en general) bloquea el puerto 465 en el plan Hobby.
+ * El puerto 587 con STARTTLS funciona correctamente en producción y local.
+ * Ref: https://vercel.com/guides/sending-emails-with-nodemailer
+ */
+function createTransporter(): Transporter {
+  const port = env.SMTP_PORT ?? 587;
+  return nodemailer.createTransport({
+    host: env.SMTP_HOST,
+    port,
+    // secure:true solo para puerto 465 (SSL implícito).
+    // Para 587 (STARTTLS) debe ser false — Nodemailer negocia TLS automáticamente.
+    secure: port === 465,
+    auth: {
+      user: env.SMTP_USER,
+      // Las App Passwords de Google se muestran con espacios en la UI de Google,
+      // pero deben guardarse SIN espacios en las variables de entorno.
+      pass: env.SMTP_PASS,
+    },
+  });
+}
+
+/** Verifica si SMTP está configurado en el entorno actual */
+function isSmtpConfigured(): boolean {
+  return !!(env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS);
+}
 
 interface AppointmentEmailData {
   ownerName: string;
@@ -21,16 +52,11 @@ interface AppointmentEmailData {
 export async function sendNewAppointmentEmail(
   data: AppointmentEmailData,
 ): Promise<void> {
-  if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS || !env.NOTIFY_EMAIL) {
+  if (!isSmtpConfigured() || !env.NOTIFY_EMAIL) {
     return; // email no configurado — ok para desarrollo
   }
 
-  const transporter = nodemailer.createTransport({
-    host: env.SMTP_HOST,
-    port: env.SMTP_PORT ?? 587,
-    secure: (env.SMTP_PORT ?? 587) === 465,
-    auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
-  });
+  const transporter = createTransporter();
 
   const html = `
     <div style="font-family:sans-serif;max-width:520px;margin:auto">
@@ -50,12 +76,17 @@ export async function sendNewAppointmentEmail(
     </div>
   `;
 
-  await transporter.sendMail({
-    from: `"Petit Salon" <${env.SMTP_USER}>`,
-    to: env.NOTIFY_EMAIL,
-    subject: `Nueva cita: ${data.dogName} — ${data.date} ${data.time}`,
-    html,
-  });
+  try {
+    await transporter.sendMail({
+      from: `"Petit Salon" <${env.SMTP_USER}>`,
+      to: env.NOTIFY_EMAIL,
+      subject: `Nueva cita: ${data.dogName} — ${data.date} ${data.time}`,
+      html,
+    });
+  } catch (error) {
+    console.error("[EMAIL ERROR] sendNewAppointmentEmail falló:", error);
+    // No re-lanzar — el fallo de email no debe bloquear el registro de la cita
+  }
 }
 
 interface ReviewRequestEmailData {
@@ -72,7 +103,7 @@ export async function sendReviewRequestEmail(
   to: string,
   data: ReviewRequestEmailData,
 ): Promise<void> {
-  if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS) {
+  if (!isSmtpConfigured()) {
     console.log("-----------------------------------------------------");
     console.log(`[EMAIL SIMULADO] Se generó una solicitud de reseña para ${data.ownerName}`);
     console.log(`URL de Reseña: ${data.reviewUrl}`);
@@ -80,12 +111,7 @@ export async function sendReviewRequestEmail(
     return;
   }
 
-  const transporter = nodemailer.createTransport({
-    host: env.SMTP_HOST,
-    port: env.SMTP_PORT ?? 587,
-    secure: (env.SMTP_PORT ?? 587) === 465,
-    auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
-  });
+  const transporter = createTransporter();
 
   const html = `
     <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:24px">
@@ -110,12 +136,17 @@ export async function sendReviewRequestEmail(
     </div>
   `;
 
-  await transporter.sendMail({
-    from: `"Petit Salon" <${env.SMTP_USER}>`,
-    to,
-    subject: `¿Cómo fue la experiencia de ${data.petName} en Petit Salon? 🐾`,
-    html,
-  });
+  try {
+    await transporter.sendMail({
+      from: `"Petit Salon" <${env.SMTP_USER}>`,
+      to,
+      subject: `¿Cómo fue la experiencia de ${data.petName} en Petit Salon? 🐾`,
+      html,
+    });
+  } catch (error) {
+    console.error("[EMAIL ERROR] sendReviewRequestEmail falló:", error);
+    // No re-lanzar — el fallo de email no debe bloquear la creación de la reseña
+  }
 }
 
 interface CampaignEmailData {
@@ -132,17 +163,12 @@ export async function sendCampaignEmail(
   to: string,
   data: CampaignEmailData,
 ): Promise<void> {
-  if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS) {
+  if (!isSmtpConfigured()) {
     console.log(`[EMAIL SIMULADO — CAMPAÑA] Para: ${to} | Asunto: ${data.subject}`);
     return;
   }
 
-  const transporter = nodemailer.createTransport({
-    host: env.SMTP_HOST,
-    port: env.SMTP_PORT ?? 587,
-    secure: (env.SMTP_PORT ?? 587) === 465,
-    auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
-  });
+  const transporter = createTransporter();
 
   const html = `
     <div style="font-family:sans-serif;max-width:560px;margin:auto;padding:24px">
@@ -159,10 +185,16 @@ export async function sendCampaignEmail(
     </div>
   `;
 
-  await transporter.sendMail({
-    from: `"Petit Salon" <${env.SMTP_USER}>`,
-    to,
-    subject: data.subject,
-    html,
-  });
+  try {
+    await transporter.sendMail({
+      from: `"Petit Salon" <${env.SMTP_USER}>`,
+      to,
+      subject: data.subject,
+      html,
+    });
+  } catch (error) {
+    console.error(`[EMAIL ERROR] sendCampaignEmail falló para ${to}:`, error);
+    // Re-lanzar en campañas para que el caller pueda contar los fallos
+    throw error;
+  }
 }
