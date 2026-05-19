@@ -3,6 +3,10 @@
     {
       "path": "/api/admin/cloudinary-audit",
       "schedule": "0 3 * * 1"
+    },
+    {
+      "path": "/api/cron/reminders",
+      "schedule": "0 * * * *"
     }
   ]
 }

@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/env";
+import {
+  sendWhatsAppConfirmation,
+  sendWhatsAppTodayReminder,
+} from "@/lib/twilio";
 
 const DOG_SIZE_VALUES: readonly string[] = ["XS", "S", "M", "L", "XL"];
 
@@ -10,13 +14,14 @@ function parseDogSize(value: string | undefined | null): string | null {
   if (!value) return null;
   const upper = String(value).toUpperCase().trim();
   if (DOG_SIZE_VALUES.includes(upper)) return upper;
-  
+
   // Buscar si empieza con la letra o tiene el formato "S - Pequeño"
-  for (const size of ["XL", "XS", "L", "M", "S"]) { // Orden importa (XL antes de L)
+  for (const size of ["XL", "XS", "L", "M", "S"]) {
+    // Orden importa (XL antes de L)
     const regex = new RegExp(`(^|\\s|\\()${size}(\\s|-|\\)|$)`);
     if (regex.test(upper)) return size;
   }
-  
+
   return null;
 }
 
@@ -71,6 +76,7 @@ interface CalComWebhookBody {
     | "BOOKING_CREATED"
     | "BOOKING_RESCHEDULED"
     | "BOOKING_CANCELLED"
+    | "RSVP_SENT"
     | string;
   createdAt: string;
   payload: CalComBookingPayload;
@@ -94,7 +100,7 @@ function verifySignature(rawBody: string, signature: string | null): boolean {
     .createHmac("sha256", env.CALCOM_WEBHOOK_SECRET)
     .update(rawBody)
     .digest("hex");
-    
+
   const expected = `sha256=${computedHash}`;
   const cleanSignature = signature.replace(/^sha256=/, "");
 
@@ -102,7 +108,9 @@ function verifySignature(rawBody: string, signature: string | null): boolean {
   const expectedBuffer = Buffer.from(computedHash);
 
   if (signatureBuffer.length !== expectedBuffer.length) {
-    console.error(`[calcom-webhook] Signature length mismatch. Received clean length: ${cleanSignature.length}, Expected: ${computedHash.length}`);
+    console.error(
+      `[calcom-webhook] Signature length mismatch. Received clean length: ${cleanSignature.length}, Expected: ${computedHash.length}`,
+    );
     return false;
   }
 
@@ -148,7 +156,12 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
     const k = key.toLowerCase();
     const isMatch = (term: string) => k.includes(term) || label.includes(term);
 
-    if (isMatch("nombre_perro") || isMatch("nombre del perro") || k === "perro" || label === "perro") {
+    if (
+      isMatch("nombre_perro") ||
+      isMatch("nombre del perro") ||
+      k === "perro" ||
+      label === "perro"
+    ) {
       dogName = val;
     } else if (isMatch("raza")) {
       dogBreed = val;
@@ -158,7 +171,11 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
       dogWeight = val;
     } else if (isMatch("edad") || isMatch("age")) {
       dogAge = val;
-    } else if (isMatch("dog_notes") || isMatch("alergia") || isMatch("temperamento")) {
+    } else if (
+      isMatch("dog_notes") ||
+      isMatch("alergia") ||
+      isMatch("temperamento")
+    ) {
       dogNotes = val;
     } else if (isMatch("servicio")) {
       passedService = val;
@@ -168,7 +185,12 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
       ownerEmail = val;
     } else if (isMatch("notes") || isMatch("notas")) {
       notes = val;
-    } else if (k === "name" || k === "nombre" || label === "nombre completo" || label === "nombre") {
+    } else if (
+      k === "name" ||
+      k === "nombre" ||
+      label === "nombre completo" ||
+      label === "nombre"
+    ) {
       ownerName = val;
     }
   }
@@ -210,12 +232,12 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
 
   // 2. Upsert Owner resiliente
   let owner = null;
-  
+
   // Buscar primero por email si viene
   if (ownerEmail) {
     owner = await prisma.owner.findUnique({ where: { email: ownerEmail } });
   }
-  
+
   // Si no se encuentra por email, buscar por teléfono si viene
   if (!owner && ownerPhone) {
     owner = await prisma.owner.findUnique({ where: { phone: ownerPhone } });
@@ -227,7 +249,10 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
         data: { name: ownerName, email: ownerEmail, phone: ownerPhone },
       });
     } catch (createErr: any) {
-      console.warn("[calcom-webhook] Error al crear dueño, reintentando recuperar por colisión:", createErr.message);
+      console.warn(
+        "[calcom-webhook] Error al crear dueño, reintentando recuperar por colisión:",
+        createErr.message,
+      );
       // Si falló por restricción de unicidad, intentamos recuperarlo por email o teléfono nuevamente
       if (ownerEmail) {
         owner = await prisma.owner.findUnique({ where: { email: ownerEmail } });
@@ -238,9 +263,9 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
       // Si aún así no existe (raro), creamos un dueño temporal sin datos únicos para que no falle la cita
       if (!owner) {
         owner = await prisma.owner.create({
-          data: { 
+          data: {
             name: ownerName,
-            phone: ownerPhone || `fallback-${Date.now()}` 
+            phone: ownerPhone || `fallback-${Date.now()}`,
           },
         });
       }
@@ -250,13 +275,16 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
     try {
       owner = await prisma.owner.update({
         where: { id: owner.id },
-        data: { 
+        data: {
           ...(ownerPhone && !owner.phone ? { phone: ownerPhone } : {}),
-          ...(ownerEmail && !owner.email ? { email: ownerEmail } : {})
+          ...(ownerEmail && !owner.email ? { email: ownerEmail } : {}),
         },
       });
     } catch (updateErr: any) {
-      console.warn("[calcom-webhook] Conflicto de unicidad al actualizar dueño (ignorado para no bloquear la cita):", updateErr.message);
+      console.warn(
+        "[calcom-webhook] Conflicto de unicidad al actualizar dueño (ignorado para no bloquear la cita):",
+        updateErr.message,
+      );
       // No lanzamos el error para que continúe la ejecución y se guarde la cita
     }
   }
@@ -282,7 +310,10 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
         },
       });
     } catch (dogCreateErr: any) {
-      console.warn("[calcom-webhook] Error al crear mascota, reintentando recuperar:", dogCreateErr.message);
+      console.warn(
+        "[calcom-webhook] Error al crear mascota, reintentando recuperar:",
+        dogCreateErr.message,
+      );
       // Recuperar de todos modos si ya existe en la base de datos
       dog = await prisma.dog.findFirst({
         where: {
@@ -309,7 +340,10 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
         },
       });
     } catch (dogUpdateErr: any) {
-      console.warn("[calcom-webhook] Error al actualizar mascota (ignorado para no bloquear la cita):", dogUpdateErr.message);
+      console.warn(
+        "[calcom-webhook] Error al actualizar mascota (ignorado para no bloquear la cita):",
+        dogUpdateErr.message,
+      );
     }
   }
 
@@ -329,9 +363,37 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
         date: new Date(payload.startTime),
       },
     });
-    console.info(`[calcom-webhook] Cita procesada exitosamente en la base de datos. ID: ${appointment.id}`);
+    console.info(
+      `[calcom-webhook] Cita procesada exitosamente en la base de datos. ID: ${appointment.id}`,
+    );
+
+    // Enviar notificación de confirmación por WhatsApp (opcional/mejor esfuerzo)
+    if (owner.phone) {
+      const appDate = new Date(payload.startTime);
+      const dateStr = appDate.toLocaleDateString("es-ES", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      });
+      const timeStr = appDate.toLocaleTimeString("es-ES", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+
+      // Nota: Aquí el mensaje es de confirmación, no de recordatorio para mañana.
+      await sendWhatsAppConfirmation(owner.phone, {
+        ownerName: owner.name,
+        petName: dog.name,
+        dateStr,
+        timeStr,
+      }).catch((e) => console.error("[calcom-webhook] WhatsApp fail:", e));
+    }
   } catch (appErr: any) {
-    console.error("[calcom-webhook] Error crítico al insertar/actualizar la cita en la base de datos:", appErr);
+    console.error(
+      "[calcom-webhook] Error crítico al insertar/actualizar la cita en la base de datos:",
+      appErr,
+    );
     throw appErr; // Lanzamos este error ya que si la cita no se puede crear, queremos que Cal.com sepa del fallo
   }
 }
@@ -350,6 +412,42 @@ async function handleBookingRescheduled(payload: CalComBookingPayload) {
   });
 }
 
+/**
+ * Maneja eventos de recordatorio enviados por Cal.com.
+ * Cal.com puede configurarse para disparar webhooks en sus propios recordatorios.
+ */
+async function handleReminderEvent(payload: CalComBookingPayload) {
+  const attendee = payload.attendees[0];
+  if (!attendee || !attendee.phoneNumber) return;
+
+  const appDate = new Date(payload.startTime);
+  const now = new Date();
+
+  // Si la cita es hoy, enviamos el mensaje de "hoy es el día"
+  if (appDate.toDateString() === now.toDateString()) {
+    const timeStr = appDate.toLocaleTimeString("es-ES", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+
+    // Intentamos recuperar el nombre del perro desde el payload o DB
+    const appointment = await prisma.appointment.findUnique({
+      where: { calComUid: payload.uid },
+      include: { dog: true },
+    });
+
+    const dogName = appointment?.dog.name || "tu mascota";
+
+    await sendWhatsAppTodayReminder(attendee.phoneNumber, {
+      ownerName: attendee.name,
+      petName: dogName,
+      dateStr: "hoy",
+      timeStr,
+    }).catch((e) => console.error("[calcom-webhook] WhatsApp Today fail:", e));
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Route Handler
 // ---------------------------------------------------------------------------
@@ -365,7 +463,9 @@ export async function POST(request: NextRequest) {
   let body: CalComWebhookBody;
   try {
     body = JSON.parse(rawBody) as CalComWebhookBody;
-    console.log(`[calcom-webhook] Event: ${body.triggerEvent}, UID: ${body.payload?.uid}`);
+    console.log(
+      `[calcom-webhook] Event: ${body.triggerEvent}, UID: ${body.payload?.uid}`,
+    );
   } catch {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
   }
@@ -381,9 +481,18 @@ export async function POST(request: NextRequest) {
       case "BOOKING_CANCELLED":
         await handleBookingCancelled(body.payload);
         break;
+      case "RSVP_SENT": // Cal.com a veces usa este para notificaciones enviadas
+        await handleReminderEvent(body.payload);
+        break;
       default:
-        // Evento no gestionado — responder 200 para que Cal.com no reintente
-        console.info(`[calcom-webhook] Evento ignorado: ${body.triggerEvent}`);
+        // Manejar otros eventos de recordatorio si el slug los incluye
+        if (body.triggerEvent.includes("REMINDER")) {
+          await handleReminderEvent(body.payload);
+        } else {
+          console.info(
+            `[calcom-webhook] Evento ignorado: ${body.triggerEvent}`,
+          );
+        }
     }
 
     // Revalidar las rutas del panel administrativo para borrar la caché

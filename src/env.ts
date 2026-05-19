@@ -30,6 +30,14 @@ const envSchema = z.object({
   // URL base de la app (para construir links en emails)
   APP_URL: z.string().url().optional(),
 
+  // Cron Job Secret (Vercel)
+  CRON_SECRET: z.string().optional(),
+
+  // Twilio (WhatsApp Reminders)
+  TWILIO_ACCOUNT_SID: z.string().optional(),
+  TWILIO_AUTH_TOKEN: z.string().optional(),
+  TWILIO_WHATSAPP_NUMBER: z.string().optional(),
+
   // App
   NODE_ENV: z
     .enum(["development", "test", "production"])
