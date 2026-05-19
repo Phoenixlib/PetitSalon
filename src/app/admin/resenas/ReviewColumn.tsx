@@ -15,11 +15,22 @@ interface Props {
 export default function ReviewColumn({ title, initialReviews, totalCount, badgeColor, type }: Props) {
   const [reviews, setReviews] = useState<any[]>(initialReviews);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Sincronizar estado local cuando cambia la data del servidor (ej. tras revalidaciones)
   useEffect(() => {
     setReviews(initialReviews);
   }, [initialReviews]);
+
+  // Colapsar por defecto en móviles/tablets (ancho < 1024px) excepto la columna de PENDING (Nuevas)
+  useEffect(() => {
+    const handleInitialCollapse = () => {
+      if (window.innerWidth < 1024 && type !== "PENDING") {
+        setIsCollapsed(true);
+      }
+    };
+    handleInitialCollapse();
+  }, [type]);
 
   const handleLoadMore = async () => {
     if (isLoading) return;
@@ -38,17 +49,53 @@ export default function ReviewColumn({ title, initialReviews, totalCount, badgeC
   const hasMore = reviews.length < totalCount;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2">
-        <h2 className="font-semibold text-lg">{title}</h2>
-        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${badgeColor}`}>
-          {totalCount}
-        </span>
-      </div>
+    <div
+      className="flex flex-col gap-4 p-4 rounded-2xl bg-gray-50 border transition-all duration-200"
+      style={{ borderColor: "var(--border)" }}
+    >
+      {/* Encabezado clickable/interactivo */}
+      <button
+        type="button"
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="flex items-center justify-between w-full text-left focus:outline-none select-none group"
+      >
+        <div className="flex items-center gap-2">
+          <h2 className="font-bold text-base md:text-lg" style={{ color: "var(--ps-text)" }}>
+            {title}
+          </h2>
+          <span className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold ${badgeColor}`}>
+            {totalCount}
+          </span>
+        </div>
 
-      <div className="flex flex-col gap-3">
+        {/* Flecha indicadora (Chevron) */}
+        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-gray-200 text-gray-500 group-hover:text-purple-600 group-hover:border-purple-300 shadow-sm transition-all duration-200">
+          <svg
+            className={`w-4 h-4 transform transition-transform duration-300 ${
+              isCollapsed ? "" : "rotate-180"
+            }`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2.5"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </div>
+      </button>
+
+      {/* Cuerpo colapsable */}
+      <div
+        className={`flex flex-col gap-3 transition-all duration-300 overflow-hidden ${
+          isCollapsed ? "max-h-0 opacity-0 pointer-events-none" : "max-h-[5000px] opacity-100"
+        }`}
+      >
         {reviews.length === 0 ? (
-          <p className="text-sm text-gray-500 italic">No hay reseñas aquí.</p>
+          <p className="text-sm text-gray-400 italic py-2">No hay reseñas aquí.</p>
         ) : (
           reviews.map((r) => <ReviewCard key={r.id} review={r} />)
         )}
