@@ -117,12 +117,13 @@ export default function Galeria({ photos }: Props) {
             />
           </div>
 
-          {/* Flechas de Navegación del Carrusel (Estilo Glassmorphism) */}
+          {/* Flechas de Navegación del Carrusel (Estilo Refinado y Visible) */}
           {photos.length > 1 && (
             <div className="flex justify-center md:justify-end gap-3">
               <button
                 onClick={scrollLeft}
-                className="p-3.5 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 border border-white/10 rounded-full transition-all duration-300 transform active:scale-95 shadow-sm"
+                className="p-3.5 bg-white hover:bg-[var(--ps-lila-pale)] border rounded-full transition-all duration-300 transform active:scale-95 shadow-md hover:shadow-lg flex items-center justify-center"
+                style={{ borderColor: "var(--ps-lila-light)", color: "var(--ps-lila)" }}
                 aria-label="Desplazar a la izquierda"
               >
                 <svg
@@ -138,7 +139,8 @@ export default function Galeria({ photos }: Props) {
               </button>
               <button
                 onClick={scrollRight}
-                className="p-3.5 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 border border-white/10 rounded-full transition-all duration-300 transform active:scale-95 shadow-sm"
+                className="p-3.5 bg-white hover:bg-[var(--ps-lila-pale)] border rounded-full transition-all duration-300 transform active:scale-95 shadow-md hover:shadow-lg flex items-center justify-center"
+                style={{ borderColor: "var(--ps-lila-light)", color: "var(--ps-lila)" }}
                 aria-label="Desplazar a la derecha"
               >
                 <svg
@@ -154,6 +156,7 @@ export default function Galeria({ photos }: Props) {
               </button>
             </div>
           )}
+
         </div>
 
         {photos.length === 0 ? (

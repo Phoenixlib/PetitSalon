@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useActionState, useState, useTransition, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   createGalleryPhotoAction,
   deleteGalleryPhotoAction,
@@ -20,7 +21,11 @@ interface GalleryPhoto {
 
 interface Props {
   initialPhotos: GalleryPhoto[];
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
 }
+
 
 // ---------------------------------------------------------------------------
 // Cloudinary upload helper
@@ -106,15 +111,29 @@ function PhotoUploadButton({
 // ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
-export default function GaleriaAdmin({ initialPhotos }: Props) {
+export default function GaleriaAdmin({
+  initialPhotos,
+  currentPage,
+  totalPages,
+  totalCount,
+}: Props) {
   const [photos, setPhotos] = useState<GalleryPhoto[]>(initialPhotos);
   const [isPending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
 
   // Sincronizar cambios desde el servidor (ej: revalidatePath)
   useEffect(() => {
     setPhotos(initialPhotos);
   }, [initialPhotos]);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages) return;
+    startTransition(() => {
+      router.push(`/admin/galeria?page=${newPage}`);
+    });
+  };
+
 
   // --- Upload state ---
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
@@ -189,9 +208,13 @@ export default function GaleriaAdmin({ initialPhotos }: Props) {
   const canSubmit = !!photoUrl && !isCreating && !uploading;
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 relative">
+      {isPending && (
+        <div className="fixed top-0 left-0 right-0 h-1 bg-[var(--ps-lila)] animate-pulse z-50" />
+      )}
       {/* ------------------------------------------------------------------ */}
       {/* Formulario de Subida                                                */}
+
       {/* ------------------------------------------------------------------ */}
       <div
         className="rounded-2xl border p-6 space-y-5"
@@ -372,6 +395,52 @@ export default function GaleriaAdmin({ initialPhotos }: Props) {
           ))}
         </div>
       )}
+
+      {/* Paginación */}
+      {totalPages > 1 && (
+        <div
+          className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t pt-6"
+          style={{ borderColor: "var(--ps-lila-light)" }}
+        >
+          <span className="text-xs" style={{ color: "var(--ps-text-mid)" }}>
+            Mostrando fotos del {Math.min((currentPage - 1) * 12 + 1, totalCount)} al {Math.min(currentPage * 12, totalCount)} de un total de {totalCount}
+          </span>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1 || isPending}
+              className="px-3 py-1.5 rounded-full border text-xs font-semibold uppercase tracking-wide transition-colors disabled:opacity-40 hover:bg-gray-50"
+              style={{ borderColor: "var(--ps-lila-light)", color: "var(--ps-text)" }}
+            >
+              Anterior
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <button
+                key={p}
+                onClick={() => handlePageChange(p)}
+                disabled={isPending}
+                className="w-8 h-8 rounded-full border text-xs font-semibold transition-colors"
+                style={
+                  p === currentPage
+                    ? { backgroundColor: "var(--ps-lila)", color: "white", borderColor: "var(--ps-lila)" }
+                    : { borderColor: "var(--ps-lila-light)", color: "var(--ps-text)", backgroundColor: "white" }
+                }
+              >
+                {p}
+              </button>
+            ))}
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages || isPending}
+              className="px-3 py-1.5 rounded-full border text-xs font-semibold uppercase tracking-wide transition-colors disabled:opacity-40 hover:bg-gray-50"
+              style={{ borderColor: "var(--ps-lila-light)", color: "var(--ps-text)" }}
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
