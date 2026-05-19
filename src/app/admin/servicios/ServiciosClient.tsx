@@ -11,16 +11,19 @@ function CalComHelpPanel() {
   return (
     <div
       className="mb-6 rounded-2xl overflow-hidden"
-      style={{ border: "1px solid #ddd6fe", backgroundColor: "#faf5ff" }}
+      style={{ border: "1px solid var(--border)", backgroundColor: "var(--ps-lila-pale)" }}
     >
       {/* Header clickeable */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-5 py-3.5 text-left transition-colors hover:bg-purple-50"
+        className="w-full flex items-center justify-between px-5 py-3.5 text-left transition-colors"
+        style={{ backgroundColor: "transparent" }}
+        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(66,194,237,0.06)")}
+        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
       >
         <div className="flex items-center gap-2.5">
           <span className="text-lg">📅</span>
-          <span className="text-sm font-semibold" style={{ color: "#6d28d9" }}>
+          <span className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
             ¿Cómo vincular un Event Type de Cal.com con un servicio?
           </span>
         </div>
@@ -29,7 +32,7 @@ function CalComHelpPanel() {
           className={`h-4 w-4 flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
-          stroke="#6d28d9"
+          stroke="var(--primary)"
           strokeWidth={2.5}
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -38,23 +41,23 @@ function CalComHelpPanel() {
 
       {/* Contenido expandible */}
       {open && (
-        <div className="px-5 pb-5 pt-1 border-t" style={{ borderColor: "#ddd6fe" }}>
+        <div className="px-5 pb-5 pt-1 border-t" style={{ borderColor: "var(--border)" }}>
           <div className="space-y-4 text-sm" style={{ color: "#374151" }}>
 
             {/* Paso 1 */}
             <div>
-              <p className="font-semibold mb-1" style={{ color: "#6d28d9" }}>
+              <p className="font-semibold mb-1" style={{ color: "var(--foreground)" }}>
                 Paso 1 — Identificar el nombre del evento en Cal.com
               </p>
               <p className="text-xs leading-relaxed text-gray-600">
                 Ve a <strong>app.cal.com → Event Types</strong> y anota el nombre exacto del evento que quieres vincular.
-                Por ejemplo: <code className="bg-purple-100 text-purple-800 rounded px-1 py-0.5 text-[11px]">Baño y Secado Perro Pequeño</code>
+                Por ejemplo: <code className="rounded px-1 py-0.5 text-[11px] font-mono" style={{ backgroundColor: "var(--pastel-cyan)", color: "var(--foreground)" }}>Baño y Secado Perro Pequeño</code>
               </p>
             </div>
 
             {/* Paso 2 */}
             <div>
-              <p className="font-semibold mb-1" style={{ color: "#6d28d9" }}>
+              <p className="font-semibold mb-1" style={{ color: "var(--foreground)" }}>
                 Paso 2 — Editar el servicio correspondiente
               </p>
               <p className="text-xs leading-relaxed text-gray-600">
@@ -64,25 +67,25 @@ function CalComHelpPanel() {
 
             {/* Paso 3 */}
             <div>
-              <p className="font-semibold mb-1" style={{ color: "#6d28d9" }}>
+              <p className="font-semibold mb-1" style={{ color: "var(--foreground)" }}>
                 Paso 3 — Llenar el campo "Enlace de Cal.com"
               </p>
               <p className="text-xs leading-relaxed text-gray-600 mb-2">
                 Dentro del formulario, tienes dos opciones:
               </p>
               <div className="grid sm:grid-cols-2 gap-2">
-                <div className="rounded-xl p-3" style={{ backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0" }}>
-                  <p className="text-xs font-semibold text-green-700 mb-1">✅ Opción A — Nombre del evento (simple)</p>
-                  <p className="text-[11px] text-green-800 leading-relaxed">
+                <div className="rounded-xl p-3" style={{ backgroundColor: "rgba(66,194,237,0.08)", border: "1px solid var(--pastel-cyan)" }}>
+                  <p className="text-xs font-semibold mb-1" style={{ color: "var(--foreground)" }}>✅ Opción A — Nombre del evento (simple)</p>
+                  <p className="text-[11px] leading-relaxed text-gray-600">
                     Escribe el nombre exacto del Event Type tal como aparece en Cal.com.<br/>
-                    <span className="font-mono bg-green-100 rounded px-1">Baño y Secado Perro Pequeño</span>
+                    <span className="font-mono rounded px-1" style={{ backgroundColor: "var(--pastel-cyan)", color: "var(--foreground)" }}>Baño y Secado Perro Pequeño</span>
                   </p>
                 </div>
-                <div className="rounded-xl p-3" style={{ backgroundColor: "#eff6ff", border: "1px solid #bfdbfe" }}>
-                  <p className="text-xs font-semibold text-blue-700 mb-1">✅ Opción B — Slug del URL (técnico)</p>
-                  <p className="text-[11px] text-blue-800 leading-relaxed">
+                <div className="rounded-xl p-3" style={{ backgroundColor: "rgba(66,194,237,0.04)", border: "1px solid var(--border)" }}>
+                  <p className="text-xs font-semibold mb-1" style={{ color: "var(--foreground)" }}>✅ Opción B — Slug del URL (técnico)</p>
+                  <p className="text-[11px] leading-relaxed text-gray-600">
                     Copia la parte del link de Cal.com después de <span className="font-mono">cal.com/</span><br/>
-                    <span className="font-mono bg-blue-100 rounded px-1">petitsalon/bano-y-secado</span>
+                    <span className="font-mono rounded px-1" style={{ backgroundColor: "var(--border)", color: "var(--foreground)" }}>petitsalon/bano-y-secado</span>
                   </p>
                 </div>
               </div>
@@ -90,7 +93,7 @@ function CalComHelpPanel() {
 
             {/* Paso 4 */}
             <div>
-              <p className="font-semibold mb-1" style={{ color: "#6d28d9" }}>
+              <p className="font-semibold mb-1" style={{ color: "var(--foreground)" }}>
                 Paso 4 — Guardar y verificar
               </p>
               <p className="text-xs leading-relaxed text-gray-600">
@@ -100,9 +103,9 @@ function CalComHelpPanel() {
             </div>
 
             {/* Advertencia */}
-            <div className="rounded-xl px-4 py-3 flex gap-2.5" style={{ backgroundColor: "#fffbeb", border: "1px solid #fde68a" }}>
+            <div className="rounded-xl px-4 py-3 flex gap-2.5" style={{ backgroundColor: "var(--pastel-yellow)", border: "1px solid #f4cc6a" }}>
               <span className="text-base flex-shrink-0">⚠️</span>
-              <p className="text-[11px] leading-relaxed" style={{ color: "#92400e" }}>
+              <p className="text-[11px] leading-relaxed" style={{ color: "#6b5c1a" }}>
                 Si no se configura este campo y el nombre del servicio no coincide con el nombre del evento, el sistema asignará la cita
                 al <strong>primer servicio activo</strong> de la lista por defecto.
               </p>
