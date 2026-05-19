@@ -72,3 +72,52 @@ export async function resendReviewRequestAction(reviewId: string) {
     reviewUrl,
   });
 }
+
+export async function getReviewsAction(
+  type: "PENDING" | "APPROVED" | "REJECTED" | "WAITING",
+  skip: number,
+  take: number
+) {
+  const session = await auth();
+  if (!session?.user) throw new Error("No autorizado");
+
+  let whereClause: any = {};
+  if (type === "PENDING") {
+    whereClause = { status: "PENDING", submittedAt: { not: null } };
+  } else if (type === "APPROVED") {
+    whereClause = { status: "APPROVED" };
+  } else if (type === "REJECTED") {
+    whereClause = { status: "REJECTED" };
+  } else if (type === "WAITING") {
+    whereClause = { status: "PENDING", submittedAt: null };
+  }
+
+  const reviews = await prisma.review.findMany({
+    where: whereClause,
+    orderBy: { createdAt: "desc" },
+    skip,
+    take,
+    include: {
+      appointment: {
+        select: {
+          date: true,
+          service: { select: { name: true } },
+          dog: {
+            select: {
+              name: true,
+              owner: {
+                select: {
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return reviews;
+}
+

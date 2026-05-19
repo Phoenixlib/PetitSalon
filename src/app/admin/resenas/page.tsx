@@ -1,40 +1,81 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import ReviewCard from "./ReviewCard";
+import ReviewColumn from "./ReviewColumn";
 
 export const metadata = { title: "Reseñas | Petit Salon Admin" };
 
-export default async function AdminResenasPage() {
-  const session = await auth();
-  if (!session?.user) throw new Error("No autorizado");
-
-  const reviews = await prisma.review.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      appointment: {
+const reviewInclude = {
+  appointment: {
+    select: {
+      date: true,
+      service: { select: { name: true } },
+      dog: {
         select: {
-          date: true,
-          service: { select: { name: true } },
-          dog: {
+          name: true,
+          owner: {
             select: {
               name: true,
-              owner: {
-                select: {
-                  name: true,
-                  email: true,
-                },
-              },
+              email: true,
             },
           },
         },
       },
     },
-  });
+  },
+};
 
-  const pending = reviews.filter((r) => r.status === "PENDING" && r.submittedAt);
-  const approved = reviews.filter((r) => r.status === "APPROVED");
-  const rejected = reviews.filter((r) => r.status === "REJECTED");
-  const waiting = reviews.filter((r) => r.status === "PENDING" && !r.submittedAt);
+export default async function AdminResenasPage() {
+  const session = await auth();
+  if (!session?.user) throw new Error("No autorizado");
+
+  const pendingWhere = { status: "PENDING" as const, submittedAt: { not: null } };
+  const approvedWhere = { status: "APPROVED" as const };
+  const rejectedWhere = { status: "REJECTED" as const };
+  const waitingWhere = { status: "PENDING" as const, submittedAt: null };
+
+  const [
+    pendingCount,
+    pendingReviews,
+    approvedCount,
+    approvedReviews,
+    rejectedCount,
+    rejectedReviews,
+    waitingCount,
+    waitingReviews,
+  ] = await Promise.all([
+    // Pendientes
+    prisma.review.count({ where: pendingWhere }),
+    prisma.review.findMany({
+      where: pendingWhere,
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      include: reviewInclude,
+    }),
+    // Aprobadas
+    prisma.review.count({ where: approvedWhere }),
+    prisma.review.findMany({
+      where: approvedWhere,
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      include: reviewInclude,
+    }),
+    // Rechazadas
+    prisma.review.count({ where: rejectedWhere }),
+    prisma.review.findMany({
+      where: rejectedWhere,
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      include: reviewInclude,
+    }),
+    // Esperando al cliente
+    prisma.review.count({ where: waitingWhere }),
+    prisma.review.findMany({
+      where: waitingWhere,
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      include: reviewInclude,
+    }),
+  ]);
 
   return (
     <div className="space-y-8">
@@ -43,32 +84,36 @@ export default async function AdminResenasPage() {
       </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
-        <Column title="Nuevas (Pendientes)" reviews={pending} badgeColor="bg-amber-100 text-amber-800" />
-        <Column title="Aprobadas (Landing)" reviews={approved} badgeColor="bg-emerald-100 text-emerald-800" />
-        <Column title="Rechazadas" reviews={rejected} badgeColor="bg-red-100 text-red-800" />
-        <Column title="Esperando al cliente" reviews={waiting} badgeColor="bg-gray-100 text-gray-800" />
+        <ReviewColumn
+          title="Nuevas (Pendientes)"
+          initialReviews={pendingReviews}
+          totalCount={pendingCount}
+          badgeColor="bg-amber-100 text-amber-800"
+          type="PENDING"
+        />
+        <ReviewColumn
+          title="Aprobadas (Landing)"
+          initialReviews={approvedReviews}
+          totalCount={approvedCount}
+          badgeColor="bg-emerald-100 text-emerald-800"
+          type="APPROVED"
+        />
+        <ReviewColumn
+          title="Rechazadas"
+          initialReviews={rejectedReviews}
+          totalCount={rejectedCount}
+          badgeColor="bg-red-100 text-red-800"
+          type="REJECTED"
+        />
+        <ReviewColumn
+          title="Esperando al cliente"
+          initialReviews={waitingReviews}
+          totalCount={waitingCount}
+          badgeColor="bg-gray-100 text-gray-800"
+          type="WAITING"
+        />
       </div>
     </div>
   );
 }
 
-function Column({ title, reviews, badgeColor }: { title: string; reviews: any[]; badgeColor: string }) {
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2">
-        <h2 className="font-semibold text-lg">{title}</h2>
-        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${badgeColor}`}>
-          {reviews.length}
-        </span>
-      </div>
-
-      <div className="flex flex-col gap-3">
-        {reviews.length === 0 ? (
-          <p className="text-sm text-gray-500 italic">No hay reseñas aquí.</p>
-        ) : (
-          reviews.map((r) => <ReviewCard key={r.id} review={r} />)
-        )}
-      </div>
-    </div>
-  );
-}
