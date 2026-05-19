@@ -10,6 +10,7 @@ interface Props {
 export default function ReviewCard({ review }: Props) {
   const [isPending, startTransition] = useTransition();
   const [resentState, setResentState] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleStatus = (status: "APPROVED" | "REJECTED") => {
     startTransition(async () => {
@@ -18,13 +19,11 @@ export default function ReviewCard({ review }: Props) {
   };
 
   const handleDelete = () => {
-    const isPendingRequest = !review.submittedAt;
-    const confirmMsg = isPendingRequest
-      ? "¿Deseas eliminar esta solicitud de reseña pendiente? El enlace del cliente dejará de funcionar."
-      : "¿Eliminar definitivamente esta reseña?";
-    
-    if (!confirm(confirmMsg)) return;
-    
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    setShowDeleteModal(false);
     startTransition(async () => {
       await deleteReviewAction(review.id);
     });
@@ -169,6 +168,45 @@ export default function ReviewCard({ review }: Props) {
         >
           Eliminar definitivamente
         </button>
+      )}
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div 
+            className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 flex flex-col gap-4 transform scale-100 transition-all duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-500 text-xl font-bold">
+              ⚠️
+            </div>
+            
+            <div className="space-y-1">
+              <h4 className="font-bold text-gray-900 text-lg">¿Estás seguro?</h4>
+              <p className="text-sm text-gray-500">
+                {!review.submittedAt
+                  ? "Deseas eliminar esta solicitud de reseña pendiente. El enlace del cliente dejará de funcionar."
+                  : "Esta acción eliminará definitivamente la reseña y no se puede deshacer."}
+              </p>
+            </div>
+            
+            <div className="flex gap-3 mt-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={confirmDelete}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-sm font-semibold text-white transition-colors"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
