@@ -11,7 +11,7 @@ import Subscript from "@tiptap/extension-subscript";
 import Superscript from "@tiptap/extension-superscript";
 import Highlight from "@tiptap/extension-highlight";
 import { Extension } from "@tiptap/core";
-import { useActionState, useState, useCallback } from "react";
+import { useActionState, useState, useCallback, useMemo } from "react";
 import { sendCampaignAction, type CampaignState } from "./actions";
 import {
   Bold as BoldIcon,
@@ -197,6 +197,9 @@ export default function CampanaComposer({ clients }: Props) {
     new Set(clients.map((c) => c.id)),
   );
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterMode, setFilterMode] = useState<"all" | "selected">("all");
+
   // Keep HTML body in sync so hidden input is always current when form submits
   const [htmlBody, setHtmlBody] = useState("");
 
@@ -232,13 +235,36 @@ export default function CampanaComposer({ clients }: Props) {
     initialState,
   );
 
-  const toggleAll = useCallback(() => {
-    setSelected(
-      selected.size === clients.length
-        ? new Set()
-        : new Set(clients.map((c) => c.id)),
-    );
-  }, [selected.size, clients]);
+  const filteredClients = useMemo(() => {
+    return clients.filter((c) => {
+      const matchesSearch =
+        c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.email.toLowerCase().includes(searchTerm.toLowerCase());
+
+      if (filterMode === "selected") {
+        return matchesSearch && selected.has(c.id);
+      }
+      return matchesSearch;
+    });
+  }, [clients, searchTerm, filterMode, selected]);
+
+  const toggleAllVisible = useCallback(() => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      const allVisibleSelected = filteredClients.every((c) => next.has(c.id));
+
+      if (allVisibleSelected) {
+        filteredClients.forEach((c) => next.delete(c.id));
+      } else {
+        filteredClients.forEach((c) => next.add(c.id));
+      }
+      return next;
+    });
+  }, [filteredClients]);
+
+  const deselectAll = useCallback(() => {
+    setSelected(new Set());
+  }, []);
 
   const toggleOne = useCallback((id: string) => {
     setSelected((prev) => {
@@ -566,75 +592,159 @@ export default function CampanaComposer({ clients }: Props) {
 
       {/* Selector de destinatarios */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <label
             className="text-sm font-semibold"
             style={{ color: "var(--ps-text)" }}
           >
             Destinatarios *
           </label>
-          <span className="text-xs" style={{ color: "var(--ps-text-mid)" }}>
+          <span className="text-xs font-medium" style={{ color: "var(--ps-text-mid)" }}>
             {selected.size} de {clients.length} seleccionados
           </span>
         </div>
 
+        {/* Barra de Búsqueda y Filtros Rápidos */}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+              🔍
+            </span>
+            <input
+              type="text"
+              placeholder="Buscar por nombre o email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-8 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white"
+              style={{ borderColor: "var(--border)", color: "var(--ps-text)" }}
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 font-bold"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setFilterMode("all")}
+              className={`flex-1 sm:flex-initial px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                filterMode === "all"
+                  ? "bg-purple-50 text-purple-700 border-purple-205"
+                  : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+              }`}
+            >
+              Todos ({clients.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilterMode("selected")}
+              className={`flex-1 sm:flex-initial px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                filterMode === "selected"
+                  ? "bg-purple-50 text-purple-700 border-purple-205"
+                  : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+              }`}
+            >
+              Seleccionados ({selected.size})
+            </button>
+          </div>
+        </div>
+
         <div
-          className="rounded-xl border overflow-hidden"
+          className="rounded-xl border overflow-hidden bg-white shadow-sm"
           style={{ borderColor: "var(--border)" }}
         >
-          {/* Seleccionar todos */}
-          <label
-            className="flex items-center gap-3 px-4 py-3 cursor-pointer border-b"
+          {/* Fila de Acciones Rápidas */}
+          <div
+            className="flex items-center justify-between px-4 py-2.5 border-b flex-wrap gap-2"
             style={{
               backgroundColor: "var(--ps-lila-base)",
               borderColor: "var(--border)",
             }}
           >
-            <input
-              type="checkbox"
-              checked={selected.size === clients.length}
-              onChange={toggleAll}
-              className="w-4 h-4 rounded"
-              style={{ accentColor: "var(--primary)" }}
-            />
-            <span
-              className="text-sm font-medium"
-              style={{ color: "var(--ps-text)" }}
-            >
-              Seleccionar todos
-            </span>
-          </label>
+            <label className="flex items-center gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={
+                  filteredClients.length > 0 &&
+                  filteredClients.every((c) => selected.has(c.id))
+                }
+                onChange={toggleAllVisible}
+                disabled={filteredClients.length === 0}
+                className="w-4 h-4 rounded disabled:opacity-50"
+                style={{ accentColor: "var(--primary)" }}
+              />
+              <span
+                className="text-xs font-semibold"
+                style={{ color: "var(--ps-text)" }}
+              >
+                {searchTerm
+                  ? "Seleccionar todos los visibles"
+                  : "Seleccionar todos"}
+              </span>
+            </label>
+
+            {selected.size > 0 && (
+              <button
+                type="button"
+                onClick={deselectAll}
+                className="text-xs font-bold text-red-500 hover:text-red-700 transition-colors"
+              >
+                Desmarcar todos
+              </button>
+            )}
+          </div>
 
           {/* Lista de clientes */}
           <div className="bg-white divide-y max-h-64 overflow-y-auto">
-            {clients.map((client) => (
-              <label
-                key={client.id}
-                className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-gray-50 transition-colors"
-              >
-                <input
-                  type="checkbox"
-                  checked={selected.has(client.id)}
-                  onChange={() => toggleOne(client.id)}
-                  className="w-4 h-4 rounded"
-                  style={{ accentColor: "var(--primary)" }}
-                />
-                <div className="min-w-0 flex-1">
-                  <p
-                    className="text-sm font-medium truncate"
-                    style={{ color: "var(--ps-text)" }}
+            {filteredClients.length === 0 ? (
+              <div className="px-4 py-8 text-center text-sm text-gray-500 italic bg-gray-50">
+                {searchTerm
+                  ? "No se encontraron destinatarios que coincidan con la búsqueda."
+                  : filterMode === "selected"
+                  ? "No tienes ningún destinatario seleccionado."
+                  : "No hay clientes en la lista."}
+              </div>
+            ) : (
+              filteredClients.map((client) => {
+                const isSelected = selected.has(client.id);
+                return (
+                  <label
+                    key={client.id}
+                    className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-gray-50 transition-colors ${
+                      isSelected ? "bg-purple-50/10" : ""
+                    }`}
                   >
-                    {client.name}
-                  </p>
-                  <p
-                    className="text-xs truncate"
-                    style={{ color: "var(--ps-text-mid)" }}
-                  >
-                    {client.email}
-                  </p>
-                </div>
-              </label>
-            ))}
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleOne(client.id)}
+                      className="w-4 h-4 rounded"
+                      style={{ accentColor: "var(--primary)" }}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className="text-sm font-semibold truncate"
+                        style={{ color: "var(--ps-text)" }}
+                      >
+                        {client.name}
+                      </p>
+                      <p
+                        className="text-xs truncate"
+                        style={{ color: "var(--ps-text-mid)" }}
+                      >
+                        {client.email}
+                      </p>
+                    </div>
+                  </label>
+                );
+              })
+            )}
           </div>
         </div>
 
