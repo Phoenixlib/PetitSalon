@@ -7,6 +7,8 @@ import { updateAppointmentStatusAction } from "./actions";
 import AppointmentDetailModal from "@/components/admin/AppointmentDetailModal";
 import { AnimatePresence } from "framer-motion";
 
+const ITEMS_PER_PAGE = 20;
+
 interface Props {
   initialAppointments: AppointmentWithRelations[];
   currentPage: number;
@@ -451,9 +453,9 @@ export default function CitasClient({
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700">
-                Mostrando <span className="font-medium">{(currentPage - 1) * 10 + 1}</span> a{" "}
+                Mostrando <span className="font-medium">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> a{" "}
                 <span className="font-medium">
-                  {Math.min(currentPage * 10, totalCount)}
+                  {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)}
                 </span>{" "}
                 de <span className="font-medium">{totalCount}</span> resultados
               </p>
