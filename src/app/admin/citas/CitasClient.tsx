@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import { useState, useTransition, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import type { AppointmentWithRelations, AppointmentStatus } from "@/types";
 import { updateAppointmentStatusAction } from "./actions";
 import AppointmentDetailModal from "@/components/admin/AppointmentDetailModal";
@@ -8,6 +9,11 @@ import { AnimatePresence } from "framer-motion";
 
 interface Props {
   initialAppointments: AppointmentWithRelations[];
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  currentSearch: string;
+  currentStatus: "ALL" | AppointmentStatus;
 }
 
 const TABS: { id: "ALL" | AppointmentStatus; label: string }[] = [
@@ -32,14 +38,72 @@ const STATUS_COLORS: Record<AppointmentStatus, string> = {
   CANCELLED: "bg-gray-100 text-gray-600 border-gray-200",
 };
 
-export default function CitasClient({ initialAppointments }: Props) {
+export default function CitasClient({
+  initialAppointments,
+  currentPage,
+  totalPages,
+  totalCount,
+  currentSearch,
+  currentStatus,
+}: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [appointments, setAppointments] = useState(initialAppointments);
-  const [activeTab, setActiveTab] = useState<"ALL" | AppointmentStatus>("ALL");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(currentSearch);
   const [isPending, startTransition] = useTransition();
 
   const [selectedApp, setSelectedApp] = useState<AppointmentWithRelations | null>(null);
   const [modalStep, setModalStep] = useState<"detail" | "done-form" | "review-prompt">("detail");
+
+  // Sincronizar el estado local cuando las props cambian (Next.js server-side pagination)
+  useEffect(() => {
+    setAppointments(initialAppointments);
+  }, [initialAppointments]);
+
+  // Debounce search input
+  useEffect(() => {
+    if (search === currentSearch) return;
+
+    const timer = setTimeout(() => {
+      updateUrl({ q: search, page: 1 });
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [search, currentSearch]);
+
+  const updateUrl = (params: { page?: number; q?: string; status?: string }) => {
+    const newParams = new URLSearchParams(window.location.search);
+
+    if (params.page !== undefined) {
+      if (params.page > 1) {
+        newParams.set("page", params.page.toString());
+      } else {
+        newParams.delete("page");
+      }
+    }
+
+    if (params.q !== undefined) {
+      if (params.q.trim()) {
+        newParams.set("q", params.q.trim());
+        newParams.delete("page");
+      } else {
+        newParams.delete("q");
+      }
+    }
+
+    if (params.status !== undefined) {
+      if (params.status !== "ALL") {
+        newParams.set("status", params.status);
+        newParams.delete("page");
+      } else {
+        newParams.delete("status");
+      }
+    }
+
+    startTransition(() => {
+      router.push(`${pathname}?${newParams.toString()}`);
+    });
+  };
 
   const handleStatusChange = (id: string, newStatus: AppointmentStatus) => {
     startTransition(async () => {
@@ -54,34 +118,28 @@ export default function CitasClient({ initialAppointments }: Props) {
     });
   };
 
-  const filteredAppointments = useMemo(() => {
-    return appointments.filter((app) => {
-      // 1. Filtrar por Tab
-      if (activeTab !== "ALL" && app.status !== activeTab) return false;
-
-      // 2. Filtrar por Búsqueda (nombre perro o nombre dueño)
-      if (search.trim()) {
-        const query = search.toLowerCase();
-        const matchDog = app.dog.name.toLowerCase().includes(query);
-        const matchOwner = app.dog.owner.name.toLowerCase().includes(query);
-        if (!matchDog && !matchOwner) return false;
-      }
-
-      return true;
-    });
-  }, [appointments, activeTab, search]);
+  // Filtrar en cliente solo el estado para ocultar inmediatamente citas editadas
+  const filteredAppointments = appointments.filter((app) => {
+    if (currentStatus !== "ALL" && app.status !== currentStatus) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-6">
+      {/* Indicador de carga sutil e interactivo arriba */}
+      {isPending && (
+        <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 via-pink-500 to-purple-600 animate-pulse z-50" />
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         {/* Tabs de estado */}
         <div className="flex flex-wrap gap-2">
           {TABS.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => updateUrl({ status: tab.id, page: 1 })}
               className={`whitespace-nowrap px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-medium transition-colors ${
-                activeTab === tab.id
+                currentStatus === tab.id
                   ? "bg-gray-900 text-white"
                   : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
               }`}
@@ -370,6 +428,81 @@ export default function CitasClient({ initialAppointments }: Props) {
           )}
         </div>
       </div>
+
+      {/* Paginación */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg shadow-sm">
+          <div className="flex flex-1 justify-between sm:hidden">
+            <button
+              onClick={() => updateUrl({ page: currentPage - 1 })}
+              disabled={currentPage <= 1 || isPending}
+              className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+            >
+              Anterior
+            </button>
+            <button
+              onClick={() => updateUrl({ page: currentPage + 1 })}
+              disabled={currentPage >= totalPages || isPending}
+              className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+            >
+              Siguiente
+            </button>
+          </div>
+          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-gray-700">
+                Mostrando <span className="font-medium">{(currentPage - 1) * 10 + 1}</span> a{" "}
+                <span className="font-medium">
+                  {Math.min(currentPage * 10, totalCount)}
+                </span>{" "}
+                de <span className="font-medium">{totalCount}</span> resultados
+              </p>
+            </div>
+            <div>
+              <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm animate-fade-in" aria-label="Pagination">
+                <button
+                  onClick={() => updateUrl({ page: currentPage - 1 })}
+                  disabled={currentPage <= 1 || isPending}
+                  className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 transition-colors"
+                >
+                  <span className="sr-only">Anterior</span>
+                  <svg className="h-5 h-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                {Array.from({ length: totalPages }).map((_, idx) => {
+                  const pNum = idx + 1;
+                  const isCurrent = pNum === currentPage;
+                  return (
+                    <button
+                      key={pNum}
+                      onClick={() => updateUrl({ page: pNum })}
+                      disabled={isPending}
+                      className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 transition-colors ${
+                        isCurrent
+                          ? "z-10 bg-gray-900 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
+                          : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
+                      }`}
+                    >
+                      {pNum}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() => updateUrl({ page: currentPage + 1 })}
+                  disabled={currentPage >= totalPages || isPending}
+                  className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 transition-colors"
+                >
+                  <span className="sr-only">Siguiente</span>
+                  <svg className="h-5 h-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      )}
 
       <AnimatePresence>
         {selectedApp && (

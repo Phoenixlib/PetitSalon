@@ -1,16 +1,51 @@
 import { prisma } from "@/lib/prisma";
 import CitasClient from "./CitasClient";
-import type { AppointmentWithRelations } from "@/types";
+import type { AppointmentWithRelations, AppointmentStatus } from "@/types";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Citas — Petit Salón Admin" };
 
-export default async function CitasPage() {
-  const appointments: AppointmentWithRelations[] =
-    await prisma.appointment.findMany({
+const ITEMS_PER_PAGE = 20;
+
+export default async function CitasPage(props: {
+  searchParams: Promise<{ page?: string; q?: string; status?: string }>;
+}) {
+  const searchParams = await props.searchParams;
+  const page = parseInt(searchParams.page ?? "1", 10) || 1;
+  const q = searchParams.q?.trim() ?? "";
+  const status = (searchParams.status ?? "ALL") as "ALL" | AppointmentStatus;
+
+  const where: any = {};
+
+  if (status !== "ALL") {
+    where.status = status;
+  }
+
+  if (q) {
+    where.OR = [
+      {
+        dog: {
+          name: { contains: q, mode: "insensitive" },
+        },
+      },
+      {
+        dog: {
+          owner: {
+            name: { contains: q, mode: "insensitive" },
+          },
+        },
+      },
+    ];
+  }
+
+  // Ejecutar queries en paralelo para optimizar rendimiento
+  const [appointments, totalCount] = await Promise.all([
+    prisma.appointment.findMany({
+      where,
       orderBy: { date: "desc" },
-      take: 200, // Las últimas 200 citas (paginación futura)
+      skip: (page - 1) * ITEMS_PER_PAGE,
+      take: ITEMS_PER_PAGE,
       select: {
         id: true,
         calComUid: true,
@@ -30,7 +65,11 @@ export default async function CitasPage() {
           select: { id: true, name: true, price: true, duration: true },
         },
       },
-    });
+    }) as Promise<AppointmentWithRelations[]>,
+    prisma.appointment.count({ where }),
+  ]);
+
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
   return (
     <div className="space-y-6">
@@ -53,7 +92,14 @@ export default async function CitasPage() {
           + Nueva Cita
         </Link>
       </div>
-      <CitasClient initialAppointments={appointments} />
+      <CitasClient
+        initialAppointments={appointments}
+        currentPage={page}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        currentSearch={q}
+        currentStatus={status}
+      />
     </div>
   );
 }
