@@ -42,7 +42,8 @@ model Appointment {
   dogId     String
   dog       Dog               @relation(fields: [dogId], references: [id])
   notes     String?
-  reminderSentAt DateTime?
+  reminderSentAt DateTime?     // Recordatorio de 24 horas
+  todayReminderSentAt DateTime? // Recordatorio del mismo día
   review    Review?
   createdAt DateTime          @default(now())
 }
