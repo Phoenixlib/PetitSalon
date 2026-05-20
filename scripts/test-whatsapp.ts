@@ -17,18 +17,18 @@ async function run() {
     console.log("1. Enviando confirmación de reserva...");
     await sendWhatsAppConfirmation(testPhone, {
       ownerName: "Propietario de Prueba",
-      dogName: "Firulais",
-      date: new Date(Date.now() + 86400000), // Mañana
-      services: ["Baño y Corte", "Limpieza dental"],
+      petName: "Firulais",
+      dateStr: "25 de Mayo",
+      timeStr: "10:00",
     });
     console.log("✅ Confirmación enviada exitosamente.");
 
     console.log("2. Enviando recordatorio...");
     await sendWhatsAppReminder(testPhone, {
       ownerName: "Propietario de Prueba",
-      dogName: "Firulais",
-      date: new Date(Date.now() + 86400000), // Mañana
-      services: ["Baño y Corte"],
+      petName: "Firulais",
+      dateStr: "Mañana",
+      timeStr: "16:30",
     });
     console.log("✅ Recordatorio enviado exitosamente.");
 
