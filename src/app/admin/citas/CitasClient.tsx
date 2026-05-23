@@ -486,9 +486,7 @@ export default function CitasClient({
                           Completar
                         </button>
                         <button
-                          onClick={() =>
-                            handleStatusChange(app.id, "PENDING")
-                          }
+                          onClick={() => handleStatusChange(app.id, "PENDING")}
                           disabled={isPending}
                           className="flex-1 text-sm font-semibold text-amber-700 bg-amber-100 hover:bg-amber-200 py-2.5 rounded-lg transition-colors disabled:opacity-50"
                         >
