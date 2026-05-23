@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { toggleServiceAction, deleteServiceAction, deleteCategoryAction, reorderCategoriesAction, reorderServicesAction } from "./actions";
+import {
+  toggleServiceAction,
+  deleteServiceAction,
+  deleteCategoryAction,
+  reorderCategoriesAction,
+  reorderServicesAction,
+} from "./actions";
 import ServiceModal from "@/components/admin/ServiceModal";
 import CategoryModal from "@/components/admin/CategoryModal";
 import CalComManual from "@/components/admin/CalComManual";
@@ -127,7 +133,8 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
       return;
 
     const newServices = [...categoryServices];
-    const targetIndex = direction === "up" ? serviceIndex - 1 : serviceIndex + 1;
+    const targetIndex =
+      direction === "up" ? serviceIndex - 1 : serviceIndex + 1;
 
     [newServices[serviceIndex], newServices[targetIndex]] = [
       newServices[targetIndex],
@@ -142,7 +149,10 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
     });
   };
 
-  const allCategoriesForSelect = categories.map((c) => ({ id: c.id, name: c.name }));
+  const allCategoriesForSelect = categories.map((c) => ({
+    id: c.id,
+    name: c.name,
+  }));
 
   return (
     <>
@@ -197,11 +207,24 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
       {/* Categories */}
       <div className="space-y-6">
         {categories.map((category, index) => (
-          <div key={category.id} className="rounded-2xl overflow-hidden shadow-sm" style={{ border: "1px solid var(--border)" }}>
-            <div className="px-4 py-3 lg:px-5 lg:py-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3" style={{ backgroundColor: "var(--ps-lila-pale)", borderBottom: "1px solid var(--border)" }}>
+          <div
+            key={category.id}
+            className="rounded-2xl overflow-hidden shadow-sm"
+            style={{ border: "1px solid var(--border)" }}
+          >
+            <div
+              className="px-4 py-3 lg:px-5 lg:py-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3"
+              style={{
+                backgroundColor: "var(--ps-lila-pale)",
+                borderBottom: "1px solid var(--border)",
+              }}
+            >
               <div className="flex-1">
                 <div className="flex items-center justify-between lg:justify-start gap-2">
-                  <h2 className="text-base lg:text-lg font-semibold flex items-center gap-2" style={{ color: "var(--ps-text)" }}>
+                  <h2
+                    className="text-base lg:text-lg font-semibold flex items-center gap-2"
+                    style={{ color: "var(--ps-text)" }}
+                  >
                     📁 {category.name}
                   </h2>
                   <div className="flex items-center gap-1 lg:hidden">
@@ -240,7 +263,9 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
                   </div>
                 </div>
                 {category.description && (
-                  <p className="text-xs lg:text-sm mt-1 text-slate-600">{category.description}</p>
+                  <p className="text-xs lg:text-sm mt-1 text-slate-600">
+                    {category.description}
+                  </p>
                 )}
               </div>
               <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
@@ -279,7 +304,10 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
               </div>
             </div>
 
-            <div className="bg-white divide-y" style={{ borderColor: "var(--border)" }}>
+            <div
+              className="bg-white divide-y"
+              style={{ borderColor: "var(--border)" }}
+            >
               {category.services.map((s, serviceIndex) => (
                 <ServiceRow
                   key={s.id}
@@ -299,12 +327,14 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
                 />
               ))}
               {category.services.length === 0 && (
-                <div className="p-4 text-sm text-center text-neutral-400">No hay servicios en esta categoría</div>
+                <div className="p-4 text-sm text-center text-neutral-400">
+                  No hay servicios en esta categoría
+                </div>
               )}
             </div>
-            
+
             <div className="p-3 bg-neutral-50 border-t border-neutral-200">
-              <button 
+              <button
                 onClick={() => handleNewService(category.id)}
                 className="text-sm font-medium hover:underline text-[var(--primary)] flex items-center gap-1"
               >
@@ -316,11 +346,28 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
 
         {/* Uncategorized */}
         {uncategorized.length > 0 && (
-          <div className="rounded-2xl overflow-hidden shadow-sm" style={{ border: "1px solid var(--border)" }}>
-            <div className="px-5 py-4 flex items-center justify-between" style={{ backgroundColor: "#f5f5f5", borderBottom: "1px solid var(--border)" }}>
-              <h2 className="text-lg font-semibold" style={{ color: "var(--ps-text)" }}>📂 Sin Categoría</h2>
+          <div
+            className="rounded-2xl overflow-hidden shadow-sm"
+            style={{ border: "1px solid var(--border)" }}
+          >
+            <div
+              className="px-5 py-4 flex items-center justify-between"
+              style={{
+                backgroundColor: "#f5f5f5",
+                borderBottom: "1px solid var(--border)",
+              }}
+            >
+              <h2
+                className="text-lg font-semibold"
+                style={{ color: "var(--ps-text)" }}
+              >
+                📂 Sin Categoría
+              </h2>
             </div>
-            <div className="bg-white divide-y" style={{ borderColor: "var(--border)" }}>
+            <div
+              className="bg-white divide-y"
+              style={{ borderColor: "var(--border)" }}
+            >
               {uncategorized.map((s, serviceIndex) => (
                 <ServiceRow
                   key={s.id}
@@ -353,7 +400,7 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
           defaultCategoryId={defaultCatId}
         />
       )}
-      
+
       {categoryModalOpen && (
         <CategoryModal
           open={categoryModalOpen}
@@ -393,7 +440,9 @@ function ServiceRow({
         {/* Indicador de estado */}
         <div
           className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1.5 sm:mt-0"
-          style={{ backgroundColor: service.isActive ? "var(--primary)" : "#ccc" }}
+          style={{
+            backgroundColor: service.isActive ? "var(--primary)" : "#ccc",
+          }}
         />
 
         {/* Info principal */}
@@ -410,7 +459,9 @@ function ServiceRow({
               <span className="text-xs font-bold text-gray-900 bg-slate-100 px-2 py-0.5 rounded">
                 {formatPrice(service.price)}
               </span>
-              <span className="text-[10px] text-gray-500 mt-0.5">{service.duration} min</span>
+              <span className="text-[10px] text-gray-500 mt-0.5">
+                {service.duration} min
+              </span>
             </div>
           </div>
           {service.description && (
@@ -423,7 +474,10 @@ function ServiceRow({
 
       {/* Precio y duración desktop */}
       <div className="hidden sm:flex flex-col items-end gap-0.5 flex-shrink-0 ml-4 mr-4">
-        <span className="text-sm font-semibold" style={{ color: "var(--ps-text)" }}>
+        <span
+          className="text-sm font-semibold"
+          style={{ color: "var(--ps-text)" }}
+        >
           {formatPrice(service.price)}
         </span>
         <span className="text-xs" style={{ color: "var(--ps-text-mid)" }}>
@@ -457,7 +511,9 @@ function ServiceRow({
           onClick={() => onToggle(service.id, service.isActive)}
           disabled={isPending}
           className={`flex-1 sm:flex-none rounded-lg px-2.5 py-1.5 text-[11px] sm:text-xs font-semibold transition-all hover:opacity-80 disabled:opacity-50 text-center ${
-            service.isActive ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700"
+            service.isActive
+              ? "bg-red-50 text-red-600"
+              : "bg-green-50 text-green-700"
           }`}
         >
           {service.isActive ? "Ocultar" : "Mostrar"}
@@ -473,7 +529,10 @@ function ServiceRow({
         {confirmDelete ? (
           <div className="flex items-center gap-1 flex-1 sm:flex-none justify-end">
             <button
-              onClick={() => { onDelete(service.id); setConfirmDelete(false); }}
+              onClick={() => {
+                onDelete(service.id);
+                setConfirmDelete(false);
+              }}
               disabled={isPending}
               className="rounded-lg px-2.5 py-1.5 text-[11px] sm:text-xs font-bold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
             >
@@ -493,7 +552,14 @@ function ServiceRow({
             className="rounded-lg p-1.5 transition-colors bg-white border border-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 disabled:opacity-50 text-gray-400"
             title="Eliminar servicio"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <polyline points="3 6 5 6 21 6" />
               <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
               <path d="M10 11v6M14 11v6" />

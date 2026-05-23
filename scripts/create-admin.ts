@@ -5,32 +5,30 @@ import { hash } from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = "admin@petitsalon.cl";
-  const password = "password123";
+  const email = process.argv[2] || "admin@petitsalon.cl";
+  const name = process.argv[3] || "Administradora";
+  const password = process.argv[4] || "password123";
 
-  // Verificar si ya existe
-  const existingUser = await prisma.adminUser.findUnique({
-    where: { email },
-  });
-
-  if (existingUser) {
-    console.log(`✅ El usuario ${email} ya existe.`);
-    return;
-  }
-
-  // Crear usuario con contraseña encriptada
+  // Crear o actualizar usuario con contraseña encriptada
   const hashedPassword = await hash(password, 10);
 
-  await prisma.adminUser.create({
-    data: {
+  await prisma.adminUser.upsert({
+    where: { email },
+    update: {
+      password: hashedPassword,
+      name: name,
+    },
+    create: {
       email,
       password: hashedPassword,
-      name: "Administradora",
+      name: name,
     },
   });
 
-  console.log(`🎉 Administrador creado exitosamente.`);
-  console.log(`Email: ${email}`);
+  console.log(
+    `🎉 Administrador ${email} configurado/actualizado exitosamente.`,
+  );
+  console.log(`Nombre: ${name}`);
   console.log(`Password: ${password}`);
 }
 

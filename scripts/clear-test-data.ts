@@ -28,8 +28,9 @@ async function main() {
     console.log(`  ✅ ${owners.count} clientes eliminados.`);
 
     console.log("\n✨ Limpieza completada con éxito.");
-    console.log("Nota: Se han mantenido los servicios, categorías, configuración del sitio, galería y usuarios admin.");
-
+    console.log(
+      "Nota: Se han mantenido los servicios, categorías, configuración del sitio, galería y usuarios admin.",
+    );
   } catch (error) {
     console.error("❌ Error durante la limpieza:", error);
     process.exit(1);

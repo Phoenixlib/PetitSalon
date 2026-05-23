@@ -381,13 +381,15 @@ async function handleBookingCreated(payload: CalComBookingPayload) {
         hour12: false,
       });
 
-      // Nota: Aquí el mensaje es de confirmación, no de recordatorio para mañana.
+      // WhatsApp deshabilitado temporalmente para evitar cargos/spam no deseado en lanzamiento
+      /*
       await sendWhatsAppConfirmation(owner.phone, {
         ownerName: owner.name,
         petName: dog.name,
         dateStr,
         timeStr,
       }).catch((e) => console.error("[calcom-webhook] WhatsApp fail:", e));
+      */
     }
   } catch (appErr: any) {
     console.error(
@@ -439,12 +441,14 @@ async function handleReminderEvent(payload: CalComBookingPayload) {
 
     const dogName = appointment?.dog.name || "tu mascota";
 
+    /*
     await sendWhatsAppTodayReminder(attendee.phoneNumber, {
       ownerName: attendee.name,
       petName: dogName,
       dateStr: "hoy",
       timeStr,
     }).catch((e) => console.error("[calcom-webhook] WhatsApp Today fail:", e));
+    */
   }
 }
 

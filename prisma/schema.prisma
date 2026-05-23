@@ -20,39 +20,32 @@ model Dog {
   id           String        @id @default(cuid())
   name         String
   breed        String
-  age          String?
-  weight       String?
   birthDate    DateTime?
   notes        String?
   photo        String?
   ownerId      String
-  owner        Owner         @relation(fields: [ownerId], references: [id])
+  createdAt    DateTime      @default(now())
+  age          String?
+  weight       String?
   appointments Appointment[]
   attendances  Attendance[]
-  createdAt    DateTime      @default(now())
+  owner        Owner         @relation(fields: [ownerId], references: [id])
 }
 
 model Appointment {
-  id        String            @id @default(cuid())
-  calComUid String?           @unique // UID de la reserva en Cal.com
-  date      DateTime
-  status    AppointmentStatus @default(PENDING)
-  serviceId String
-  service   Service           @relation(fields: [serviceId], references: [id])
-  dogId     String
-  dog       Dog               @relation(fields: [dogId], references: [id])
-  notes     String?
-  reminderSentAt DateTime?     // Recordatorio de 24 horas
-  todayReminderSentAt DateTime? // Recordatorio del mismo día
-  review    Review?
-  createdAt DateTime          @default(now())
-}
-
-enum AppointmentStatus {
-  PENDING
-  CONFIRMED
-  DONE
-  CANCELLED
+  id                  String            @id @default(cuid())
+  calComUid           String?           @unique
+  date                DateTime
+  status              AppointmentStatus @default(PENDING)
+  serviceId           String
+  dogId               String
+  notes               String?
+  createdAt           DateTime          @default(now())
+  reminderSentAt      DateTime?
+  todayReminderSentAt DateTime?
+  dog                 Dog               @relation(fields: [dogId], references: [id])
+  service             Service           @relation(fields: [serviceId], references: [id])
+  review              Review?
 }
 
 model Attendance {
@@ -62,8 +55,8 @@ model Attendance {
   notes     String?
   photos    String[]
   dogId     String
-  dog       Dog      @relation(fields: [dogId], references: [id])
   createdAt DateTime @default(now())
+  dog       Dog      @relation(fields: [dogId], references: [id])
 }
 
 model Service {
@@ -73,11 +66,11 @@ model Service {
   duration     Int
   description  String?
   isActive     Boolean          @default(true)
-  order        Int              @default(0)
   calComLink   String?          @map("cal_com_link")
   categoryId   String?
-  category     ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  order        Int              @default(0)
   appointments Appointment[]
+  category     ServiceCategory? @relation(fields: [categoryId], references: [id])
 }
 
 model ServiceCategory {
@@ -86,8 +79,8 @@ model ServiceCategory {
   description String?
   order       Int       @default(0)
   isActive    Boolean   @default(true)
-  services    Service[]
   createdAt   DateTime  @default(now())
+  services    Service[]
 }
 
 model AdminUser {
@@ -98,14 +91,12 @@ model AdminUser {
   createdAt DateTime @default(now())
 }
 
-// Configuración global del sitio (clave-valor)
 model SiteConfig {
   key       String   @id
   value     String
   updatedAt DateTime @updatedAt
 }
 
-// Preguntas frecuentes
 model FaqItem {
   id        String   @id @default(cuid())
   question  String
@@ -121,26 +112,33 @@ model Review {
   token         String       @unique @default(cuid())
   ownerName     String
   petName       String
-  rating        Int          @default(0)  // 0 = aún no enviado por el cliente
+  rating        Int          @default(0)
   text          String       @default("")
   status        ReviewStatus @default(PENDING)
   appointmentId String?      @unique
-  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
   createdAt     DateTime     @default(now())
-  submittedAt   DateTime?    // cuando el cliente envía el formulario
-}
-
-enum ReviewStatus {
-  PENDING    // recibida o link enviado, pendiente de aprobación
-  APPROVED   // visible en el landing
-  REJECTED   // descartada
+  submittedAt   DateTime?
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
 }
 
 model GalleryPhoto {
   id        String   @id @default(cuid())
-  photoUrl  String                          // URL Cloudinary — foto del resultado
-  caption   String?                         // Texto breve (ej: "Golden Retriever, corte de verano")
-  order     Int      @default(0)            // Orden de aparición en el landing
-  isVisible Boolean  @default(true)         // Si aparece en el landing
+  photoUrl  String
+  caption   String?
+  order     Int      @default(0)
+  isVisible Boolean  @default(true)
   createdAt DateTime @default(now())
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  DONE
+  CANCELLED
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
