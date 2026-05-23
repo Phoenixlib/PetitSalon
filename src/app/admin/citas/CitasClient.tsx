@@ -323,6 +323,16 @@ export default function CitasClient({
                               </button>
                               <button
                                 onClick={() =>
+                                  handleStatusChange(app.id, "PENDING")
+                                }
+                                disabled={isPending}
+                                title="Revertir a Agendada"
+                                className="text-xs font-medium text-amber-600 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
+                              >
+                                ⟲ Revertir
+                              </button>
+                              <button
+                                onClick={() =>
                                   handleStatusChange(app.id, "CANCELLED")
                                 }
                                 disabled={isPending}
@@ -474,6 +484,15 @@ export default function CitasClient({
                           className="flex-1 text-sm font-semibold text-green-700 bg-green-100 hover:bg-green-200 py-2.5 rounded-lg transition-colors disabled:opacity-50"
                         >
                           Completar
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleStatusChange(app.id, "PENDING")
+                          }
+                          disabled={isPending}
+                          className="flex-1 text-sm font-semibold text-amber-700 bg-amber-100 hover:bg-amber-200 py-2.5 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                          ⟲ Revertir
                         </button>
                         <button
                           onClick={() =>

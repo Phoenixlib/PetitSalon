@@ -402,14 +402,24 @@ export default function AppointmentDetailModal({
                   >
                     Marcar como Realizado
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => handleStatusChange("CANCELLED")}
-                    disabled={isPending}
-                    className="w-full rounded-full py-2.5 font-semibold text-gray-700 bg-gray-200 transition-opacity hover:bg-gray-300 disabled:opacity-50"
-                  >
-                    Cancelar Cita
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleStatusChange("PENDING")}
+                      disabled={isPending}
+                      className="flex-1 rounded-full py-2.5 font-semibold text-amber-700 bg-amber-100 hover:bg-amber-200 transition-colors disabled:opacity-50"
+                    >
+                      ⟲ Revertir a Pendiente
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleStatusChange("CANCELLED")}
+                      disabled={isPending}
+                      className="flex-1 rounded-full py-2.5 font-semibold text-gray-700 bg-gray-200 transition-opacity hover:bg-gray-300 disabled:opacity-50"
+                    >
+                      Cancelar Cita
+                    </button>
+                  </div>
                 </>
               )}
 
