@@ -26,7 +26,14 @@ export default async function DogDetailPage(props: {
             in: [AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED],
           },
         },
-        include: { service: true },
+        include: {
+          service: true,
+          dog: {
+            include: {
+              owner: true,
+            },
+          },
+        },
         orderBy: { date: "asc" },
       },
     },

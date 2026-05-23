@@ -169,12 +169,36 @@ export default function PerrosClient({
                     </span>
                   </td>
                   <td className="p-4">
-                    <Link
-                      href={`/admin/clientes/${dog.owner.id}`}
-                      className="text-[var(--primary)] hover:underline font-medium"
-                    >
-                      {dog.owner.name}
-                    </Link>
+                    <div className="flex flex-col">
+                      <Link
+                        href={`/admin/clientes/${dog.owner.id}`}
+                        className="text-[var(--primary)] hover:underline font-medium"
+                      >
+                        {dog.owner.name}
+                      </Link>
+                      <div className="flex items-center gap-2 mt-1">
+                        <a
+                          href={`tel:${dog.owner.phone}`}
+                          className="text-xs text-blue-600 hover:underline"
+                        >
+                          {dog.owner.phone}
+                        </a>
+                        <a
+                          href={`https://wa.me/${dog.owner.phone.replace(/\D/g, "")}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-green-600 hover:text-green-700 transition-colors"
+                          title="WhatsApp"
+                        >
+                          <svg
+                            className="w-3.5 h-3.5 fill-current"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M12.008.01c-6.61 0-11.948 5.338-11.951 11.951 0 2.097.546 4.142 1.587 5.946l-1.687 6.163 6.31-1.654c1.751.953 3.719 1.454 5.724 1.455 6.613 0 11.949-5.34 11.953-11.997 0-3.204-1.239-6.216-3.505-8.484C18.22 1.256 15.21.011 12.008.01zm6.979 16.983c-1.861 1.862-4.332 2.886-6.979 2.888-1.637-.002-3.225-.501-4.825-1.451l-5.448 1.428 1.458-5.328c-.913-1.534-1.393-3.255-1.392-5.017.003-5.444 4.428-9.86 9.865-9.86 2.638 0 5.11.025 6.963 1.879 1.861 1.862 2.886 4.341 2.884 6.979-.004 5.444-4.426 9.863-9.862 9.861z" />
+                          </svg>
+                        </a>
+                      </div>
+                    </div>
                   </td>
                   <td className="p-4 text-center">
                     <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-800 font-bold text-xs">
@@ -237,16 +261,46 @@ export default function PerrosClient({
                   </div>
                 </div>
 
-                <div className="bg-neutral-50 p-3 rounded-lg border border-neutral-100">
-                  <span className="text-xs text-neutral-500 uppercase font-semibold">
-                    Dueño
-                  </span>
-                  <Link
-                    href={`/admin/clientes/${dog.owner.id}`}
-                    className="block mt-0.5 text-sm text-[var(--primary)] hover:underline font-medium truncate"
-                  >
-                    {dog.owner.name}
-                  </Link>
+                <div className="bg-neutral-50 p-3 rounded-lg border border-neutral-100 flex justify-between items-center">
+                  <div>
+                    <span className="text-xs text-neutral-500 uppercase font-semibold">
+                      Dueño
+                    </span>
+                    <Link
+                      href={`/admin/clientes/${dog.owner.id}`}
+                      className="block mt-0.5 text-sm text-[var(--primary)] hover:underline font-medium truncate"
+                    >
+                      {dog.owner.name}
+                    </Link>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={`tel:${dog.owner.phone}`}
+                      className="inline-flex items-center justify-center p-2 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
+                      title="Llamar"
+                    >
+                      <svg
+                        className="w-3.5 h-3.5 fill-current"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M21 16.5c-1.35 0-2.65-.21-3.85-.6-.35-.11-.75-.02-1.02.26l-2.2 2.2c-2.83-1.45-5.15-3.76-6.59-6.59l2.2-2.21c.28-.26.36-.65.25-1C9.39 7.65 9.19 6.35 9.19 5c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-4.19c0-.55-.45-1-1-1z" />
+                      </svg>
+                    </a>
+                    <a
+                      href={`https://wa.me/${dog.owner.phone.replace(/\D/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors"
+                      title="WhatsApp"
+                    >
+                      <svg
+                        className="w-3.5 h-3.5 fill-current"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M12.008.01c-6.61 0-11.948 5.338-11.951 11.951 0 2.097.546 4.142 1.587 5.946l-1.687 6.163 6.31-1.654c1.751.953 3.719 1.454 5.724 1.455 6.613 0 11.949-5.34 11.953-11.997 0-3.204-1.239-6.216-3.505-8.484C18.22 1.256 15.21.011 12.008.01zm6.979 16.983c-1.861 1.862-4.332 2.886-6.979 2.888-1.637-.002-3.225-.501-4.825-1.451l-5.448 1.428 1.458-5.328c-.913-1.534-1.393-3.255-1.392-5.017.003-5.444 4.428-9.86 9.865-9.86 2.638 0 5.11.025 6.963 1.879 1.861 1.862 2.886 4.341 2.884 6.979-.004 5.444-4.426 9.863-9.862 9.861z" />
+                      </svg>
+                    </a>
+                  </div>
                 </div>
 
                 <div className="mt-1 pt-2">

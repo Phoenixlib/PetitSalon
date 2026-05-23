@@ -138,37 +138,64 @@ export default function ClientesClient({
                 </td>
               </tr>
             ) : (
-              owners.map((owner) => (
-                <tr key={owner.id} className="hover:bg-neutral-50">
-                  <td className="p-4 font-medium">{owner.name}</td>
-                  <td className="p-4 text-neutral-600">
-                    {owner.phone} <br />
-                    <span className="text-xs text-neutral-400">
-                      {owner.email || "Sin email"}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex gap-2 flex-wrap">
-                      {owner.dogs.map((dog) => (
-                        <span
-                          key={dog.id}
-                          className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full border border-orange-200"
-                        >
-                          {dog.name} ({dog.breed})
+              owners.map((owner) => {
+                const cleanPhone = owner.phone.replace(/\D/g, "");
+                return (
+                  <tr key={owner.id} className="hover:bg-neutral-50">
+                    <td className="p-4 font-medium">{owner.name}</td>
+                    <td className="p-4 text-neutral-600">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={`tel:${owner.phone}`}
+                            className="text-blue-600 hover:underline font-medium"
+                            title="Llamar"
+                          >
+                            {owner.phone}
+                          </a>
+                          <a
+                            href={`https://wa.me/${cleanPhone}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center p-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors"
+                            title="WhatsApp"
+                          >
+                            <svg
+                              className="w-3.5 h-3.5 fill-current"
+                              viewBox="0 0 24 24"
+                            >
+                              <path d="M12.008.01c-6.61 0-11.948 5.338-11.951 11.951 0 2.097.546 4.142 1.587 5.946l-1.687 6.163 6.31-1.654c1.751.953 3.719 1.454 5.724 1.455 6.613 0 11.949-5.34 11.953-11.997 0-3.204-1.239-6.216-3.505-8.484C18.22 1.256 15.21.011 12.008.01zm6.979 16.983c-1.861 1.862-4.332 2.886-6.979 2.888-1.637-.002-3.225-.501-4.825-1.451l-5.448 1.428 1.458-5.328c-.913-1.534-1.393-3.255-1.392-5.017.003-5.444 4.428-9.86 9.865-9.86 2.638 0 5.11.025 6.963 1.879 1.861 1.862 2.886 4.341 2.884 6.979-.004 5.444-4.426 9.863-9.862 9.861z" />
+                            </svg>
+                          </a>
+                        </div>
+                        <span className="text-xs text-neutral-400">
+                          {owner.email || "Sin email"}
                         </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="p-4 text-right">
-                    <Link
-                      href={`/admin/clientes/${owner.id}`}
-                      className="text-[var(--primary)] hover:underline font-medium text-xs"
-                    >
-                      Ver detalle →
-                    </Link>
-                  </td>
-                </tr>
-              ))
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex gap-2 flex-wrap">
+                        {owner.dogs.map((dog) => (
+                          <span
+                            key={dog.id}
+                            className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full border border-orange-200"
+                          >
+                            {dog.name} ({dog.breed})
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="p-4 text-right">
+                      <Link
+                        href={`/admin/clientes/${owner.id}`}
+                        className="text-[var(--primary)] hover:underline font-medium text-xs"
+                      >
+                        Ver detalle →
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -187,15 +214,29 @@ export default function ClientesClient({
                     <h3 className="font-semibold text-base text-gray-900">
                       {owner.name}
                     </h3>
-                    <div className="text-sm text-neutral-600 mt-0.5">
+                    <div className="text-sm text-neutral-600 mt-1 flex flex-wrap items-center gap-3">
                       <a
                         href={`tel:${owner.phone}`}
-                        className="hover:underline text-blue-600"
+                        className="hover:underline text-blue-600 font-medium"
                       >
                         {owner.phone}
                       </a>
+                      <a
+                        href={`https://wa.me/${owner.phone.replace(/\D/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-green-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-100 text-[10px] font-bold uppercase"
+                      >
+                        <svg
+                          className="w-3 h-3 fill-current"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M12.008.01c-6.61 0-11.948 5.338-11.951 11.951 0 2.097.546 4.142 1.587 5.946l-1.687 6.163 6.31-1.654c1.751.953 3.719 1.454 5.724 1.455 6.613 0 11.949-5.34 11.953-11.997 0-3.204-1.239-6.216-3.505-8.484C18.22 1.256 15.21.011 12.008.01zm6.979 16.983c-1.861 1.862-4.332 2.886-6.979 2.888-1.637-.002-3.225-.501-4.825-1.451l-5.448 1.428 1.458-5.328c-.913-1.534-1.393-3.255-1.392-5.017.003-5.444 4.428-9.86 9.865-9.86 2.638 0 5.11.025 6.963 1.879 1.861 1.862 2.886 4.341 2.884 6.979-.004 5.444-4.426 9.863-9.862 9.861z" />
+                        </svg>
+                        WhatsApp
+                      </a>
                       {owner.email && (
-                        <span className="block text-xs text-neutral-400">
+                        <span className="w-full text-xs text-neutral-400">
                           {owner.email}
                         </span>
                       )}

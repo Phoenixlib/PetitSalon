@@ -21,10 +21,14 @@ interface CalComEmbedProps {
   onSuccess?: () => void;
 }
 
-export default function CalComEmbed({ calLink, prefill, onSuccess }: CalComEmbedProps) {
+export default function CalComEmbed({
+  calLink,
+  prefill,
+  onSuccess,
+}: CalComEmbedProps) {
   useEffect(() => {
     (async function () {
-      const cal = await getCalApi({ namespace: "petitsalon" });
+      const cal = await getCalApi();
       cal("ui", {
         theme: "light",
         hideEventTypeDetails: false,
@@ -81,7 +85,6 @@ export default function CalComEmbed({ calLink, prefill, onSuccess }: CalComEmbed
   return (
     <div className="w-full h-full min-h-[850px] md:min-h-[650px] overflow-y-auto">
       <Cal
-        namespace="petitsalon"
         calLink={finalCalLink}
         style={{ width: "100%", height: "100%" }}
         config={{
