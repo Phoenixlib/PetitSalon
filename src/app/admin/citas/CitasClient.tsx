@@ -184,7 +184,10 @@ export default function CitasClient({
       </div>
 
       {/* Tabla */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative group/table">
+        <div className="absolute top-0 right-0 p-2 text-[10px] font-bold text-neutral-400 bg-neutral-50 border-l border-b border-neutral-100 rounded-bl-lg z-10 hidden lg:block">
+          💡 HAZ CLIC EN CUALQUIER FILA PARA VER DETALLES
+        </div>
         <div className="overflow-x-auto hidden lg:block">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-gray-50 text-gray-500 uppercase font-semibold">
@@ -226,40 +229,42 @@ export default function CitasClient({
                   return (
                     <tr
                       key={app.id}
-                      className="hover:bg-gray-50/50 transition-colors"
+                      className="group hover:bg-orange-50/50 transition-colors cursor-pointer border-l-4 border-l-transparent hover:border-l-[var(--primary)]"
                       data-testid="cita-row"
+                      onClick={() => {
+                        setSelectedApp(app);
+                        setModalStep("detail");
+                      }}
                     >
                       <td className="px-6 py-4">
-                        <div className="font-medium text-gray-900">
+                        <div className="font-bold text-gray-900 group-hover:text-[var(--primary)] transition-colors">
                           {dateStr}
                         </div>
-                        <div className="text-gray-500">{timeStr}</div>
+                        <div className="text-gray-500 font-medium">
+                          {timeStr}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
-                        <button
-                          onClick={() => {
-                            setSelectedApp(app);
-                            setModalStep("detail");
-                          }}
-                          className="text-left hover:opacity-70 transition-opacity"
-                        >
-                          <div className="font-medium text-gray-900">
+                        <div className="text-left group/dog">
+                          <div className="font-bold text-gray-900 flex items-center gap-1.5">
                             {app.dog.name}
+                            <span className="text-[var(--primary)] opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0">
+                              →
+                            </span>
                           </div>
-                          <div className="text-gray-500">{app.dog.breed}</div>
-                        </button>
+                          <div className="text-gray-500 text-xs font-medium">
+                            {app.dog.breed}
+                          </div>
+                        </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="font-medium text-gray-900">
+                        <div className="font-semibold text-gray-900">
                           {app.dog.owner.name}
                         </div>
-                        <div className="flex items-center gap-2">
-                          <a
-                            href={`tel:${app.dog.owner.phone}`}
-                            className="text-blue-500 hover:underline inline-flex items-center gap-1"
-                          >
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-gray-500 text-xs font-medium bg-neutral-100 px-2 py-0.5 rounded">
                             {app.dog.owner.phone}
-                          </a>
+                          </span>
                           {app.whatsappSentAt && (
                             <span
                               className="text-xs text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full"
@@ -426,12 +431,9 @@ export default function CitasClient({
                               ✓ WA
                             </span>
                           )}
-                          <a
-                            href={`tel:${app.dog.owner.phone}`}
-                            className="text-blue-500 hover:underline"
-                          >
+                          <span className="text-gray-500">
                             {app.dog.owner.phone}
-                          </a>
+                          </span>
                         </div>
                       </div>
                     </div>

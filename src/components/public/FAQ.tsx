@@ -51,10 +51,10 @@ export default function FAQ({ items, whatsapp }: FAQProps) {
                 className="rounded-2xl overflow-hidden border"
                 style={{
                   borderColor: estaAbierto
-                    ? "var(--ps-lila-mid)"
+                    ? "var(--ps-gold)"
                     : "oklch(90% 0.01 280)",
                   backgroundColor: estaAbierto
-                    ? "var(--ps-lila-pale)"
+                    ? "var(--ps-gold-light)"
                     : "white",
                   transition: "background-color 0.25s, border-color 0.25s",
                 }}
@@ -68,7 +68,7 @@ export default function FAQ({ items, whatsapp }: FAQProps) {
                     className="text-base font-semibold leading-snug"
                     style={{
                       color: estaAbierto
-                        ? "var(--ps-lila-deep)"
+                        ? "var(--ps-gold-dark)"
                         : "var(--ps-text)",
                     }}
                   >
@@ -80,7 +80,7 @@ export default function FAQ({ items, whatsapp }: FAQProps) {
                     className="flex-shrink-0"
                     style={{
                       color: estaAbierto
-                        ? "var(--ps-lila-deep)"
+                        ? "var(--ps-gold-dark)"
                         : "var(--ps-text-mid)",
                     }}
                   >

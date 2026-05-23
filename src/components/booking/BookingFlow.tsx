@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import CalComEmbed, { CalComPrefill } from "./CalComEmbed";
 import {
@@ -12,6 +13,7 @@ import {
   Clock,
   CalendarDays,
   PawPrint,
+  ArrowRight,
 } from "lucide-react";
 
 type Step = "lookup" | "dog-select" | "embed";
@@ -66,6 +68,13 @@ export default function BookingFlow({
   const [copied, setCopied] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
 
+  // Auto-scroll to top on success
+  useEffect(() => {
+    if (isSuccess) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [isSuccess]);
+
   const handleLookup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
@@ -91,13 +100,15 @@ export default function BookingFlow({
         setDogs(data.dogs);
         setStep("dog-select");
       } else {
-        // No encontrado -> Ir a embed
-        setStep("embed");
+        // No encontrado -> Mostrar error para que revise sus datos
+        setError(
+          "No encontramos a un cliente con estos datos. Verifica si hay algún error en tu correo o teléfono, o si es tu primera vez en Petit Salon, por favor vuelve e ingresa por la opción de nuevo cliente.",
+        );
       }
     } catch (err) {
       console.error(err);
       setError(
-        "No pudimos buscar tu información. Por favor, continúa como invitado.",
+        "Ocurrió un error al buscar tu información. Por favor, intenta de nuevo.",
       );
     } finally {
       setLoading(false);
@@ -445,23 +456,32 @@ Correo: ${bankConfig.bank_email || ""}`;
             </div>
 
             <button
-              onClick={() => setShowTerms(true)}
-              className="w-full mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-100 flex items-start gap-3 text-left hover:bg-amber-100 transition-colors group"
+              onClick={() => {
+                setShowTerms(true);
+                // Pequeño timeout para asegurar que el modal se renderice antes de scrollear si fuera necesario,
+                // aunque aquí el scroll es al inicio de la página.
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className="w-full mb-6 p-5 rounded-2xl bg-amber-50 border-2 border-amber-200 flex items-start gap-4 text-left hover:bg-amber-100 transition-all group scale-100 hover:scale-[1.02] active:scale-[0.98]"
             >
-              <div className="size-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0 group-hover:bg-amber-200 transition-colors">
-                <ShieldAlert className="size-5 text-amber-600" />
+              <div className="size-10 rounded-xl bg-amber-200 flex items-center justify-center shrink-0 group-hover:bg-amber-300 transition-colors shadow-sm">
+                <ShieldAlert className="size-6 text-amber-700" />
               </div>
-              <div>
-                <h4 className="text-sm font-bold text-amber-900 flex items-center gap-1.5">
-                  Información Importante
-                  <span className="text-[10px] bg-amber-200/50 px-1.5 py-0.5 rounded text-amber-700 font-medium">
-                    Leer
-                  </span>
+              <div className="flex-1">
+                <h4 className="text-base font-extrabold text-amber-900 mb-1">
+                  Información Importante (Términos)
                 </h4>
-                <p className="text-xs text-amber-800/80 mt-0.5 leading-relaxed">
-                  Para la mejor experiencia de tu mascota, revisa nuestra
-                  política de puntualidad, cancelación y convivencia.
+                <p className="text-sm text-amber-800/90 leading-relaxed font-medium">
+                  Este es solo un resumen. Hay información crucial sobre
+                  puntualidad, salud y cancelaciones que debes conocer antes de
+                  agendar.
                 </p>
+                <div className="mt-3">
+                  <span className="text-[11px] bg-amber-600 text-white px-3 py-1.5 rounded-lg font-bold inline-flex items-center gap-1.5 shadow-sm group-hover:bg-amber-700 transition-colors">
+                    Presiona aquí para leer más
+                    <ArrowRight className="size-3" />
+                  </span>
+                </div>
               </div>
             </button>
 
@@ -487,8 +507,8 @@ Correo: ${bankConfig.bank_email || ""}`;
               </p>
 
               <button
-                onClick={() => window.location.reload()}
-                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 p-3 rounded-full font-medium transition-colors text-sm cursor-pointer mt-4"
+                onClick={() => (window.location.href = "/")}
+                className="w-full bg-slate-900 text-white p-3.5 rounded-full font-bold hover:bg-slate-800 transition-colors text-sm cursor-pointer mt-4 shadow-lg active:scale-[0.98]"
               >
                 Volver al Inicio
               </button>
@@ -592,12 +612,19 @@ Correo: ${bankConfig.bank_email || ""}`;
                   </p>
                 </section>
 
-                <section className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <section className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center gap-3">
                   <p className="text-xs text-slate-500 leading-relaxed text-center italic">
                     "En Petit Salón nuestra prioridad es el bienestar y la
                     felicidad de tu mascota. Estos términos nos ayudan a
                     mantener un entorno seguro y organizado para todos."
                   </p>
+                  <Link
+                    href="/politicas"
+                    target="_blank"
+                    className="text-xs font-bold text-slate-900 border-b border-slate-900 pb-0.5 hover:text-slate-600 hover:border-slate-600 transition-colors"
+                  >
+                    Ver términos y condiciones completos
+                  </Link>
                 </section>
               </div>
 
