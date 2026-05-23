@@ -28,9 +28,11 @@ function appointmentToEvent(a: AppointmentWithRelations): EventInput {
   const startObj = new Date(a.date);
   const endObj = new Date(startObj.getTime() + a.service.duration * 60000);
 
+  const waMark = a.whatsappSentAt ? " ✓WA" : "";
+
   return {
     id: a.id,
-    title: `🐾 ${a.dog.name} — ${a.dog.owner.name}`,
+    title: `🐾 ${a.dog.name} — ${a.dog.owner.name}${waMark}`,
     start: startObj.toISOString(),
     end: endObj.toISOString(),
     backgroundColor: colors.bg,
@@ -98,7 +100,9 @@ export default function AgendaCalendar({ initialAppointments }: Props) {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-2 lg:p-4">
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @media (max-width: 1023px) {
           .fc .fc-toolbar.fc-header-toolbar {
             flex-direction: column;
@@ -115,7 +119,9 @@ export default function AgendaCalendar({ initialAppointments }: Props) {
             font-size: 0.75rem;
           }
         }
-      `}} />
+      `,
+        }}
+      />
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
@@ -141,6 +147,14 @@ export default function AgendaCalendar({ initialAppointments }: Props) {
             appointment={selectedAppointment}
             onClose={() => setSelectedAppointment(null)}
             onStatusChange={handleStatusChange}
+            onAppointmentUpdate={(updated) => {
+              setEvents((prev) =>
+                prev.map((ev) =>
+                  ev.id === updated.id ? appointmentToEvent(updated) : ev,
+                ),
+              );
+              setSelectedAppointment(updated);
+            }}
           />
         )}
       </AnimatePresence>

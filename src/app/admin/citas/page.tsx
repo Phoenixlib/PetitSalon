@@ -53,12 +53,15 @@ export default async function CitasPage(props: {
         status: true,
         notes: true,
         createdAt: true,
+        whatsappSentAt: true,
         dog: {
           select: {
             id: true,
             name: true,
             breed: true,
-            owner: { select: { id: true, name: true, phone: true, email: true } },
+            owner: {
+              select: { id: true, name: true, phone: true, email: true },
+            },
           },
         },
         service: {

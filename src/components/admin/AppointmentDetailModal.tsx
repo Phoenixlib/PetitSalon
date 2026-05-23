@@ -6,13 +6,16 @@ import type { AppointmentWithRelations, AppointmentStatus } from "@/types";
 import {
   updateAppointmentStatusAction,
   markDoneWithAttendanceAction,
+  toggleWhatsappSentAction,
 } from "@/app/admin/citas/actions";
 import { useCloudinaryUpload } from "@/hooks/useCloudinaryUpload";
+import { getWhatsappLink, WhatsappTemplate } from "@/lib/whatsapp";
 
 interface Props {
   appointment: AppointmentWithRelations | null;
   onClose: () => void;
   onStatusChange: (id: string, newStatus: AppointmentStatus) => void;
+  onAppointmentUpdate?: (updatedApp: AppointmentWithRelations) => void;
   initialStep?: "detail" | "done-form" | "review-prompt";
 }
 
@@ -42,6 +45,7 @@ export default function AppointmentDetailModal({
   appointment,
   onClose,
   onStatusChange,
+  onAppointmentUpdate,
   initialStep = "detail",
 }: Props) {
   const [isPending, startTransition] = useTransition();
@@ -211,18 +215,105 @@ export default function AppointmentDetailModal({
                 >
                   Dueño
                 </h3>
-                <p
-                  className="font-medium"
-                  style={{ color: "var(--ps-text)" }}
-                >
+                <p className="font-medium" style={{ color: "var(--ps-text)" }}>
                   {appointment.dog.owner.name}
                 </p>
-                <a
-                  href={`tel:${appointment.dog.owner.phone}`}
-                  className="text-sm text-blue-500 hover:underline"
-                >
-                  {appointment.dog.owner.phone}
-                </a>
+                <div className="flex items-center gap-3 mt-1">
+                  <a
+                    href={`tel:${appointment.dog.owner.phone}`}
+                    className="text-sm text-blue-500 hover:underline inline-flex items-center gap-1"
+                  >
+                    📞 {appointment.dog.owner.phone}
+                  </a>
+                  {appointment.whatsappSentAt && (
+                    <span className="text-xs text-green-600 font-medium bg-green-50 px-2 py-0.5 rounded-full">
+                      ✓ WA enviado
+                    </span>
+                  )}
+                </div>
+
+                {/* Botones de WhatsApp */}
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <button
+                    disabled={isPending}
+                    onClick={() => {
+                      const link = getWhatsappLink(
+                        appointment.dog.owner.phone,
+                        "REMINDER",
+                        {
+                          ownerName: appointment.dog.owner.name,
+                          dogName: appointment.dog.name,
+                          serviceName: appointment.service.name,
+                          dateStr: dateFormatted,
+                          timeStr: timeFormatted,
+                        },
+                      );
+                      window.open(link, "_blank");
+                      startTransition(() => {
+                        toggleWhatsappSentAction(appointment.id, true);
+                        if (onAppointmentUpdate) {
+                          onAppointmentUpdate({
+                            ...appointment,
+                            whatsappSentAt: new Date(),
+                          });
+                        }
+                      });
+                    }}
+                    className="text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 px-3 py-1.5 rounded-md transition-colors flex items-center gap-1 disabled:opacity-50"
+                  >
+                    💬 Recordatorio
+                  </button>
+                  <button
+                    disabled={isPending}
+                    onClick={() => {
+                      const link = getWhatsappLink(
+                        appointment.dog.owner.phone,
+                        "READY_FOR_PICKUP",
+                        {
+                          ownerName: appointment.dog.owner.name,
+                          dogName: appointment.dog.name,
+                          serviceName: appointment.service.name,
+                        },
+                      );
+                      window.open(link, "_blank");
+                      startTransition(() => {
+                        toggleWhatsappSentAction(appointment.id, true);
+                        if (onAppointmentUpdate) {
+                          onAppointmentUpdate({
+                            ...appointment,
+                            whatsappSentAt: new Date(),
+                          });
+                        }
+                      });
+                    }}
+                    className="text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 px-3 py-1.5 rounded-md transition-colors flex items-center gap-1 disabled:opacity-50"
+                  >
+                    💬 Retiro Listo
+                  </button>
+
+                  <button
+                    disabled={isPending}
+                    onClick={() => {
+                      startTransition(() => {
+                        const nextVal = !appointment.whatsappSentAt;
+                        toggleWhatsappSentAction(appointment.id, nextVal);
+                        if (onAppointmentUpdate) {
+                          onAppointmentUpdate({
+                            ...appointment,
+                            whatsappSentAt: nextVal ? new Date() : null,
+                          });
+                        }
+                      });
+                    }}
+                    className={`text-xs font-medium px-3 py-1.5 rounded-md transition-colors flex items-center gap-1 disabled:opacity-50 ${
+                      appointment.whatsappSentAt
+                        ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200"
+                    }`}
+                  >
+                    {appointment.whatsappSentAt ? "Desmarcar" : "Marcar 💬"}
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -232,10 +323,7 @@ export default function AppointmentDetailModal({
                 >
                   Servicio
                 </h3>
-                <p
-                  className="font-medium"
-                  style={{ color: "var(--ps-text)" }}
-                >
+                <p className="font-medium" style={{ color: "var(--ps-text)" }}>
                   {appointment.service.name}
                 </p>
                 <p className="text-sm" style={{ color: "var(--ps-text)" }}>
@@ -356,10 +444,7 @@ export default function AppointmentDetailModal({
               </h2>
             </div>
 
-            <form
-              onSubmit={handleMarkDoneWithAttendance}
-              className="space-y-4"
-            >
+            <form onSubmit={handleMarkDoneWithAttendance} className="space-y-4">
               <div className="space-y-1">
                 <label
                   className="text-sm font-medium"
@@ -501,19 +586,21 @@ export default function AppointmentDetailModal({
           <>
             <div className="flex flex-col items-center text-center gap-4 py-4">
               <span className="text-5xl">⭐</span>
-              <h2 className="text-xl font-bold" style={{ color: "var(--ps-text)" }}>
+              <h2
+                className="text-xl font-bold"
+                style={{ color: "var(--ps-text)" }}
+              >
                 ¿Enviar link de reseña?
               </h2>
               <p className="text-sm" style={{ color: "var(--ps-text-mid)" }}>
-                ¿Deseas enviarle a{" "}
-                <strong>{appointment.dog.owner.name}</strong> un link para que
-                deje una reseña de la experiencia de{" "}
+                ¿Deseas enviarle a <strong>{appointment.dog.owner.name}</strong>{" "}
+                un link para que deje una reseña de la experiencia de{" "}
                 <strong>{appointment.dog.name}</strong>?
               </p>
               {!appointment.dog.owner.email && (
                 <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2 w-full">
-                  ⚠️ Este cliente no tiene email registrado. No se puede enviar el
-                  link de forma automática.
+                  ⚠️ Este cliente no tiene email registrado. No se puede enviar
+                  el link de forma automática.
                 </p>
               )}
             </div>

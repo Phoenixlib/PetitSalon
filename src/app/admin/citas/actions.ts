@@ -70,9 +70,10 @@ export async function markDoneWithAttendanceAction(
     }
 
     // Validar que las URLs de fotos sean de Cloudinary
-    const validPhotos = input?.photos.filter((url) =>
-      url.startsWith("https://res.cloudinary.com/"),
-    ) ?? [];
+    const validPhotos =
+      input?.photos.filter((url) =>
+        url.startsWith("https://res.cloudinary.com/"),
+      ) ?? [];
 
     // Buscar la cita para obtener dogId y datos del dueño
     const appointment = await prisma.appointment.findUnique({
@@ -148,5 +149,30 @@ export async function markDoneWithAttendanceAction(
     return { success: true };
   } catch {
     return { errors: { _form: ["Error al guardar. Intenta de nuevo."] } };
+  }
+}
+
+export type ToggleWhatsappState = {
+  errors?: { _form?: string[] };
+  success?: boolean;
+};
+
+export async function toggleWhatsappSentAction(
+  id: string,
+  sent: boolean,
+): Promise<ToggleWhatsappState> {
+  try {
+    await requireAdmin();
+    // Actualizamos con la fecha actual o null según el parámetro `sent`
+    await prisma.appointment.update({
+      where: { id },
+      data: { whatsappSentAt: sent ? new Date() : null },
+    });
+    revalidatePath("/admin/agenda");
+    revalidatePath("/admin/citas");
+    revalidatePath("/admin");
+    return { success: true };
+  } catch {
+    return { errors: { _form: ["Error al actualizar estado de WhatsApp."] } };
   }
 }

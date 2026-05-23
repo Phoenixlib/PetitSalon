@@ -80,6 +80,7 @@ async function getDashboardData() {
           status: true,
           notes: true,
           createdAt: true,
+          whatsappSentAt: true,
           dog: {
             select: {
               id: true,
@@ -259,6 +260,14 @@ export default async function AdminDashboardPage() {
                       style={{ color: "var(--ps-text-mid)" }}
                     >
                       {appt.dog.owner.name} · {appt.dog.breed}
+                      {appt.whatsappSentAt && (
+                        <span
+                          className="ml-1 text-[10px] text-green-600 bg-green-50 px-1 rounded-sm font-medium"
+                          title="WhatsApp enviado"
+                        >
+                          ✓ WA
+                        </span>
+                      )}
                     </p>
                   </div>
                 </div>

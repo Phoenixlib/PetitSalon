@@ -54,8 +54,11 @@ export default function CitasClient({
   const [search, setSearch] = useState(currentSearch);
   const [isPending, startTransition] = useTransition();
 
-  const [selectedApp, setSelectedApp] = useState<AppointmentWithRelations | null>(null);
-  const [modalStep, setModalStep] = useState<"detail" | "done-form" | "review-prompt">("detail");
+  const [selectedApp, setSelectedApp] =
+    useState<AppointmentWithRelations | null>(null);
+  const [modalStep, setModalStep] = useState<
+    "detail" | "done-form" | "review-prompt"
+  >("detail");
 
   // Sincronizar el estado local cuando las props cambian (Next.js server-side pagination)
   useEffect(() => {
@@ -73,7 +76,11 @@ export default function CitasClient({
     return () => clearTimeout(timer);
   }, [search, currentSearch]);
 
-  const updateUrl = (params: { page?: number; q?: string; status?: string }) => {
+  const updateUrl = (params: {
+    page?: number;
+    q?: string;
+    status?: string;
+  }) => {
     const newParams = new URLSearchParams(window.location.search);
 
     if (params.page !== undefined) {
@@ -246,12 +253,22 @@ export default function CitasClient({
                         <div className="font-medium text-gray-900">
                           {app.dog.owner.name}
                         </div>
-                        <a
-                          href={`tel:${app.dog.owner.phone}`}
-                          className="text-blue-500 hover:underline"
-                        >
-                          {app.dog.owner.phone}
-                        </a>
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={`tel:${app.dog.owner.phone}`}
+                            className="text-blue-500 hover:underline inline-flex items-center gap-1"
+                          >
+                            {app.dog.owner.phone}
+                          </a>
+                          {app.whatsappSentAt && (
+                            <span
+                              className="text-xs text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full"
+                              title={`Enviado: ${new Date(app.whatsappSentAt).toLocaleString()}`}
+                            >
+                              ✓ WA
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-gray-900" title={app.service.name}>
@@ -359,8 +376,12 @@ export default function CitasClient({
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <div className="font-bold text-gray-900 capitalize">{dateStr}</div>
-                      <div className="text-sm font-medium text-gray-500">{timeStr}</div>
+                      <div className="font-bold text-gray-900 capitalize">
+                        {dateStr}
+                      </div>
+                      <div className="text-sm font-medium text-gray-500">
+                        {timeStr}
+                      </div>
                     </div>
                     <span
                       className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${STATUS_COLORS[app.status]}`}
@@ -373,34 +394,68 @@ export default function CitasClient({
                   <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 flex flex-col gap-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-500">Mascota:</span>
-                      <span className="font-medium text-gray-900">{app.dog.name} <span className="text-gray-500 font-normal">({app.dog.breed})</span></span>
+                      <span className="font-medium text-gray-900">
+                        {app.dog.name}{" "}
+                        <span className="text-gray-500 font-normal">
+                          ({app.dog.breed})
+                        </span>
+                      </span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-start">
                       <span className="text-gray-500">Dueño:</span>
                       <div className="text-right">
-                        <span className="font-medium text-gray-900 block">{app.dog.owner.name}</span>
-                        <a href={`tel:${app.dog.owner.phone}`} className="text-blue-500 hover:underline">{app.dog.owner.phone}</a>
+                        <span className="font-medium text-gray-900 block">
+                          {app.dog.owner.name}
+                        </span>
+                        <div className="flex items-center justify-end gap-2">
+                          {app.whatsappSentAt && (
+                            <span
+                              className="text-[10px] uppercase font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-100"
+                              title={`WhatsApp enviado: ${new Date(app.whatsappSentAt).toLocaleString()}`}
+                            >
+                              ✓ WA
+                            </span>
+                          )}
+                          <a
+                            href={`tel:${app.dog.owner.phone}`}
+                            className="text-blue-500 hover:underline"
+                          >
+                            {app.dog.owner.phone}
+                          </a>
+                        </div>
                       </div>
                     </div>
                     <div className="flex justify-between pt-2 border-t border-gray-200 mt-1">
                       <span className="text-gray-500">Servicio:</span>
-                      <span className="font-medium text-gray-900 truncate pl-2" title={app.service.name}>{app.service.name}</span>
+                      <span
+                        className="font-medium text-gray-900 truncate pl-2"
+                        title={app.service.name}
+                      >
+                        {app.service.name}
+                      </span>
                     </div>
                   </div>
 
                   {/* Mobile Actions */}
-                  <div className="flex gap-2 pt-1" onClick={(e) => e.stopPropagation()}>
+                  <div
+                    className="flex gap-2 pt-1"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     {app.status === "PENDING" && (
                       <>
                         <button
-                          onClick={() => handleStatusChange(app.id, "CONFIRMED")}
+                          onClick={() =>
+                            handleStatusChange(app.id, "CONFIRMED")
+                          }
                           disabled={isPending}
                           className="flex-1 text-sm font-semibold text-blue-700 bg-blue-100 hover:bg-blue-200 py-2.5 rounded-lg transition-colors disabled:opacity-50"
                         >
                           Confirmar
                         </button>
                         <button
-                          onClick={() => handleStatusChange(app.id, "CANCELLED")}
+                          onClick={() =>
+                            handleStatusChange(app.id, "CANCELLED")
+                          }
                           disabled={isPending}
                           className="flex-1 text-sm font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 py-2.5 rounded-lg transition-colors disabled:opacity-50"
                         >
@@ -421,7 +476,9 @@ export default function CitasClient({
                           Completar
                         </button>
                         <button
-                          onClick={() => handleStatusChange(app.id, "CANCELLED")}
+                          onClick={() =>
+                            handleStatusChange(app.id, "CANCELLED")
+                          }
                           disabled={isPending}
                           className="flex-1 text-sm font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 py-2.5 rounded-lg transition-colors disabled:opacity-50"
                         >
@@ -459,7 +516,11 @@ export default function CitasClient({
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700">
-                Mostrando <span className="font-medium">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> a{" "}
+                Mostrando{" "}
+                <span className="font-medium">
+                  {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+                </span>{" "}
+                a{" "}
                 <span className="font-medium">
                   {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)}
                 </span>{" "}
@@ -467,15 +528,27 @@ export default function CitasClient({
               </p>
             </div>
             <div>
-              <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm animate-fade-in" aria-label="Pagination">
+              <nav
+                className="isolate inline-flex -space-x-px rounded-md shadow-sm animate-fade-in"
+                aria-label="Pagination"
+              >
                 <button
                   onClick={() => updateUrl({ page: currentPage - 1 })}
                   disabled={currentPage <= 1 || isPending}
                   className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 transition-colors"
                 >
                   <span className="sr-only">Anterior</span>
-                  <svg className="h-5 h-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
+                  <svg
+                    className="h-5 h-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </button>
                 {Array.from({ length: totalPages }).map((_, idx) => {
@@ -502,8 +575,17 @@ export default function CitasClient({
                   className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 transition-colors"
                 >
                   <span className="sr-only">Siguiente</span>
-                  <svg className="h-5 h-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                  <svg
+                    className="h-5 h-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </button>
               </nav>
@@ -520,8 +602,16 @@ export default function CitasClient({
             onClose={() => setSelectedApp(null)}
             onStatusChange={(id, newStatus) => {
               setAppointments((prev) =>
-                prev.map((a) => (a.id === id ? { ...a, status: newStatus } : a)),
+                prev.map((a) =>
+                  a.id === id ? { ...a, status: newStatus } : a,
+                ),
               );
+            }}
+            onAppointmentUpdate={(updated) => {
+              setAppointments((prev) =>
+                prev.map((a) => (a.id === updated.id ? updated : a)),
+              );
+              setSelectedApp(updated);
             }}
           />
         )}
