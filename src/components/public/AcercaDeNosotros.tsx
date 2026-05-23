@@ -119,7 +119,8 @@ export default function AcercaDeNosotros({
                 className="text-lg font-semibold"
                 style={{ color: "var(--ps-text)" }}
               >
-                +{whatsapp.slice(0, 2)} {whatsapp.slice(2, 3)} {whatsapp.slice(3, 7)} {whatsapp.slice(7)}
+                {whatsapp.startsWith("+") ? "" : "+"}
+                {whatsapp.slice(0, 2)} {whatsapp.slice(2, 3)} {whatsapp.slice(3, 7)} {whatsapp.slice(7)}
               </p>
             </div>
           </a>

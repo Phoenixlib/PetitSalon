@@ -205,7 +205,7 @@ function AboutTab({ config }: { config: Record<string, string> }) {
 
       <div className="space-y-6">
         <h3 className="text-lg font-semibold text-slate-800 border-b pb-2">Contacto</h3>
-        <ConfigField label="Número de WhatsApp (ej. 56937541863 sin el +)" configKey="whatsapp" initialValue={config.whatsapp || ""} />
+        <ConfigField label="Número de WhatsApp (solo dígitos: ej. 56937541863)" configKey="whatsapp" initialValue={config.whatsapp || ""} />
         <ConfigField label="Correo Electrónico" configKey="email" initialValue={config.email || ""} type="email" />
       </div>
 
