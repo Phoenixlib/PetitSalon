@@ -221,7 +221,15 @@ export default function Servicios({
             })}
 
             {uncategorizedServices.length > 0 && (
-              <div>
+              <div
+                className="rounded-3xl p-7 md:p-10"
+                style={{
+                  background: "linear-gradient(135deg, #f0fafa 0%, #ffffff 50%, #fef4cc 100%)",
+                  backdropFilter: "blur(12px)",
+                  border: "1px solid rgba(182, 230, 230, 0.6)",
+                  boxShadow: "0 12px 32px rgba(66, 194, 237, 0.08)",
+                }}
+              >
                 <div className="mb-6">
                   <h3
                     className="text-2xl font-semibold mb-2"
