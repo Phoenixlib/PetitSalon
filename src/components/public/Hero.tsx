@@ -164,9 +164,10 @@ export default function Hero({ whatsapp }: HeroProps) {
           {/* Subtext */}
           <motion.p
             className="text-base lg:text-lg leading-relaxed max-w-sm font-medium lg:font-normal drop-shadow-[0_1px_4px_rgba(255,255,255,1)] lg:drop-shadow-none"
+            style={{ color: "var(--ps-text-mid)" }}
+            variants={item}
           >
-            Baño, corte y cuidado de uñas con amor y profesionalismo. Porque tu
-            mejor amigo merece sentirse increíble.
+            Estética canina profesional, libre de estrés y personalizada.
           </motion.p>
 
           {/* CTAs */}
