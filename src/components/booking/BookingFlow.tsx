@@ -407,9 +407,6 @@ Correo: ${bankConfig.bank_email || ""}`;
               </button>
             </div>
 
-              </button>
-            </div>
-
             <button
               onClick={() => setShowTerms(true)}
               className="w-full mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-100 flex items-start gap-3 text-left hover:bg-amber-100 transition-colors group"
