@@ -3,7 +3,16 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CalComEmbed, { CalComPrefill } from "./CalComEmbed";
-import { Check, Copy, Info, X, ShieldAlert, Clock, CalendarDays, PawPrint } from "lucide-react";
+import {
+  Check,
+  Copy,
+  Info,
+  X,
+  ShieldAlert,
+  Clock,
+  CalendarDays,
+  PawPrint,
+} from "lucide-react";
 
 type Step = "lookup" | "dog-select" | "embed";
 
@@ -28,7 +37,11 @@ interface BookingFlowProps {
   bankConfig: Record<string, string>;
 }
 
-export default function BookingFlow({ calLink, servicio, bankConfig }: BookingFlowProps) {
+export default function BookingFlow({
+  calLink,
+  servicio,
+  bankConfig,
+}: BookingFlowProps) {
   const [step, setStep] = useState<Step>("lookup");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -42,7 +55,12 @@ export default function BookingFlow({ calLink, servicio, bankConfig }: BookingFl
 
   // New dog form
   const [showNewDogForm, setShowNewDogForm] = useState(false);
-  const [newDog, setNewDog] = useState({ name: "", breed: "", age: "", weight: "" });
+  const [newDog, setNewDog] = useState({
+    name: "",
+    breed: "",
+    age: "",
+    weight: "",
+  });
 
   const [isSuccess, setIsSuccess] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -141,7 +159,7 @@ Correo: ${bankConfig.bank_email || ""}`;
   const whatsappPhone = bankConfig.whatsapp || "";
   const cleanPhone = whatsappPhone.replace(/\D/g, "");
   const whatsappMessage = encodeURIComponent(
-    `¡Hola! Acabo de agendar una cita en Petit Salón para mi perrito. He leído y acepto los términos y condiciones, y aquí te adjunto el comprobante del abono de $10.000 CLP de la reserva.🐾`
+    `¡Hola! Acabo de agendar una cita en Petit Salón para mi perrito. He leído y acepto los términos y condiciones, y aquí te adjunto el comprobante del abono de $10.000 CLP de la reserva.🐾`,
   );
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${whatsappMessage}`;
 
@@ -330,10 +348,10 @@ Correo: ${bankConfig.bank_email || ""}`;
             transition={{ duration: 0.3 }}
             className="w-full bg-white rounded-3xl shadow-[0_2px_16px_rgba(0,0,0,0.06)] border border-[var(--ps-border,neutral-200)] p-4 sm:p-8"
           >
-            <CalComEmbed 
-              calLink={calLink} 
-              prefill={prefill} 
-              onSuccess={() => setIsSuccess(true)} 
+            <CalComEmbed
+              calLink={calLink}
+              prefill={prefill}
+              onSuccess={() => setIsSuccess(true)}
             />
           </motion.div>
         )}
@@ -349,12 +367,18 @@ Correo: ${bankConfig.bank_email || ""}`;
             <div className="size-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 text-green-500">
               <Check className="size-8 stroke-[3]" />
             </div>
-            
-            <h2 className="text-3xl font-extrabold text-slate-800 mb-3" style={{ fontFamily: "var(--font-display)" }}>
+
+            <h2
+              className="text-3xl font-extrabold text-slate-800 mb-3"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
               ¡Cita Agendada! 🎉
             </h2>
             <p className="text-slate-600 mb-8 max-w-md mx-auto text-sm leading-relaxed">
-              Tu hora en <strong>Petit Salón</strong> ha sido reservada con éxito. Para asegurar tu reserva, por favor realiza el abono de <strong>$10.000 CLP</strong> y envía el comprobante de transferencia a continuación.
+              Tu hora en <strong>Petit Salón</strong> ha sido reservada con
+              éxito. Para asegurar tu reserva, por favor realiza el abono de{" "}
+              <strong>$10.000 CLP</strong> y envía el comprobante de
+              transferencia a continuación.
             </p>
 
             <div className="bg-slate-50 border border-slate-100 rounded-2xl p-6 mb-6 text-left relative overflow-hidden">
@@ -363,31 +387,43 @@ Correo: ${bankConfig.bank_email || ""}`;
                 <span className="inline-block w-1.5 h-3 bg-[var(--ps-lila)] rounded-full" />
                 Datos para Transferencia
               </h3>
-              
+
               <div className="space-y-3.5 text-sm text-slate-700">
                 <div className="flex justify-between border-b border-slate-100 pb-2">
                   <span className="text-slate-400">Banco:</span>
-                  <span className="font-semibold text-slate-800">{bankConfig.bank_name || "Banco por configurar"}</span>
+                  <span className="font-semibold text-slate-800">
+                    {bankConfig.bank_name || "Banco por configurar"}
+                  </span>
                 </div>
                 <div className="flex justify-between border-b border-slate-100 pb-2">
                   <span className="text-slate-400">Tipo de Cuenta:</span>
-                  <span className="font-semibold text-slate-800">{bankConfig.bank_account_type || "Por configurar"}</span>
+                  <span className="font-semibold text-slate-800">
+                    {bankConfig.bank_account_type || "Por configurar"}
+                  </span>
                 </div>
                 <div className="flex justify-between border-b border-slate-100 pb-2">
                   <span className="text-slate-400">Número de Cuenta:</span>
-                  <span className="font-mono font-semibold text-slate-800">{bankConfig.bank_account_number || "Por configurar"}</span>
+                  <span className="font-mono font-semibold text-slate-800">
+                    {bankConfig.bank_account_number || "Por configurar"}
+                  </span>
                 </div>
                 <div className="flex justify-between border-b border-slate-100 pb-2">
                   <span className="text-slate-400">Titular:</span>
-                  <span className="font-semibold text-slate-800">{bankConfig.bank_owner_name || "Por configurar"}</span>
+                  <span className="font-semibold text-slate-800">
+                    {bankConfig.bank_owner_name || "Por configurar"}
+                  </span>
                 </div>
                 <div className="flex justify-between border-b border-slate-100 pb-2">
                   <span className="text-slate-400">RUT:</span>
-                  <span className="font-mono font-semibold text-slate-800">{bankConfig.bank_rut || "Por configurar"}</span>
+                  <span className="font-mono font-semibold text-slate-800">
+                    {bankConfig.bank_rut || "Por configurar"}
+                  </span>
                 </div>
                 <div className="flex justify-between border-b border-slate-100 pb-2">
                   <span className="text-slate-400">Correo:</span>
-                  <span className="font-semibold text-slate-800 break-all">{bankConfig.bank_email || "Por configurar"}</span>
+                  <span className="font-semibold text-slate-800 break-all">
+                    {bankConfig.bank_email || "Por configurar"}
+                  </span>
                 </div>
               </div>
 
@@ -401,7 +437,8 @@ Correo: ${bankConfig.bank_email || ""}`;
                   </>
                 ) : (
                   <>
-                    <Copy className="size-4 text-slate-400" /> Copiar Datos de Transferencia
+                    <Copy className="size-4 text-slate-400" /> Copiar Datos de
+                    Transferencia
                   </>
                 )}
               </button>
@@ -417,10 +454,13 @@ Correo: ${bankConfig.bank_email || ""}`;
               <div>
                 <h4 className="text-sm font-bold text-amber-900 flex items-center gap-1.5">
                   Información Importante
-                  <span className="text-[10px] bg-amber-200/50 px-1.5 py-0.5 rounded text-amber-700 font-medium">Leer</span>
+                  <span className="text-[10px] bg-amber-200/50 px-1.5 py-0.5 rounded text-amber-700 font-medium">
+                    Leer
+                  </span>
                 </h4>
                 <p className="text-xs text-amber-800/80 mt-0.5 leading-relaxed">
-                  Para la mejor experiencia de tu mascota, revisa nuestra política de puntualidad, cancelación y convivencia.
+                  Para la mejor experiencia de tu mascota, revisa nuestra
+                  política de puntualidad, cancelación y convivencia.
                 </p>
               </div>
             </button>
@@ -433,13 +473,17 @@ Correo: ${bankConfig.bank_email || ""}`;
                 className="w-full bg-[#25D366] hover:bg-[#20ba5a] text-white p-3.5 rounded-full font-semibold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 active:scale-[0.98] text-sm cursor-pointer"
               >
                 <svg className="size-5 fill-current" viewBox="0 0 24 24">
-                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436.002 9.858-4.417 9.862-9.861.002-2.638-1.023-5.117-2.884-6.979C16.592 1.905 14.12 1.88 11.482 1.88c-5.437 0-9.862 4.416-9.865 9.86-.001 1.762.479 3.483 1.392 5.017L1.93 22.07l5.448-1.428c1.554.848 3.238 1.293 4.962 1.293zM15.97 18.06c-.23.115-.65.23-.97.23-.32 0-.74-.115-1.06-.23-1.16-.48-2.28-1.16-3.26-2.03-.98-.87-1.78-1.92-2.38-3.08-.28-.53-.28-1.05.02-1.39.26-.29.56-.56.84-.84.28-.28.37-.56.24-.87-.13-.31-.56-1.39-.77-1.88-.2-.49-.4-.56-.63-.56-.23 0-.46 0-.69.07-.23.07-.53.22-.76.45-.63.63-.98 1.48-.98 2.38 0 1.27.53 2.5 1.46 3.65 1.48 1.83 3.48 3.16 5.86 3.86.63.18 1.26.27 1.89.27.63 0 1.21-.07 1.71-.24.51-.17.96-.46 1.3-.85.34-.39.53-.87.53-1.39 0-.21-.07-.39-.14-.5-.14-.23-.42-.35-.85-.56z" fillRule="evenodd" />
+                  <path
+                    d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436.002 9.858-4.417 9.862-9.861.002-2.638-1.023-5.117-2.884-6.979C16.592 1.905 14.12 1.88 11.482 1.88c-5.437 0-9.862 4.416-9.865 9.86-.001 1.762.479 3.483 1.392 5.017L1.93 22.07l5.448-1.428c1.554.848 3.238 1.293 4.962 1.293zM15.97 18.06c-.23.115-.65.23-.97.23-.32 0-.74-.115-1.06-.23-1.16-.48-2.28-1.16-3.26-2.03-.98-.87-1.78-1.92-2.38-3.08-.28-.53-.28-1.05.02-1.39.26-.29.56-.56.84-.84.28-.28.37-.56.24-.87-.13-.31-.56-1.39-.77-1.88-.2-.49-.4-.56-.63-.56-.23 0-.46 0-.69.07-.23.07-.53.22-.76.45-.63.63-.98 1.48-.98 2.38 0 1.27.53 2.5 1.46 3.65 1.48 1.83 3.48 3.16 5.86 3.86.63.18 1.26.27 1.89.27.63 0 1.21-.07 1.71-.24.51-.17.96-.46 1.3-.85.34-.39.53-.87.53-1.39 0-.21-.07-.39-.14-.5-.14-.23-.42-.35-.85-.56z"
+                    fillRule="evenodd"
+                  />
                 </svg>
                 Enviar Comprobante por WhatsApp
               </a>
-              
+
               <p className="text-[10px] text-slate-400 mt-2">
-                Al enviar el comprobante, aceptas nuestros Términos y Condiciones.
+                Al enviar el comprobante, aceptas nuestros Términos y
+                Condiciones.
               </p>
 
               <button
@@ -470,7 +514,7 @@ Correo: ${bankConfig.bank_email || ""}`;
                   </span>
                   Términos y Condiciones
                 </h3>
-                <button 
+                <button
                   onClick={() => setShowTerms(false)}
                   className="p-2 hover:bg-slate-100 rounded-full transition-colors"
                 >
@@ -484,10 +528,15 @@ Correo: ${bankConfig.bank_email || ""}`;
                     <div className="bg-blue-100 p-1.5 rounded-md">
                       <Clock className="size-4 text-blue-600" />
                     </div>
-                    <h4 className="font-bold text-slate-800">Puntualidad y Espera</h4>
+                    <h4 className="font-bold text-slate-800">
+                      Puntualidad y Espera
+                    </h4>
                   </div>
                   <p className="text-sm text-slate-600 leading-relaxed ml-9">
-                    Contamos con un margen de espera de máximo <strong>15 minutos</strong>. Pasado este tiempo, la cita se considerará cancelada para no afectar la agenda de los demás perritos y los tiempos de higiene.
+                    Contamos con un margen de espera de máximo{" "}
+                    <strong>15 minutos</strong>. Pasado este tiempo, la cita se
+                    considerará cancelada para no afectar la agenda de los demás
+                    perritos y los tiempos de higiene.
                   </p>
                 </section>
 
@@ -496,10 +545,15 @@ Correo: ${bankConfig.bank_email || ""}`;
                     <div className="bg-red-100 p-1.5 rounded-md">
                       <CalendarDays className="size-4 text-red-600" />
                     </div>
-                    <h4 className="font-bold text-slate-800">Cancelaciones y Abonos</h4>
+                    <h4 className="font-bold text-slate-800">
+                      Cancelaciones y Abonos
+                    </h4>
                   </div>
                   <p className="text-sm text-slate-600 leading-relaxed ml-9">
-                    Para el reembolso del abono de reserva ($10.000), se requiere un aviso de cancelación con al menos <strong>24 horas de anticipación</strong>. Si cancelas con menos tiempo o no asistes, el abono no será reembolsable.
+                    Para el reembolso del abono de reserva ($10.000), se
+                    requiere un aviso de cancelación con al menos{" "}
+                    <strong>24 horas de anticipación</strong>. Si cancelas con
+                    menos tiempo o no asistes, el abono no será reembolsable.
                   </p>
                 </section>
 
@@ -508,10 +562,16 @@ Correo: ${bankConfig.bank_email || ""}`;
                     <div className="bg-orange-100 p-1.5 rounded-md">
                       <PawPrint className="size-4 text-orange-600" />
                     </div>
-                    <h4 className="font-bold text-slate-800">Salud e Higiene</h4>
+                    <h4 className="font-bold text-slate-800">
+                      Salud e Higiene
+                    </h4>
                   </div>
                   <p className="text-sm text-slate-600 leading-relaxed ml-9">
-                    Por seguridad de todos, tu mascota debe contar con sus <strong>vacunas al día</strong> y haber realizado su tratamiento antiparasitario (interno y externo). No podemos recibir mascotas con signos evidentes de enfermedades contagiosas o parásitos activos.
+                    Por seguridad de todos, tu mascota debe contar con sus{" "}
+                    <strong>vacunas al día</strong> y haber realizado su
+                    tratamiento antiparasitario (interno y externo). No podemos
+                    recibir mascotas con signos evidentes de enfermedades
+                    contagiosas o parásitos activos.
                   </p>
                 </section>
 
@@ -520,16 +580,23 @@ Correo: ${bankConfig.bank_email || ""}`;
                     <div className="bg-amber-100 p-1.5 rounded-md">
                       <ShieldAlert className="size-4 text-amber-600" />
                     </div>
-                    <h4 className="font-bold text-slate-800">Comportamiento y Seguridad</h4>
+                    <h4 className="font-bold text-slate-800">
+                      Comportamiento y Seguridad
+                    </h4>
                   </div>
                   <p className="text-sm text-slate-600 leading-relaxed ml-9">
-                    Es fundamental <strong>notificar previamente</strong> si tu mascota es reactiva, miedosa o presenta tendencia a morder. Esto nos permite tomar medidas de seguridad adicionales para proteger tanto al perrito como a nuestro equipo.
+                    Es fundamental <strong>notificar previamente</strong> si tu
+                    mascota es reactiva, miedosa o presenta tendencia a morder.
+                    Esto nos permite tomar medidas de seguridad adicionales para
+                    proteger tanto al perrito como a nuestro equipo.
                   </p>
                 </section>
 
                 <section className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                   <p className="text-xs text-slate-500 leading-relaxed text-center italic">
-                    "En Petit Salón nuestra prioridad es el bienestar y la felicidad de tu mascota. Estos términos nos ayudan a mantener un entorno seguro y organizado para todos."
+                    "En Petit Salón nuestra prioridad es el bienestar y la
+                    felicidad de tu mascota. Estos términos nos ayudan a
+                    mantener un entorno seguro y organizado para todos."
                   </p>
                 </section>
               </div>
@@ -549,4 +616,3 @@ Correo: ${bankConfig.bank_email || ""}`;
     </div>
   );
 }
-
