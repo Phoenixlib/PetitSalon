@@ -43,6 +43,7 @@ model Appointment {
   createdAt           DateTime          @default(now())
   reminderSentAt      DateTime?
   todayReminderSentAt DateTime?
+  whatsappSentAt      DateTime?
   dog                 Dog               @relation(fields: [dogId], references: [id])
   service             Service           @relation(fields: [serviceId], references: [id])
   review              Review?

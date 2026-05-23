@@ -9,6 +9,7 @@ export interface AppointmentWithRelations {
   status: AppointmentStatus;
   notes: string | null;
   createdAt: Date;
+  whatsappSentAt: Date | null;
   dog: {
     id: string;
     name: string;
