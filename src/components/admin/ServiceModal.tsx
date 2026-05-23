@@ -5,8 +5,7 @@ import {
   createServiceAction,
   updateServiceAction,
   ServiceFormState,
-} from "@/app/admin/servicios/actions";
-
+} from "@/app/admin/servicios/actions";import CalComManual from "./CalComManual";
 type Service = {
   id: string;
   name: string;
@@ -252,20 +251,31 @@ export default function ServiceModal({
 
           {/* Link de Cal.com */}
           <div className="flex flex-col gap-1">
-            <label
-              className="text-sm font-medium"
-              style={{ color: "var(--ps-text)" }}
-            >
-              Enlace de Cal.com{" "}
-              <span style={{ color: "var(--ps-text-mid)", fontWeight: 400 }}>
-                (opcional)
-              </span>
-            </label>
+            <div className="flex items-center justify-between mb-0.5">
+              <label
+                className="text-sm font-medium"
+                style={{ color: "var(--ps-text)" }}
+              >
+                Enlace de Cal.com{" "}
+                <span style={{ color: "var(--ps-text-mid)", fontWeight: 400 }}>
+                  (opcional)
+                </span>
+              </label>
+              <a
+                href="https://app.cal.com/event-types"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] font-bold uppercase tracking-wider transition-opacity hover:opacity-70"
+                style={{ color: "var(--ps-gold)" }}
+              >
+                ↗ Ver Event Types en Cal.com
+              </a>
+            </div>
             <input
               type="text"
               name="calComLink"
               defaultValue={service?.calComLink || ""}
-              placeholder="Ej: pequeños/corte-perro-pequeno"
+              placeholder="Ej: Baño y Secado Perro Pequeño"
               className="w-full rounded-xl px-4 py-2.5 text-sm transition-shadow focus:outline-none focus:ring-2"
               style={{
                 backgroundColor: "#f9fafb",
@@ -277,9 +287,10 @@ export default function ServiceModal({
                 {(state.errors as any).calComLink?.[0]}
               </p>
             )}
-            <p className="text-xs mt-1" style={{ color: "var(--ps-text-mid)" }}>
-              Si se deja en blanco usará el link por defecto configurado.
-            </p>
+            
+            <div className="mt-2">
+              <CalComManual />
+            </div>
           </div>
 
           {state.errors?._form && (

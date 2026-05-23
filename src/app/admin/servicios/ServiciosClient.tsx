@@ -4,119 +4,7 @@ import { useState, useTransition } from "react";
 import { toggleServiceAction, deleteServiceAction, deleteCategoryAction, reorderCategoriesAction, reorderServicesAction } from "./actions";
 import ServiceModal from "@/components/admin/ServiceModal";
 import CategoryModal from "@/components/admin/CategoryModal";
-
-function CalComHelpPanel() {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div
-      className="mb-6 rounded-2xl overflow-hidden"
-      style={{ border: "1px solid var(--border)", backgroundColor: "var(--ps-lila-pale)" }}
-    >
-      {/* Header clickeable */}
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-5 py-3.5 text-left transition-colors"
-        style={{ backgroundColor: "transparent" }}
-        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(66,194,237,0.06)")}
-        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-      >
-        <div className="flex items-center gap-2.5">
-          <span className="text-lg">📅</span>
-          <span className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
-            ¿Cómo vincular un Event Type de Cal.com con un servicio?
-          </span>
-        </div>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className={`h-4 w-4 flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="var(--primary)"
-          strokeWidth={2.5}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-
-      {/* Contenido expandible */}
-      {open && (
-        <div className="px-5 pb-5 pt-1 border-t" style={{ borderColor: "var(--border)" }}>
-          <div className="space-y-4 text-sm" style={{ color: "#374151" }}>
-
-            {/* Paso 1 */}
-            <div>
-              <p className="font-semibold mb-1" style={{ color: "var(--foreground)" }}>
-                Paso 1 — Identificar el nombre del evento en Cal.com
-              </p>
-              <p className="text-xs leading-relaxed text-gray-600">
-                Ve a <strong>app.cal.com → Event Types</strong> y anota el nombre exacto del evento que quieres vincular.
-                Por ejemplo: <code className="rounded px-1 py-0.5 text-[11px] font-mono" style={{ backgroundColor: "var(--pastel-cyan)", color: "var(--foreground)" }}>Baño y Secado Perro Pequeño</code>
-              </p>
-            </div>
-
-            {/* Paso 2 */}
-            <div>
-              <p className="font-semibold mb-1" style={{ color: "var(--foreground)" }}>
-                Paso 2 — Editar el servicio correspondiente
-              </p>
-              <p className="text-xs leading-relaxed text-gray-600">
-                Busca el servicio en esta página y haz clic en <strong>"Editar"</strong>. Si no existe, crea uno nuevo con el botón <strong>"Nuevo Servicio"</strong>.
-              </p>
-            </div>
-
-            {/* Paso 3 */}
-            <div>
-              <p className="font-semibold mb-1" style={{ color: "var(--foreground)" }}>
-                Paso 3 — Llenar el campo "Enlace de Cal.com"
-              </p>
-              <p className="text-xs leading-relaxed text-gray-600 mb-2">
-                Dentro del formulario, tienes dos opciones:
-              </p>
-              <div className="grid sm:grid-cols-2 gap-2">
-                <div className="rounded-xl p-3" style={{ backgroundColor: "rgba(66,194,237,0.08)", border: "1px solid var(--pastel-cyan)" }}>
-                  <p className="text-xs font-semibold mb-1" style={{ color: "var(--foreground)" }}>✅ Opción A — Nombre del evento (simple)</p>
-                  <p className="text-[11px] leading-relaxed text-gray-600">
-                    Escribe el nombre exacto del Event Type tal como aparece en Cal.com.<br/>
-                    <span className="font-mono rounded px-1" style={{ backgroundColor: "var(--pastel-cyan)", color: "var(--foreground)" }}>Baño y Secado Perro Pequeño</span>
-                  </p>
-                </div>
-                <div className="rounded-xl p-3" style={{ backgroundColor: "rgba(66,194,237,0.04)", border: "1px solid var(--border)" }}>
-                  <p className="text-xs font-semibold mb-1" style={{ color: "var(--foreground)" }}>✅ Opción B — Slug del URL (técnico)</p>
-                  <p className="text-[11px] leading-relaxed text-gray-600">
-                    Copia la parte del link de Cal.com después de <span className="font-mono">cal.com/</span><br/>
-                    <span className="font-mono rounded px-1" style={{ backgroundColor: "var(--border)", color: "var(--foreground)" }}>petitsalon/bano-y-secado</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Paso 4 */}
-            <div>
-              <p className="font-semibold mb-1" style={{ color: "var(--foreground)" }}>
-                Paso 4 — Guardar y verificar
-              </p>
-              <p className="text-xs leading-relaxed text-gray-600">
-                Guarda los cambios. Para verificar, haz una reserva de prueba en Cal.com y comprueba que aparezca en
-                <strong> Citas</strong> con el servicio correcto asignado.
-              </p>
-            </div>
-
-            {/* Advertencia */}
-            <div className="rounded-xl px-4 py-3 flex gap-2.5" style={{ backgroundColor: "var(--pastel-yellow)", border: "1px solid #f4cc6a" }}>
-              <span className="text-base flex-shrink-0">⚠️</span>
-              <p className="text-[11px] leading-relaxed" style={{ color: "#6b5c1a" }}>
-                Si no se configura este campo y el nombre del servicio no coincide con el nombre del evento, el sistema asignará la cita
-                al <strong>primer servicio activo</strong> de la lista por defecto.
-              </p>
-            </div>
-
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+import CalComManual from "@/components/admin/CalComManual";
 
 type Service = {
   id: string;
@@ -289,7 +177,7 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
         </div>
       </div>
 
-      <CalComHelpPanel />
+      <CalComManual />
 
       {errorMsg && (
         <div
