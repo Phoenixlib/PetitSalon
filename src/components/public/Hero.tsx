@@ -61,12 +61,50 @@ interface HeroProps {
 
 export default function Hero({ whatsapp }: HeroProps) {
   return (
-    <section
-      className="relative min-h-screen flex items-center overflow-hidden"
-      style={{ backgroundColor: "var(--ps-lila-base)" }}
-    >
-      {/* Background blobs */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    <section className="relative min-h-[100svh] flex items-start lg:items-center overflow-hidden bg-white">
+      {/* Background Image with Professional Overlay */}
+      <motion.div 
+        className="absolute inset-0 z-0 pointer-events-none flex lg:justify-end"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.5, ease: "easeOut" }}
+      >
+        {/*
+          Móvil: El perro se muestra completo (object-bottom) para lucir patitas.
+          Desktop: Elevamos al perro con object-[center_0%] para que toque casi el header.
+        */}
+        <div className="relative w-full h-full lg:w-[50%]">
+          <Image
+            src="/images/hero/perro1.jpeg"
+            alt=""
+            fill
+            className="object-cover object-bottom lg:object-[center_0%]"
+            priority
+          />
+          {/* Gradient Overlay (Desktop) - Smooth left edge */}
+          <div 
+            className="absolute inset-0 hidden lg:block"
+            style={{ 
+              background: "linear-gradient(to right, white 0%, rgba(255,255,255,0.7) 20%, transparent 40%)"
+            }}
+          />
+          {/* Gradient Overlay (Mobile) - Capa de protección para el texto */}
+          <div 
+            className="absolute inset-0 lg:hidden"
+            style={{ 
+              background: `linear-gradient(to bottom, 
+                white 0%, 
+                rgba(255,255,255,0.92) 20%, 
+                rgba(255,255,255,0.7) 45%, 
+                rgba(255,255,255,0.2) 75%, 
+                transparent 100%)`
+            }}
+          />
+        </div>
+      </motion.div>
+
+      {/* Subtle Background blobs */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden mix-blend-overlay opacity-30">
         <div
           className="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full filter blur-[120px] opacity-65 animate-pulse"
           style={{ backgroundColor: "var(--pastel-cyan)" }}
@@ -75,14 +113,9 @@ export default function Hero({ whatsapp }: HeroProps) {
           className="absolute -bottom-24 -left-24 w-[450px] h-[450px] rounded-full filter blur-[100px] opacity-55 animate-pulse"
           style={{ backgroundColor: "var(--pastel-pink)", animationDelay: "2s" }}
         />
-        {/* Subtle gold grain dot */}
-        <div
-          className="absolute top-1/3 left-1/2 w-1.5 h-1.5 rounded-full opacity-80"
-          style={{ backgroundColor: "var(--ps-gold)" }}
-        />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 w-full py-32 grid lg:grid-cols-2 gap-16 items-center">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 w-full pt-32 pb-4 lg:py-32 grid lg:grid-cols-2 gap-8 lg:gap-16 items-center flex-1">
         {/* LEFT — Copy */}
         <motion.div
           className="flex flex-col gap-8"
@@ -90,48 +123,47 @@ export default function Hero({ whatsapp }: HeroProps) {
           initial="hidden"
           animate="visible"
         >
-          {/* Badge */}
-          <motion.div variants={item}>
-            <span
-              className="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.2em] uppercase px-4 py-2 rounded-full border"
-              style={{
-                color: "var(--ps-gold)",
-                borderColor: "oklch(0.72 0.12 78 / 0.35)",
-              }}
-            >
-              ✦ Peluquería Premium
-            </span>
-          </motion.div>
+        {/* Badge */}
+        <motion.div variants={item}>
+          <span
+            className="inline-flex items-center gap-2 text-xs font-bold tracking-[0.2em] uppercase px-4 py-2 rounded-full border shadow-sm"
+            style={{
+              color: "var(--ps-gold-dark)",
+              backgroundColor: "rgba(255,255,255,0.8)",
+              borderColor: "oklch(0.72 0.12 78 / 0.5)",
+            }}
+          >
+            ✦ Peluquería Premium
+          </span>
+        </motion.div>
 
-          {/* Headline */}
-          <motion.h1
-            className="leading-[0.92] font-light"
+        {/* Headline */}
+        <motion.h1
+            className="leading-[1.1] font-light drop-shadow-[0_2px_10px_rgba(255,255,255,0.8)] lg:drop-shadow-none"
             style={{
               fontFamily: "var(--font-display)",
-              fontSize: "clamp(3.2rem, 7vw, 5.5rem)",
+              fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
               color: "var(--ps-text)",
             }}
             variants={item}
           >
-            Donde cada
+            Cuando ellos
             <br />
-            perro es
+            están bien,
             <br />
             <em
-              className="not-italic font-medium"
+              className="not-italic font-medium drop-shadow-sm"
               style={{ color: "var(--ps-gold)" }}
             >
-              tratado
+              nosotros
             </em>
             <br />
-            <em className="italic font-semibold">como realeza</em>
+            <em className="italic font-semibold text-ps-lila drop-shadow-sm">también</em>
           </motion.h1>
 
           {/* Subtext */}
           <motion.p
-            className="text-base lg:text-lg leading-relaxed max-w-sm"
-            style={{ color: "var(--ps-text-mid)" }}
-            variants={item}
+            className="text-base lg:text-lg leading-relaxed max-w-sm font-medium lg:font-normal drop-shadow-[0_1px_4px_rgba(255,255,255,1)] lg:drop-shadow-none"
           >
             Baño, corte y cuidado de uñas con amor y profesionalismo. Porque tu
             mejor amigo merece sentirse increíble.
@@ -164,97 +196,17 @@ export default function Hero({ whatsapp }: HeroProps) {
             </a>
             <Link
               href="/#servicios"
-              className="inline-flex items-center justify-center gap-2 font-semibold px-7 py-4 rounded-full border-2 transition-all duration-300 hover:scale-[1.03]"
+              className="inline-flex items-center justify-center gap-2 font-bold px-7 py-4 rounded-full border-2 transition-all duration-300 hover:scale-[1.03] shadow-lg backdrop-blur-sm"
               style={{
                 color: "var(--ps-lila)",
                 borderColor: "var(--ps-lila)",
+                backgroundColor: "rgba(255,255,255,0.7)",
               }}
             >
               Reservar cita
               <span className="text-lg leading-none">→</span>
             </Link>
           </motion.div>
-        </motion.div>
-
-        {/* RIGHT — Decoration */}
-        <motion.div
-          className="relative flex items-center justify-center w-full mt-12 lg:mt-0"
-          initial={{ opacity: 0, scale: 0.88 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
-        >
-          {/* Staggered Photo Grid Container */}
-          <div className="relative w-[300px] h-[260px] sm:w-[380px] sm:h-[320px] lg:w-[460px] lg:h-[400px]">
-            {/* Foto 1 (Perro 1) - Foreground / Left */}
-            <motion.div
-              animate={{ y: [0, -8, 0], rotate: [-2, -1, -2] }}
-              transition={{
-                repeat: Infinity,
-                duration: 5,
-                ease: "easeInOut",
-              }}
-              className="absolute left-2 bottom-4 w-[160px] h-[213px] sm:w-[200px] sm:h-[267px] lg:w-[260px] lg:h-[347px] rounded-2xl lg:rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white z-20 aspect-[3/4]"
-            >
-              <Image
-                src="/images/hero/perro1.jpeg"
-                alt="Peluquería Canina - Perro 1"
-                fill
-                sizes="(max-width: 640px) 160px, (max-width: 1024px) 200px, 260px"
-                className="object-cover"
-                priority
-              />
-            </motion.div>
-
-            {/* Foto 2 (Perro 2) - Background / Right */}
-            <motion.div
-              animate={{ y: [0, 8, 0], rotate: [3, 4, 3] }}
-              transition={{
-                repeat: Infinity,
-                duration: 6,
-                ease: "easeInOut",
-                delay: 0.5,
-              }}
-              className="absolute right-2 top-4 w-[135px] h-[180px] sm:w-[170px] sm:h-[227px] lg:w-[220px] lg:h-[293px] rounded-2xl lg:rounded-[2rem] overflow-hidden shadow-xl border-4 border-white z-10 aspect-[3/4]"
-            >
-              <Image
-                src="/images/hero/perro2.jpeg"
-                alt="Peluquería Canina - Perro 2"
-                fill
-                sizes="(max-width: 640px) 135px, (max-width: 1024px) 170px, 220px"
-                className="object-cover"
-                priority
-              />
-            </motion.div>
-
-            {/* Floating stat card */}
-            <motion.div
-              className="absolute -bottom-4 right-0 lg:-bottom-6 lg:-right-4 rounded-2xl p-3 sm:p-4 shadow-xl z-30"
-              style={{
-                backgroundColor: "white",
-                border: "1px solid var(--ps-lila-pale)",
-                boxShadow: "0 8px 32px oklch(0.52 0.10 295 / 0.12)",
-              }}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <p
-                className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider"
-                style={{ color: "var(--ps-text-mid)" }}
-              >
-                Perritos felices
-              </p>
-              <p
-                className="text-2xl sm:text-3xl font-semibold mt-0.5"
-                style={{
-                  fontFamily: "var(--font-display)",
-                  color: "var(--ps-lila)",
-                }}
-              >
-                +100
-              </p>
-            </motion.div>
-          </div>
         </motion.div>
       </div>
 
