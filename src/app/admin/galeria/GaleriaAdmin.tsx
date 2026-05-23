@@ -139,6 +139,7 @@ export default function GaleriaAdmin({
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const initialState: CreatePhotoState = {};
   const [formState, formAction, isCreating] = useActionState(
@@ -168,10 +169,10 @@ export default function GaleriaAdmin({
   };
 
   const handleDelete = (id: string) => {
-    if (!window.confirm("¿Seguro que deseas eliminar esta foto de la galería?")) return;
     startTransition(async () => {
       await deleteGalleryPhotoAction(id);
       setPhotos((prev) => prev.filter((p) => p.id !== id));
+      setConfirmDeleteId(null);
     });
   };
 
@@ -382,7 +383,7 @@ export default function GaleriaAdmin({
 
                     <button
                       type="button"
-                      onClick={() => handleDelete(photo.id)}
+                      onClick={() => setConfirmDeleteId(photo.id)}
                       disabled={isPending}
                       className="px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase bg-red-50 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50"
                     >
@@ -437,6 +438,38 @@ export default function GaleriaAdmin({
             >
               Siguiente
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación de eliminación */}
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            onClick={() => setConfirmDeleteId(null)}
+          />
+          <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <h3 className="text-lg font-bold text-slate-900 mb-2">¿Eliminar foto?</h3>
+            <p className="text-sm text-slate-500 mb-6">
+              Esta acción no se puede deshacer. La foto desaparecerá de la galería pública.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDeleteId(null)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                disabled={isPending}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => handleDelete(confirmDeleteId)}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 text-sm font-semibold text-white hover:bg-red-700 transition-colors disabled:opacity-50"
+                disabled={isPending}
+              >
+                {isPending ? "Eliminando..." : "Eliminar"}
+              </button>
+            </div>
           </div>
         </div>
       )}
