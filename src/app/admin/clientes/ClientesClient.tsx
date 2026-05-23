@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { Owner, Dog } from "@prisma/client";
+import { Pagination } from "@/components/ui/Pagination";
 
 interface OwnerWithDogs extends Owner {
   dogs: Dog[];
@@ -80,12 +81,15 @@ export default function ClientesClient({
 
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Clientes</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
+            Clientes
+          </h1>
           <Link
             href="/admin/clientes/nuevo"
             className="bg-[var(--primary)] text-white px-4 py-2 rounded-lg font-medium hover:opacity-90 transition-opacity text-sm lg:text-base whitespace-nowrap"
           >
-            + <span className="hidden sm:inline">Nuevo Cliente</span><span className="sm:hidden">Cliente</span>
+            + <span className="hidden sm:inline">Nuevo Cliente</span>
+            <span className="sm:hidden">Cliente</span>
           </Link>
         </div>
 
@@ -180,13 +184,20 @@ export default function ClientesClient({
               <div key={owner.id} className="p-4 flex flex-col gap-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-semibold text-base text-gray-900">{owner.name}</h3>
+                    <h3 className="font-semibold text-base text-gray-900">
+                      {owner.name}
+                    </h3>
                     <div className="text-sm text-neutral-600 mt-0.5">
-                      <a href={`tel:${owner.phone}`} className="hover:underline text-blue-600">
+                      <a
+                        href={`tel:${owner.phone}`}
+                        className="hover:underline text-blue-600"
+                      >
                         {owner.phone}
                       </a>
                       {owner.email && (
-                        <span className="block text-xs text-neutral-400">{owner.email}</span>
+                        <span className="block text-xs text-neutral-400">
+                          {owner.email}
+                        </span>
                       )}
                     </div>
                   </div>
@@ -200,7 +211,9 @@ export default function ClientesClient({
                         className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full border border-orange-200"
                       >
                         {dog.name}{" "}
-                        <span className="text-orange-600 opacity-80">({dog.breed})</span>
+                        <span className="text-orange-600 opacity-80">
+                          ({dog.breed})
+                        </span>
                       </span>
                     ))}
                   </div>
@@ -221,90 +234,13 @@ export default function ClientesClient({
       </div>
 
       {/* Paginación */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg shadow-sm">
-          <div className="flex flex-1 justify-between sm:hidden">
-            <button
-              onClick={() => updateUrl({ page: currentPage - 1 })}
-              disabled={currentPage <= 1 || isPending}
-              className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
-            >
-              Anterior
-            </button>
-            <button
-              onClick={() => updateUrl({ page: currentPage + 1 })}
-              disabled={currentPage >= totalPages || isPending}
-              className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
-            >
-              Siguiente
-            </button>
-          </div>
-          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-gray-700">
-                Mostrando <span className="font-medium">{(currentPage - 1) * 10 + 1}</span> a{" "}
-                <span className="font-medium">
-                  {Math.min(currentPage * 10, totalCount)}
-                </span>{" "}
-                de <span className="font-medium">{totalCount}</span> resultados
-              </p>
-            </div>
-            <div>
-              <nav
-                className="isolate inline-flex -space-x-px rounded-md shadow-sm"
-                aria-label="Pagination"
-              >
-                <button
-                  onClick={() => updateUrl({ page: currentPage - 1 })}
-                  disabled={currentPage <= 1 || isPending}
-                  className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 transition-colors"
-                >
-                  <span className="sr-only">Anterior</span>
-                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path
-                      fillRule="evenodd"
-                      d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
-                {Array.from({ length: totalPages }).map((_, idx) => {
-                  const pNum = idx + 1;
-                  const isCurrent = pNum === currentPage;
-                  return (
-                    <button
-                      key={pNum}
-                      onClick={() => updateUrl({ page: pNum })}
-                      disabled={isPending}
-                      className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 transition-colors ${
-                        isCurrent
-                          ? "z-10 bg-gray-900 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
-                          : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
-                      }`}
-                    >
-                      {pNum}
-                    </button>
-                  );
-                })}
-                <button
-                  onClick={() => updateUrl({ page: currentPage + 1 })}
-                  disabled={currentPage >= totalPages || isPending}
-                  className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 transition-colors"
-                >
-                  <span className="sr-only">Siguiente</span>
-                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path
-                      fillRule="evenodd"
-                      d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
-              </nav>
-            </div>
-          </div>
-        </div>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        onPageChange={(page) => updateUrl({ page })}
+        isPending={isPending}
+      />
     </div>
   );
 }

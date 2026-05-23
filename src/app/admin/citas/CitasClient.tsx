@@ -6,6 +6,7 @@ import type { AppointmentWithRelations, AppointmentStatus } from "@/types";
 import { updateAppointmentStatusAction } from "./actions";
 import AppointmentDetailModal from "@/components/admin/AppointmentDetailModal";
 import { AnimatePresence } from "framer-motion";
+import { Pagination } from "@/components/ui/Pagination";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -438,79 +439,13 @@ export default function CitasClient({
       </div>
 
       {/* Paginación */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg shadow-sm">
-          <div className="flex flex-1 justify-between sm:hidden">
-            <button
-              onClick={() => updateUrl({ page: currentPage - 1 })}
-              disabled={currentPage <= 1 || isPending}
-              className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
-            >
-              Anterior
-            </button>
-            <button
-              onClick={() => updateUrl({ page: currentPage + 1 })}
-              disabled={currentPage >= totalPages || isPending}
-              className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
-            >
-              Siguiente
-            </button>
-          </div>
-          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-gray-700">
-                Mostrando <span className="font-medium">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> a{" "}
-                <span className="font-medium">
-                  {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)}
-                </span>{" "}
-                de <span className="font-medium">{totalCount}</span> resultados
-              </p>
-            </div>
-            <div>
-              <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm animate-fade-in" aria-label="Pagination">
-                <button
-                  onClick={() => updateUrl({ page: currentPage - 1 })}
-                  disabled={currentPage <= 1 || isPending}
-                  className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 transition-colors"
-                >
-                  <span className="sr-only">Anterior</span>
-                  <svg className="h-5 h-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
-                  </svg>
-                </button>
-                {Array.from({ length: totalPages }).map((_, idx) => {
-                  const pNum = idx + 1;
-                  const isCurrent = pNum === currentPage;
-                  return (
-                    <button
-                      key={pNum}
-                      onClick={() => updateUrl({ page: pNum })}
-                      disabled={isPending}
-                      className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 transition-colors ${
-                        isCurrent
-                          ? "z-10 bg-gray-900 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
-                          : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
-                      }`}
-                    >
-                      {pNum}
-                    </button>
-                  );
-                })}
-                <button
-                  onClick={() => updateUrl({ page: currentPage + 1 })}
-                  disabled={currentPage >= totalPages || isPending}
-                  className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 transition-colors"
-                >
-                  <span className="sr-only">Siguiente</span>
-                  <svg className="h-5 h-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              </nav>
-            </div>
-          </div>
-        </div>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        onPageChange={(page) => updateUrl({ page })}
+        isPending={isPending}
+      />
 
       <AnimatePresence>
         {selectedApp && (
