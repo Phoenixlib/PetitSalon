@@ -68,7 +68,7 @@ export default function CategoryModal({ open, onClose, category }: Props) {
       />
 
       <div
-        className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl z-10"
+        className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl z-10 max-h-[90vh] overflow-y-auto"
         style={{ border: "1px solid var(--border)" }}
       >
         <div className="mb-5 flex items-center justify-between">

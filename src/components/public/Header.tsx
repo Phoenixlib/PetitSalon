@@ -61,11 +61,9 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
         isAdminPage ? "lg:hidden" : ""
       }`}
       style={{
-        backgroundColor:
-          scrolled || isAdminPage ? "rgba(255,255,255,0.96)" : "transparent",
-        backdropFilter: scrolled || isAdminPage ? "blur(16px)" : "none",
-        boxShadow:
-          scrolled || isAdminPage ? "0 1px 24px rgba(0,0,0,0.06)" : "none",
+        backgroundColor: "rgba(255,255,255,0.96)",
+        backdropFilter: "blur(16px)",
+        boxShadow: "0 1px 24px rgba(0,0,0,0.06)",
       }}
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full flex items-center justify-between">
@@ -232,9 +230,15 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
                 Navegación Admin
               </p>
               {ADMIN_NAV.map(({ href, label, external }) => {
-                const isActive = !external && (href === "/admin" ? pathname === href : pathname.startsWith(href));
+                const isActive =
+                  !external &&
+                  (href === "/admin"
+                    ? pathname === href
+                    : pathname.startsWith(href));
                 const Comp = external ? "a" : Link;
-                const extraProps = external ? { target: "_blank", rel: "noopener noreferrer" } : {};
+                const extraProps = external
+                  ? { target: "_blank", rel: "noopener noreferrer" }
+                  : {};
                 return (
                   <Comp
                     key={href}
@@ -289,7 +293,10 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
                   key={href}
                   href={href}
                   className="text-base font-medium py-2.5 border-b"
-                  style={{ color: "var(--ps-text)", borderColor: "var(--border)" }}
+                  style={{
+                    color: "var(--ps-text)",
+                    borderColor: "var(--border)",
+                  }}
                   onClick={() => setMenuOpen(false)}
                 >
                   {label}
@@ -303,7 +310,10 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-center font-semibold py-3 rounded-full border text-sm"
-                  style={{ color: "var(--ps-gold)", borderColor: "var(--ps-gold)" }}
+                  style={{
+                    color: "var(--ps-gold)",
+                    borderColor: "var(--ps-gold)",
+                  }}
                 >
                   Escribir por WhatsApp
                 </a>

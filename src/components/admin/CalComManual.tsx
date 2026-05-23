@@ -8,7 +8,10 @@ export default function CalComManual() {
   return (
     <div
       className="rounded-2xl overflow-hidden"
-      style={{ border: "1px solid var(--border)", backgroundColor: "var(--ps-lila-pale)" }}
+      style={{
+        border: "1px solid var(--border)",
+        backgroundColor: "var(--ps-lila-pale)",
+      }}
     >
       {/* Header clickeable */}
       <button
@@ -16,12 +19,19 @@ export default function CalComManual() {
         type="button"
         className="w-full flex items-center justify-between px-5 py-3.5 text-left transition-colors"
         style={{ backgroundColor: "transparent" }}
-        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(66,194,237,0.06)")}
-        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.backgroundColor = "rgba(66,194,237,0.06)")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.backgroundColor = "transparent")
+        }
       >
         <div className="flex items-center gap-2.5">
           <span className="text-lg">📅</span>
-          <span className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
+          <span
+            className="text-sm font-semibold"
+            style={{ color: "var(--primary)" }}
+          >
             ¿Cómo vincular un Event Type de Cal.com?
           </span>
         </div>
@@ -33,58 +43,109 @@ export default function CalComManual() {
           stroke="var(--primary)"
           strokeWidth={2.5}
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
 
       {/* Contenido expandible */}
       {open && (
-        <div className="px-5 pb-5 pt-1 border-t" style={{ borderColor: "var(--border)" }}>
+        <div
+          className="px-5 pb-5 pt-1 border-t"
+          style={{ borderColor: "var(--border)" }}
+        >
           <div className="space-y-4 text-sm" style={{ color: "#374151" }}>
-
             {/* Paso 1 */}
             <div>
-              <p className="font-semibold mb-1" style={{ color: "var(--foreground)" }}>
-                Paso 1 — Identificar el nombre en Cal.com
+              <p
+                className="font-semibold mb-1"
+                style={{ color: "var(--foreground)" }}
+              >
+                Paso 1 — Ir a Cal.com
               </p>
               <p className="text-xs leading-relaxed text-gray-600">
-                Ve a <strong>app.cal.com → Event Types</strong> y busca el nombre exacto.
-                Ej: <code className="rounded px-1 py-0.5 text-[11px] font-mono" style={{ backgroundColor: "var(--pastel-cyan)", color: "var(--foreground)" }}>Baño y Secado Perro Pequeño</code>
+                Haz clic en el link{" "}
+                <strong style={{ color: "var(--ps-gold)" }}>
+                  ↗ Ver Event Types
+                </strong>{" "}
+                del modal para ir directo a tus eventos en Cal.com.
+              </p>
+            </div>
+
+            {/* Paso 2 */}
+            <div>
+              <p
+                className="font-semibold mb-1"
+                style={{ color: "var(--foreground)" }}
+              >
+                Paso 2 — Duplicar un evento existente
+              </p>
+              <p className="text-xs leading-relaxed text-gray-600">
+                Para mantener la configuración de preguntas al cliente, haz clic
+                en los <strong>3 puntos</strong> de cualquier evento y
+                selecciona <strong>"Duplicar"</strong>.
               </p>
             </div>
 
             {/* Paso 3 */}
             <div>
-              <p className="font-semibold mb-1" style={{ color: "var(--foreground)" }}>
-                Paso 2 — Llenar el campo "Enlace de Cal.com"
+              <p
+                className="font-semibold mb-1"
+                style={{ color: "var(--foreground)" }}
+              >
+                Paso 3 — Configurar el nuevo servicio
               </p>
-              <p className="text-xs leading-relaxed text-gray-600 mb-2">
-                Tienes dos opciones válidas:
+              <ul className="text-xs leading-relaxed text-gray-600 list-disc ml-4 space-y-1">
+                <li>
+                  Ponle el <strong>mismo nombre</strong> que tendrá en esta app.
+                </li>
+                <li>La URL se generará automáticamente.</li>
+                <li>
+                  Elige la <strong>duración</strong> correcta para la agenda.
+                </li>
+                <li>
+                  Presiona <strong>Continuar</strong>.
+                </li>
+              </ul>
+            </div>
+
+            {/* Paso 4 */}
+            <div>
+              <p
+                className="font-semibold mb-1"
+                style={{ color: "var(--foreground)" }}
+              >
+                Paso 4 — Copiar y Vincular
               </p>
-              <div className="grid grid-cols-1 gap-2">
-                <div className="rounded-xl p-3" style={{ backgroundColor: "rgba(66,194,237,0.08)", border: "1px solid var(--pastel-cyan)" }}>
-                  <p className="text-[11px] font-semibold mb-1" style={{ color: "var(--foreground)" }}>✅ Opción A — Nombre exacto</p>
-                  <p className="text-[10px] leading-relaxed text-gray-600 font-mono">
-                    Baño y Secado Perro Pequeño
-                  </p>
-                </div>
-                <div className="rounded-xl p-3" style={{ backgroundColor: "rgba(66,194,237,0.04)", border: "1px solid var(--border)" }}>
-                  <p className="text-[11px] font-semibold mb-1" style={{ color: "var(--foreground)" }}>✅ Opción B — Slug del URL</p>
-                  <p className="text-[10px] leading-relaxed text-gray-600 font-mono">
-                    petitsalon/bano-y-secado
-                  </p>
-                </div>
-              </div>
+              <p className="text-xs leading-relaxed text-gray-600">
+                Copia la <strong>URL (link)</strong> obtenida, vuelve aquí y
+                pégala en el campo <strong>"Enlace de Cal.com"</strong>. Luego
+                presiona <strong>Guardar cambios</strong>. Ya puedes cerrar la
+                ventana de Cal.com.
+              </p>
             </div>
 
             {/* Advertencia */}
-            <div className="rounded-xl px-4 py-3 flex gap-2.5" style={{ backgroundColor: "var(--pastel-yellow)", border: "1px solid #f4cc6a" }}>
-              <span className="text-base flex-shrink-0">⚠️</span>
-              <p className="text-[10px] leading-relaxed" style={{ color: "#6b5c1a" }}>
-                Si no se configura, el sistema asignará la cita al <strong>primer servicio activo</strong> por defecto.
+            <div
+              className="rounded-xl px-4 py-3 flex gap-2.5"
+              style={{
+                backgroundColor: "var(--pastel-yellow)",
+                border: "1px solid #f4cc6a",
+              }}
+            >
+              <span className="text-base flex-shrink-0">💡</span>
+              <p
+                className="text-[10px] leading-relaxed"
+                style={{ color: "#6b5c1a" }}
+              >
+                Al duplicar te aseguras de que el cliente complete todos los
+                datos necesarios (nombre del perro, raza, etc.) ya configurados
+                en Cal.com.
               </p>
             </div>
-
           </div>
         </div>
       )}

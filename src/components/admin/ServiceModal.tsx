@@ -5,7 +5,8 @@ import {
   createServiceAction,
   updateServiceAction,
   ServiceFormState,
-} from "@/app/admin/servicios/actions";import CalComManual from "./CalComManual";
+} from "@/app/admin/servicios/actions";
+import CalComManual from "./CalComManual";
 type Service = {
   id: string;
   name: string;
@@ -87,12 +88,12 @@ export default function ServiceModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
       style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+        className="w-full max-w-md my-auto rounded-2xl bg-white p-6 shadow-2xl"
         style={{ border: "1px solid var(--border)" }}
       >
         <div className="mb-5 flex items-center justify-between">
@@ -287,7 +288,7 @@ export default function ServiceModal({
                 {(state.errors as any).calComLink?.[0]}
               </p>
             )}
-            
+
             <div className="mt-2">
               <CalComManual />
             </div>
