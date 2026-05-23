@@ -382,9 +382,11 @@ export default function AppointmentDetailModal({
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleStatusChange("CANCELLED")}
-                    disabled={isPending}
-                    className="w-full rounded-full py-2.5 font-semibold text-gray-700 bg-gray-200 transition-opacity hover:bg-gray-300 disabled:opacity-50"
+                    onClick={() => {
+                      window.open("https://app.cal.com/bookings/upcoming", "_blank");
+                      onClose();
+                    }}
+                    className="w-full rounded-full py-2.5 font-semibold text-gray-700 bg-gray-200 transition-opacity hover:bg-gray-300"
                   >
                     Cancelar Cita
                   </button>
@@ -413,9 +415,11 @@ export default function AppointmentDetailModal({
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleStatusChange("CANCELLED")}
-                      disabled={isPending}
-                      className="flex-1 rounded-full py-2.5 font-semibold text-gray-700 bg-gray-200 transition-opacity hover:bg-gray-300 disabled:opacity-50"
+                      onClick={() => {
+                        window.open("https://app.cal.com/bookings/upcoming", "_blank");
+                        onClose();
+                      }}
+                      className="flex-1 rounded-full py-2.5 font-semibold text-gray-700 bg-gray-200 transition-opacity hover:bg-gray-300"
                     >
                       Cancelar Cita
                     </button>

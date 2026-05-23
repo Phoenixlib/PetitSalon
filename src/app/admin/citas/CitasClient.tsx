@@ -305,10 +305,9 @@ export default function CitasClient({
                               </button>
                               <button
                                 onClick={() =>
-                                  handleStatusChange(app.id, "CANCELLED")
+                                  window.open("https://app.cal.com/bookings/upcoming", "_blank")
                                 }
-                                disabled={isPending}
-                                className="text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
+                                className="text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md transition-colors"
                               >
                                 Cancelar
                               </button>
@@ -338,10 +337,9 @@ export default function CitasClient({
                               </button>
                               <button
                                 onClick={() =>
-                                  handleStatusChange(app.id, "CANCELLED")
+                                  window.open("https://app.cal.com/bookings/upcoming", "_blank")
                                 }
-                                disabled={isPending}
-                                className="text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
+                                className="text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md transition-colors"
                               >
                                 Cancelar
                               </button>
@@ -466,10 +464,9 @@ export default function CitasClient({
                         </button>
                         <button
                           onClick={() =>
-                            handleStatusChange(app.id, "CANCELLED")
+                            window.open("https://app.cal.com/bookings/upcoming", "_blank")
                           }
-                          disabled={isPending}
-                          className="flex-1 text-sm font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 py-2.5 rounded-lg transition-colors disabled:opacity-50"
+                          className="flex-1 text-sm font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 py-2.5 rounded-lg transition-colors"
                         >
                           Cancelar
                         </button>
@@ -496,10 +493,9 @@ export default function CitasClient({
                         </button>
                         <button
                           onClick={() =>
-                            handleStatusChange(app.id, "CANCELLED")
+                            window.open("https://app.cal.com/bookings/upcoming", "_blank")
                           }
-                          disabled={isPending}
-                          className="flex-1 text-sm font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 py-2.5 rounded-lg transition-colors disabled:opacity-50"
+                          className="flex-1 text-sm font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 py-2.5 rounded-lg transition-colors"
                         >
                           Cancelar
                         </button>
