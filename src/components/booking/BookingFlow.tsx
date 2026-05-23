@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CalComEmbed, { CalComPrefill } from "./CalComEmbed";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Info, X, ShieldAlert, Clock, CalendarDays, PawPrint } from "lucide-react";
 
 type Step = "lookup" | "dog-select" | "embed";
 
@@ -46,6 +46,7 @@ export default function BookingFlow({ calLink, servicio, bankConfig }: BookingFl
 
   const [isSuccess, setIsSuccess] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
 
   const handleLookup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,7 +141,7 @@ Correo: ${bankConfig.bank_email || ""}`;
   const whatsappPhone = bankConfig.whatsapp || "";
   const cleanPhone = whatsappPhone.replace(/\D/g, "");
   const whatsappMessage = encodeURIComponent(
-    `¡Hola! Acabo de agendar una cita en Petit Salón para mi perrito y aquí te adjunto el comprobante del abono de $10.000 CLP de la reserva.`
+    `¡Hola! Acabo de agendar una cita en Petit Salón para mi perrito. He leído y acepto los términos y condiciones, y aquí te adjunto el comprobante del abono de $10.000 CLP de la reserva.🐾`
   );
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${whatsappMessage}`;
 
@@ -406,6 +407,27 @@ Correo: ${bankConfig.bank_email || ""}`;
               </button>
             </div>
 
+              </button>
+            </div>
+
+            <button
+              onClick={() => setShowTerms(true)}
+              className="w-full mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-100 flex items-start gap-3 text-left hover:bg-amber-100 transition-colors group"
+            >
+              <div className="size-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0 group-hover:bg-amber-200 transition-colors">
+                <ShieldAlert className="size-5 text-amber-600" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-amber-900 flex items-center gap-1.5">
+                  Información Importante
+                  <span className="text-[10px] bg-amber-200/50 px-1.5 py-0.5 rounded text-amber-700 font-medium">Leer</span>
+                </h4>
+                <p className="text-xs text-amber-800/80 mt-0.5 leading-relaxed">
+                  Para la mejor experiencia de tu mascota, revisa nuestra política de puntualidad, cancelación y convivencia.
+                </p>
+              </div>
+            </button>
+
             <div className="space-y-3">
               <a
                 href={whatsappUrl}
@@ -419,14 +441,112 @@ Correo: ${bankConfig.bank_email || ""}`;
                 Enviar Comprobante por WhatsApp
               </a>
               
+              <p className="text-[10px] text-slate-400 mt-2">
+                Al enviar el comprobante, aceptas nuestros Términos y Condiciones.
+              </p>
+
               <button
                 onClick={() => window.location.reload()}
-                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 p-3 rounded-full font-medium transition-colors text-sm cursor-pointer"
+                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 p-3 rounded-full font-medium transition-colors text-sm cursor-pointer mt-4"
               >
                 Volver al Inicio
               </button>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal de Términos y Condiciones */}
+      <AnimatePresence>
+        {showTerms && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
+                <h3 className="text-xl font-extrabold text-slate-800 flex items-center gap-2">
+                  <span className="size-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <ShieldAlert className="size-5 text-orange-600" />
+                  </span>
+                  Términos y Condiciones
+                </h3>
+                <button 
+                  onClick={() => setShowTerms(false)}
+                  className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                >
+                  <X className="size-5 text-slate-400" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                <section>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="bg-blue-100 p-1.5 rounded-md">
+                      <Clock className="size-4 text-blue-600" />
+                    </div>
+                    <h4 className="font-bold text-slate-800">Puntualidad y Espera</h4>
+                  </div>
+                  <p className="text-sm text-slate-600 leading-relaxed ml-9">
+                    Contamos con un margen de espera de máximo <strong>15 minutos</strong>. Pasado este tiempo, la cita se considerará cancelada para no afectar la agenda de los demás perritos y los tiempos de higiene.
+                  </p>
+                </section>
+
+                <section>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="bg-red-100 p-1.5 rounded-md">
+                      <CalendarDays className="size-4 text-red-600" />
+                    </div>
+                    <h4 className="font-bold text-slate-800">Cancelaciones y Abonos</h4>
+                  </div>
+                  <p className="text-sm text-slate-600 leading-relaxed ml-9">
+                    Para el reembolso del abono de reserva ($10.000), se requiere un aviso de cancelación con al menos <strong>24 horas de anticipación</strong>. Si cancelas con menos tiempo o no asistes, el abono no será reembolsable.
+                  </p>
+                </section>
+
+                <section>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="bg-orange-100 p-1.5 rounded-md">
+                      <PawPrint className="size-4 text-orange-600" />
+                    </div>
+                    <h4 className="font-bold text-slate-800">Salud e Higiene</h4>
+                  </div>
+                  <p className="text-sm text-slate-600 leading-relaxed ml-9">
+                    Por seguridad de todos, tu mascota debe contar con sus <strong>vacunas al día</strong> y haber realizado su tratamiento antiparasitario (interno y externo). No podemos recibir mascotas con signos evidentes de enfermedades contagiosas o parásitos activos.
+                  </p>
+                </section>
+
+                <section>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="bg-amber-100 p-1.5 rounded-md">
+                      <ShieldAlert className="size-4 text-amber-600" />
+                    </div>
+                    <h4 className="font-bold text-slate-800">Comportamiento y Seguridad</h4>
+                  </div>
+                  <p className="text-sm text-slate-600 leading-relaxed ml-9">
+                    Es fundamental <strong>notificar previamente</strong> si tu mascota es reactiva, miedosa o presenta tendencia a morder. Esto nos permite tomar medidas de seguridad adicionales para proteger tanto al perrito como a nuestro equipo.
+                  </p>
+                </section>
+
+                <section className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <p className="text-xs text-slate-500 leading-relaxed text-center italic">
+                    "En Petit Salón nuestra prioridad es el bienestar y la felicidad de tu mascota. Estos términos nos ayudan a mantener un entorno seguro y organizado para todos."
+                  </p>
+                </section>
+              </div>
+
+              <div className="p-6 border-t border-slate-100 bg-slate-50">
+                <button
+                  onClick={() => setShowTerms(false)}
+                  className="w-full bg-slate-900 text-white py-3.5 rounded-2xl font-bold shadow-lg shadow-slate-200 hover:bg-slate-800 transition-colors"
+                >
+                  Entendido, cerrar
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
