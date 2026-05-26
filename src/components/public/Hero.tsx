@@ -78,6 +78,7 @@ export default function Hero({ whatsapp }: HeroProps) {
             src="/images/hero/perro1.jpeg"
             alt=""
             fill
+            sizes="(max-width: 1024px) 100vw, 50vw"
             className="object-cover object-bottom lg:object-[center_0%]"
             priority
           />
@@ -147,7 +148,13 @@ export default function Hero({ whatsapp }: HeroProps) {
             }}
             variants={item}
           >
-            Cuando ellos
+            Cuando{" "}
+            <em
+              className="not-italic font-medium drop-shadow-sm"
+              style={{ color: "var(--ps-gold)" }}
+            >
+              ellos
+            </em>
             <br />
             están bien,
             <br />
@@ -158,7 +165,7 @@ export default function Hero({ whatsapp }: HeroProps) {
               nosotros
             </em>
             <br />
-            <em className="italic font-semibold text-ps-lila drop-shadow-sm">también</em>
+            <em className="italic font-semibold drop-shadow-sm" style={{ color: "var(--ps-text)" }}>también</em>
           </motion.h1>
 
           {/* Subtext */}
