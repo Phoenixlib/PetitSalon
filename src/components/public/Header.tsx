@@ -200,7 +200,7 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
           menuOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
-        } ${!isAdminPage ? "h-[calc(100vh-4rem)]" : "pb-6"}`}
+        } ${!(isAdminPage && isAuthenticated) ? "h-[calc(100vh-4rem)]" : "pb-6"}`}
         style={{
           backgroundColor: "rgba(255,255,255,0.98)",
           backdropFilter: "blur(20px)",
@@ -210,8 +210,8 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
           className="px-6 pt-4 flex flex-col gap-1 h-full"
           style={{ borderTop: "1px solid var(--border)" }}
         >
-          {isAdminPage ? (
-            /* Admin menu (only shown when inside the admin pages) */
+          {isAdminPage && isAuthenticated ? (
+            /* Admin menu (only shown when inside the admin pages and authenticated) */
             <>
               <p
                 className="text-[10px] uppercase tracking-[0.2em] mt-2 mb-2 font-semibold"

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import ResetearForm from "@/components/admin/ResetearForm";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Restablecer contraseña | Petit Salón",
@@ -13,6 +14,30 @@ export default function ResetearPage() {
       style={{ backgroundColor: "var(--ps-lila-base)" }}
     >
       <div className="w-full max-w-sm">
+        {/* Back Button */}
+        <div className="mb-6 md:block hidden">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider transition-colors hover:opacity-75"
+            style={{ color: "var(--ps-lila-deep)" }}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mr-0.5"
+            >
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Volver a la web
+          </Link>
+        </div>
         {/* Brand header */}
         <div className="text-center mb-8">
           <h1
