@@ -18,6 +18,7 @@ import {
   Image as ImageIcon,
   Home,
   Clock,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/app/admin/actions";
@@ -146,6 +147,21 @@ export default function AdminSidebar({ userName, pendingReviewsCount = 0 }: Admi
         className="px-2 py-4 border-t space-y-1"
         style={{ borderColor: "var(--ps-lila-light)" }}
       >
+        <Link
+          href="/admin/configuracion"
+          className={cn(
+            "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium w-full transition-colors",
+            pathname !== "/admin/configuracion" && "hover:bg-surface"
+          )}
+          style={
+            pathname === "/admin/configuracion"
+              ? { backgroundColor: "var(--ps-lila)", color: "white" }
+              : { color: "var(--ps-text-mid)" }
+          }
+        >
+          <Settings className="size-4 shrink-0" />
+          Configuración
+        </Link>
         <Link
           href="/"
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium w-full transition-colors hover:bg-surface"

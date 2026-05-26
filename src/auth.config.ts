@@ -12,10 +12,10 @@ export const authConfig: NextAuthConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isAdminRoute = nextUrl.pathname.startsWith("/admin");
-      const isLoginPage = nextUrl.pathname === "/admin/login";
+      const isLoginRoute = nextUrl.pathname.startsWith("/admin/login");
 
-      if (isAdminRoute && !isLoginPage && !isLoggedIn) return false;
-      if (isLoginPage && isLoggedIn) {
+      if (isAdminRoute && !isLoginRoute && !isLoggedIn) return false;
+      if (isLoginRoute && isLoggedIn) {
         return Response.redirect(new URL("/admin", nextUrl));
       }
       return true;

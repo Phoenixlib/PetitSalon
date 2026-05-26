@@ -164,16 +164,6 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
               >
                 Reservar
               </Link>
-              <Link
-                href="/admin/login"
-                className="text-sm font-medium px-4 py-2 rounded-full border transition-all duration-200 hover:opacity-80"
-                style={{
-                  borderColor: "var(--border)",
-                  color: "var(--ps-text-mid)",
-                }}
-              >
-                Iniciar sesión
-              </Link>
             </>
           )}
         </div>
@@ -325,7 +315,7 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
                 >
                   Reservar cita
                 </Link>
-                {isAuthenticated ? (
+                {isAuthenticated && (
                   <Link
                     href="/admin"
                     className="text-center font-semibold py-3 rounded-full text-sm border-2"
@@ -336,18 +326,6 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
                     onClick={() => setMenuOpen(false)}
                   >
                     Panel de administración
-                  </Link>
-                ) : (
-                  <Link
-                    href="/admin/login"
-                    className="text-center font-medium py-3 rounded-full text-sm border"
-                    style={{
-                      borderColor: "var(--border)",
-                      color: "var(--ps-text-mid)",
-                    }}
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Iniciar sesión
                   </Link>
                 )}
               </div>

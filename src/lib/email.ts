@@ -198,3 +198,57 @@ export async function sendCampaignEmail(
     throw error;
   }
 }
+
+/**
+ * Envía un email al administrador con el enlace de recuperación de contraseña.
+ */
+export async function sendPasswordResetEmail(
+  to: string,
+  resetUrl: string,
+): Promise<void> {
+  if (!isSmtpConfigured()) {
+    console.log("-----------------------------------------------------");
+    console.log(`[EMAIL SIMULADO] Recuperación de contraseña para: ${to}`);
+    console.log(`URL de recuperación: ${resetUrl}`);
+    console.log("-----------------------------------------------------");
+    return;
+  }
+
+  const transporter = createTransporter();
+
+  const html = `
+    <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:24px">
+      <h2 style="color:#7c3aed;margin-bottom:8px">🐾 Recuperación de Contraseña — Petit Salon</h2>
+      <p style="color:#444;font-size:15px">
+        Hola, se ha solicitado un restablecimiento de contraseña para tu cuenta de administrador en Petit Salon.
+      </p>
+      <p style="color:#444;font-size:15px">
+        Para restablecer tu contraseña, haz clic en el siguiente botón. Este enlace es válido por 1 hora.
+      </p>
+      <div style="text-align:center;margin:32px 0">
+        <a
+          href="${resetUrl}"
+          style="background:#7c3aed;color:#fff;padding:14px 32px;border-radius:999px;text-decoration:none;font-weight:600;font-size:16px"
+        >
+          Restablecer Contraseña 🔒
+        </a>
+      </div>
+      <p style="color:#888;font-size:12px;text-align:center">
+        Si no solicitaste este cambio, puedes ignorar este correo de forma segura.
+      </p>
+    </div>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: `"Petit Salon" <${env.SMTP_USER}>`,
+      to,
+      subject: "Recuperación de Contraseña 🔒 — Petit Salon",
+      html,
+    });
+  } catch (error) {
+    console.error("[EMAIL ERROR] sendPasswordResetEmail falló:", error);
+    throw error;
+  }
+}
+

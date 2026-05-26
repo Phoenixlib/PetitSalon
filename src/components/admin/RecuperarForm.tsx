@@ -1,12 +1,31 @@
 "use client";
 
 import { useActionState } from "react";
-import { loginAction } from "@/app/admin/login/actions";
+import { requestResetAction } from "@/app/admin/login/recuperar/actions";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-export default function LoginForm() {
-  const [error, formAction, isPending] = useActionState(loginAction, null);
+export default function RecuperarForm() {
+  const [state, formAction, isPending] = useActionState(requestResetAction, null);
+
+  if (state?.success) {
+    return (
+      <div className="space-y-4">
+        <p className="text-sm p-3 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200">
+          Si el correo está registrado, recibirás un enlace de recuperación en los próximos minutos.
+        </p>
+        <Link
+          href="/admin/login"
+          className="block w-full text-center font-medium py-2.5 rounded-full text-sm border hover:bg-slate-50 transition-colors mt-4 text-slate-700"
+          style={{
+            borderColor: "var(--border)",
+          }}
+        >
+          Volver al inicio de sesión
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <form action={formAction} className="space-y-4">
@@ -36,34 +55,9 @@ export default function LoginForm() {
         />
       </div>
 
-      <div className="space-y-1.5">
-        <label
-          htmlFor="password"
-          className="block text-sm font-medium"
-          style={{ color: "var(--ps-text)" }}
-        >
-          Contraseña
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          required
-          autoComplete="current-password"
-          className="w-full rounded-lg border bg-white px-3 py-2 text-sm outline-none transition-colors"
-          style={{ borderColor: "var(--ps-lila-light)" }}
-          onFocus={(e) => {
-            e.currentTarget.style.borderColor = "var(--ps-lila)";
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.borderColor = "var(--ps-lila-light)";
-          }}
-        />
-      </div>
-
-      {error && (
+      {state?.error && (
         <p role="alert" className="text-sm text-destructive">
-          {error}
+          {state.error}
         </p>
       )}
 
@@ -73,19 +67,18 @@ export default function LoginForm() {
         className="w-full"
         style={{ backgroundColor: "var(--ps-lila)", color: "white" }}
       >
-        {isPending ? "Ingresando…" : "Ingresar"}
+        {isPending ? "Enviando enlace…" : "Enviar enlace de recuperación"}
       </Button>
 
       <div className="text-center pt-2">
         <Link
-          href="/admin/login/recuperar"
+          href="/admin/login"
           className="text-xs transition-colors hover:underline"
           style={{ color: "var(--ps-text-mid)" }}
         >
-          ¿Olvidaste tu contraseña?
+          Volver al inicio de sesión
         </Link>
       </div>
     </form>
   );
 }
-
