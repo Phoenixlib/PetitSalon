@@ -102,6 +102,29 @@ function SaveButton({ isSaving, saved, disabled }: { isSaving: boolean; saved: b
   );
 }
 
+function validateRut(rut: string): boolean {
+  const cleanRut = rut.replace(/[^0-9kK]/g, "");
+  if (cleanRut.length < 8 || cleanRut.length > 9) return false;
+  
+  const body = cleanRut.slice(0, -1);
+  const dv = cleanRut.slice(-1).toLowerCase();
+  
+  let sum = 0;
+  let multiplier = 2;
+  for (let i = body.length - 1; i >= 0; i--) {
+    sum += parseInt(body[i], 10) * multiplier;
+    multiplier = multiplier === 7 ? 2 : multiplier + 1;
+  }
+  
+  const expectedDv = 11 - (sum % 11);
+  let expectedDvStr = "";
+  if (expectedDv === 11) expectedDvStr = "0";
+  else if (expectedDv === 10) expectedDvStr = "k";
+  else expectedDvStr = expectedDv.toString();
+  
+  return dv === expectedDvStr;
+}
+
 function ConfigField({ 
   label, 
   configKey, 
@@ -119,12 +142,57 @@ function ConfigField({
   const [lastSavedValue, setLastSavedValue] = useState(initialValue);
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const hasChanged = value !== lastSavedValue;
+
+  function validate(val: string): string | null {
+    if (configKey === "whatsapp") {
+      if (val !== "") {
+        const whatsappRegex = /^\d{9,15}$/;
+        if (!whatsappRegex.test(val)) {
+          return "El número de WhatsApp debe contener solo dígitos (entre 9 y 15). Ej: 56937541863";
+        }
+      }
+    } else if (configKey === "email" || configKey === "bank_email") {
+      if (val !== "") {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(val)) {
+          return "Ingrese un correo electrónico válido (ej: usuario@dominio.com)";
+        }
+      }
+    } else if (configKey === "bank_rut") {
+      if (val !== "") {
+        if (!validateRut(val)) {
+          return "Ingrese un RUT chileno válido (ej: 12.345.678-9)";
+        }
+      }
+    } else if (configKey === "bank_account_number") {
+      if (val !== "") {
+        const accountNumberRegex = /^[0-9\s\-]{5,30}$/;
+        if (!accountNumberRegex.test(val)) {
+          return "El número de cuenta debe contener solo dígitos, espacios o guiones (entre 5 y 30 caracteres)";
+        }
+      }
+    }
+    return null;
+  }
+
+  function handleValueChange(val: string) {
+    setValue(val);
+    setError(validate(val));
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!hasChanged) return;
+    
+    const validationError = validate(value);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setError(null);
     
     setIsSaving(true);
     const res = await updateSiteConfigAction(configKey, value);
@@ -134,30 +202,37 @@ function ConfigField({
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } else {
-      alert(res.error || "Error al guardar");
+      setError(res.error || "Error al guardar");
     }
   }
 
   return (
     <form onSubmit={handleSave} className="space-y-2">
       <label className="block text-sm font-medium text-slate-700">{label}</label>
-      <div className="flex flex-col sm:flex-row gap-3 items-start">
-        {multiline ? (
-          <textarea
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            rows={4}
-            className="flex-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--ps-lila)] focus:border-transparent"
-          />
-        ) : (
-          <input
-            type={type}
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            className="flex-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--ps-lila)] focus:border-transparent"
-          />
-        )}
-        <SaveButton isSaving={isSaving} saved={saved} disabled={!hasChanged} />
+      <div className="flex flex-col sm:flex-row gap-3 items-start w-full">
+        <div className="flex-1 w-full">
+          {multiline ? (
+            <textarea
+              value={value}
+              onChange={(e) => handleValueChange(e.target.value)}
+              rows={4}
+              className={`w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--ps-lila)] focus:border-transparent ${
+                error ? "border-red-500 focus:ring-red-500" : "border-slate-300"
+              }`}
+            />
+          ) : (
+            <input
+              type={type}
+              value={value}
+              onChange={(e) => handleValueChange(e.target.value)}
+              className={`w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--ps-lila)] focus:border-transparent ${
+                error ? "border-red-500 focus:ring-red-500" : "border-slate-300"
+              }`}
+            />
+          )}
+          {error && <p className="text-red-500 text-xs mt-1 font-medium">{error}</p>}
+        </div>
+        <SaveButton isSaving={isSaving} saved={saved} disabled={!hasChanged || !!error} />
       </div>
     </form>
   );

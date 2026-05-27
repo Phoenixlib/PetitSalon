@@ -1,3 +1,0 @@
-Need to install the following packages:
-vercel@54.2.0
-Ok to proceed? (y) 

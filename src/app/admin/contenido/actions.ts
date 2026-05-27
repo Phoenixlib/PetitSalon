@@ -10,9 +10,63 @@ async function requireAdmin() {
   if (!session?.user) throw new Error("No autorizado");
 }
 
+function validateRut(rut: string): boolean {
+  const cleanRut = rut.replace(/[^0-9kK]/g, "");
+  if (cleanRut.length < 8 || cleanRut.length > 9) return false;
+  
+  const body = cleanRut.slice(0, -1);
+  const dv = cleanRut.slice(-1).toLowerCase();
+  
+  let sum = 0;
+  let multiplier = 2;
+  for (let i = body.length - 1; i >= 0; i--) {
+    sum += parseInt(body[i], 10) * multiplier;
+    multiplier = multiplier === 7 ? 2 : multiplier + 1;
+  }
+  
+  const expectedDv = 11 - (sum % 11);
+  let expectedDvStr = "";
+  if (expectedDv === 11) expectedDvStr = "0";
+  else if (expectedDv === 10) expectedDvStr = "k";
+  else expectedDvStr = expectedDv.toString();
+  
+  return dv === expectedDvStr;
+}
+
 export async function updateSiteConfigAction(key: string, value: string): Promise<{ success?: boolean; error?: string }> {
   try {
     await requireAdmin();
+
+    // Validaciones del servidor
+    if (key === "whatsapp") {
+      if (value !== "") {
+        const whatsappRegex = /^\d{9,15}$/;
+        if (!whatsappRegex.test(value)) {
+          return { error: "El número de WhatsApp debe contener solo dígitos y tener entre 9 y 15 caracteres." };
+        }
+      }
+    } else if (key === "email" || key === "bank_email") {
+      if (value !== "") {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(value)) {
+          return { error: "El correo electrónico no es válido. Debe tener un formato correcto (ej: usuario@dominio.com)." };
+        }
+      }
+    } else if (key === "bank_rut") {
+      if (value !== "") {
+        if (!validateRut(value)) {
+          return { error: "El RUT ingresado no es válido. Debe ser un RUT chileno real (ej: 12.345.678-9)." };
+        }
+      }
+    } else if (key === "bank_account_number") {
+      if (value !== "") {
+        const accountNumberRegex = /^[0-9\s\-]{5,30}$/;
+        if (!accountNumberRegex.test(value)) {
+          return { error: "El número de cuenta debe contener solo dígitos, espacios o guiones (entre 5 y 30 caracteres)." };
+        }
+      }
+    }
+
     await prisma.siteConfig.upsert({
       where: { key },
       update: { value },

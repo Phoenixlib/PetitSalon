@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { logoutAction } from "@/app/admin/actions";
+import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
   { href: "/#nosotros", label: "Quiénes somos" },
@@ -96,7 +97,7 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
         )}
 
         {/* Desktop CTAs */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className={cn("items-center gap-3", (isAdminPage && isAuthenticated) ? "hidden lg:flex" : "hidden md:flex")}>
           {isAuthenticated ? (
             <>
               {!isAdminPage && (
@@ -170,7 +171,7 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
 
         {/* Mobile hamburger */}
         <button
-          className="md:hidden p-2 rounded-md"
+          className={cn("p-2 rounded-md", (isAdminPage && isAuthenticated) ? "lg:hidden" : "md:hidden")}
           style={{ color: "var(--ps-text)" }}
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
@@ -196,11 +197,14 @@ export default function Header({ isAuthenticated = false, whatsapp }: Props) {
 
       {/* Mobile menu */}
       <div
-        className={`md:hidden overflow-y-auto transition-all duration-300 ease-in-out absolute top-full inset-x-0 ${
+        className={cn(
+          "overflow-y-auto transition-all duration-300 ease-in-out absolute top-full inset-x-0",
+          (isAdminPage && isAuthenticated) ? "lg:hidden" : "md:hidden",
           menuOpen
             ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-        } ${!(isAdminPage && isAuthenticated) ? "h-[calc(100vh-4rem)]" : "pb-6"}`}
+            : "opacity-0 pointer-events-none",
+          !(isAdminPage && isAuthenticated) ? "h-[calc(100vh-4rem)]" : "pb-6"
+        )}
         style={{
           backgroundColor: "rgba(255,255,255,0.98)",
           backdropFilter: "blur(20px)",
