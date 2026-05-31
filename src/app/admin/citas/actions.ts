@@ -176,3 +176,63 @@ export async function toggleWhatsappSentAction(
     return { errors: { _form: ["Error al actualizar estado de WhatsApp."] } };
   }
 }
+
+const ManualAppointmentSchema = z.object({
+  dogId: z.string().min(1, "Selecciona una mascota"),
+  serviceId: z.string().min(1, "Selecciona un servicio"),
+  date: z.coerce.date(),
+  status: z.enum(["PENDING", "CONFIRMED", "DONE", "CANCELLED"]),
+  notes: z.string().max(1000).optional().nullable(),
+});
+
+export type ManualAppointmentFormState = {
+  errors?: {
+    dogId?: string[];
+    serviceId?: string[];
+    date?: string[];
+    status?: string[];
+    notes?: string[];
+    _form?: string[];
+  };
+  success?: boolean;
+};
+
+export async function createManualAppointmentAction(
+  _prev: ManualAppointmentFormState,
+  formData: FormData,
+): Promise<ManualAppointmentFormState> {
+  try {
+    await requireAdmin();
+    const raw = {
+      dogId: formData.get("dogId") as string,
+      serviceId: formData.get("serviceId") as string,
+      date: formData.get("date") as string,
+      status: formData.get("status") as string,
+      notes: (formData.get("notes") as string) || null,
+    };
+
+    const parsed = ManualAppointmentSchema.safeParse(raw);
+    if (!parsed.success) {
+      return { errors: parsed.error.flatten().fieldErrors };
+    }
+
+    await prisma.appointment.create({
+      data: {
+        dogId: parsed.data.dogId,
+        serviceId: parsed.data.serviceId,
+        date: parsed.data.date,
+        status: parsed.data.status,
+        notes: parsed.data.notes,
+      },
+    });
+
+    revalidatePath("/admin/agenda");
+    revalidatePath("/admin/citas");
+    revalidatePath("/admin");
+
+    return { success: true };
+  } catch (error) {
+    return { errors: { _form: ["Error al crear la cita manual"] } };
+  }
+}
+

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import AgendaCalendar from "@/components/admin/AgendaCalendar";
 import type { AppointmentWithRelations } from "@/types";
+import { env } from "@/env";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Agenda — Petit Salón Admin" };
@@ -41,6 +42,17 @@ export default async function AgendaPage() {
       },
     });
 
+  const services = await prisma.service.findMany({
+    where: { isActive: true },
+    orderBy: { order: "asc" },
+    select: {
+      id: true,
+      name: true,
+      price: true,
+      duration: true,
+    },
+  });
+
   return (
     <div className="space-y-6">
       <div>
@@ -77,7 +89,12 @@ export default async function AgendaPage() {
         ))}
       </div>
 
-      <AgendaCalendar initialAppointments={appointments} />
+      <AgendaCalendar
+        initialAppointments={appointments}
+        services={services}
+        calComLink={env.NEXT_PUBLIC_CALCOM_LINK ?? ""}
+      />
     </div>
   );
 }
+

@@ -1,8 +1,15 @@
+import { prisma } from "@/lib/prisma";
 import ChangePasswordForm from "@/components/admin/ChangePasswordForm";
+import AgendaToggle from "@/components/admin/AgendaToggle";
 
 export const dynamic = "force-dynamic";
 
-export default function ConfigurationPage() {
+export default async function ConfigurationPage() {
+  const configRow = await prisma.siteConfig.findUnique({
+    where: { key: "agenda_bloqueada" },
+  });
+  const agendaBloqueada = configRow?.value === "true";
+
   return (
     <div className="space-y-6">
       <div>
@@ -16,6 +23,9 @@ export default function ConfigurationPage() {
           Administra las opciones de tu cuenta y seguridad
         </p>
       </div>
+
+      {/* Control de agenda pública */}
+      <AgendaToggle initialValue={agendaBloqueada} />
 
       <div
         className="rounded-xl overflow-hidden max-w-2xl"

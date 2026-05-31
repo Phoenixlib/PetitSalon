@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { compare, hash } from "bcryptjs";
+import { revalidatePath } from "next/cache";
 
 export async function changePasswordAction(
   _prevState: { success: boolean; error: string | null; successMessage: string | null } | null,
@@ -58,3 +59,26 @@ export async function changePasswordAction(
     return { success: false, error: "Ocurrió un error al intentar cambiar la contraseña.", successMessage: null };
   }
 }
+
+export async function toggleAgendaBloqueadaAction(
+  bloqueada: boolean
+): Promise<{ success: boolean; error?: string }> {
+  const session = await auth();
+  if (!session?.user?.email) {
+    return { success: false, error: "No autorizado." };
+  }
+  try {
+    await prisma.siteConfig.upsert({
+      where: { key: "agenda_bloqueada" },
+      update: { value: bloqueada ? "true" : "false" },
+      create: { key: "agenda_bloqueada", value: bloqueada ? "true" : "false" },
+    });
+    revalidatePath("/"); // para que el landing público se actualice
+    revalidatePath("/admin/configuracion");
+    return { success: true };
+  } catch (error) {
+    console.error("[TOGGLE AGENDA ERROR]:", error);
+    return { success: false, error: "Error al guardar la configuración." };
+  }
+}
+
