@@ -33,49 +33,41 @@ export default async function AdminResenasPage() {
   const rejectedWhere = { status: "REJECTED" as const };
   const waitingWhere = { status: "PENDING" as const, submittedAt: null };
 
-  const [
-    pendingCount,
-    pendingReviews,
-    approvedCount,
-    approvedReviews,
-    rejectedCount,
-    rejectedReviews,
-    waitingCount,
-    waitingReviews,
-  ] = await Promise.all([
-    // Pendientes
-    prisma.review.count({ where: pendingWhere }),
-    prisma.review.findMany({
-      where: pendingWhere,
-      orderBy: { createdAt: "desc" },
-      take: 10,
-      include: reviewInclude,
-    }),
-    // Aprobadas
-    prisma.review.count({ where: approvedWhere }),
-    prisma.review.findMany({
-      where: approvedWhere,
-      orderBy: { createdAt: "desc" },
-      take: 10,
-      include: reviewInclude,
-    }),
-    // Rechazadas
-    prisma.review.count({ where: rejectedWhere }),
-    prisma.review.findMany({
-      where: rejectedWhere,
-      orderBy: { createdAt: "desc" },
-      take: 10,
-      include: reviewInclude,
-    }),
-    // Esperando al cliente
-    prisma.review.count({ where: waitingWhere }),
-    prisma.review.findMany({
-      where: waitingWhere,
-      orderBy: { createdAt: "desc" },
-      take: 10,
-      include: reviewInclude,
-    }),
-  ]);
+  // Pendientes
+  const pendingCount = await prisma.review.count({ where: pendingWhere });
+  const pendingReviews = await prisma.review.findMany({
+    where: pendingWhere,
+    orderBy: { createdAt: "desc" },
+    take: 10,
+    include: reviewInclude,
+  });
+
+  // Aprobadas
+  const approvedCount = await prisma.review.count({ where: approvedWhere });
+  const approvedReviews = await prisma.review.findMany({
+    where: approvedWhere,
+    orderBy: { createdAt: "desc" },
+    take: 10,
+    include: reviewInclude,
+  });
+
+  // Rechazadas
+  const rejectedCount = await prisma.review.count({ where: rejectedWhere });
+  const rejectedReviews = await prisma.review.findMany({
+    where: rejectedWhere,
+    orderBy: { createdAt: "desc" },
+    take: 10,
+    include: reviewInclude,
+  });
+
+  // Esperando al cliente
+  const waitingCount = await prisma.review.count({ where: waitingWhere });
+  const waitingReviews = await prisma.review.findMany({
+    where: waitingWhere,
+    orderBy: { createdAt: "desc" },
+    take: 10,
+    include: reviewInclude,
+  });
 
   return (
     <div className="space-y-8">

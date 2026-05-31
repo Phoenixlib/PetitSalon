@@ -58,47 +58,46 @@ async function getDashboardData() {
   const todayEnd = addDaysUTC(todayStart, 1);
   const next7daysEnd = addDaysUTC(todayStart, 7);
 
-  const [todayCount, upcomingAppointments, ownerCount, dogCount] =
-    await Promise.all([
-      prisma.appointment.count({
-        where: {
-          date: { gte: todayStart, lt: todayEnd },
-          status: { not: "CANCELLED" },
-        },
-      }),
-      prisma.appointment.findMany({
-        where: {
-          date: { gte: now, lt: next7daysEnd },
-          status: { not: "CANCELLED" },
-        },
-        orderBy: { date: "asc" },
-        take: 10,
+  const todayCount = await prisma.appointment.count({
+    where: {
+      date: { gte: todayStart, lt: todayEnd },
+      status: { not: "CANCELLED" },
+    },
+  });
+
+  const upcomingAppointments = await prisma.appointment.findMany({
+    where: {
+      date: { gte: now, lt: next7daysEnd },
+      status: { not: "CANCELLED" },
+    },
+    orderBy: { date: "asc" },
+    take: 10,
+    select: {
+      id: true,
+      calComUid: true,
+      date: true,
+      status: true,
+      notes: true,
+      createdAt: true,
+      whatsappSentAt: true,
+      dog: {
         select: {
           id: true,
-          calComUid: true,
-          date: true,
-          status: true,
-          notes: true,
-          createdAt: true,
-          whatsappSentAt: true,
-          dog: {
-            select: {
-              id: true,
-              name: true,
-              breed: true,
-              owner: {
-                select: { id: true, name: true, phone: true, email: true },
-              },
-            },
-          },
-          service: {
-            select: { id: true, name: true, price: true, duration: true },
+          name: true,
+          breed: true,
+          owner: {
+            select: { id: true, name: true, phone: true, email: true },
           },
         },
-      }),
-      prisma.owner.count(),
-      prisma.dog.count(),
-    ]);
+      },
+      service: {
+        select: { id: true, name: true, price: true, duration: true },
+      },
+    },
+  });
+
+  const ownerCount = await prisma.owner.count();
+  const dogCount = await prisma.dog.count();
 
   return {
     todayCount,

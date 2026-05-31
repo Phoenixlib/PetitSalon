@@ -39,38 +39,37 @@ export default async function CitasPage(props: {
     ];
   }
 
-  // Ejecutar queries en paralelo para optimizar rendimiento
-  const [appointments, totalCount] = await Promise.all([
-    prisma.appointment.findMany({
-      where,
-      orderBy: { date: "desc" },
-      skip: (page - 1) * ITEMS_PER_PAGE,
-      take: ITEMS_PER_PAGE,
-      select: {
-        id: true,
-        calComUid: true,
-        date: true,
-        status: true,
-        notes: true,
-        createdAt: true,
-        whatsappSentAt: true,
-        dog: {
-          select: {
-            id: true,
-            name: true,
-            breed: true,
-            owner: {
-              select: { id: true, name: true, phone: true, email: true },
-            },
+  // Ejecutar queries de manera secuencial para evitar ECONNRESET en PrismaNeon
+  const appointments = await prisma.appointment.findMany({
+    where,
+    orderBy: { date: "desc" },
+    skip: (page - 1) * ITEMS_PER_PAGE,
+    take: ITEMS_PER_PAGE,
+    select: {
+      id: true,
+      calComUid: true,
+      date: true,
+      status: true,
+      notes: true,
+      createdAt: true,
+      whatsappSentAt: true,
+      dog: {
+        select: {
+          id: true,
+          name: true,
+          breed: true,
+          owner: {
+            select: { id: true, name: true, phone: true, email: true },
           },
         },
-        service: {
-          select: { id: true, name: true, price: true, duration: true },
-        },
       },
-    }) as Promise<AppointmentWithRelations[]>,
-    prisma.appointment.count({ where }),
-  ]);
+      service: {
+        select: { id: true, name: true, price: true, duration: true },
+      },
+    },
+  }) as AppointmentWithRelations[];
+
+  const totalCount = await prisma.appointment.count({ where });
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 

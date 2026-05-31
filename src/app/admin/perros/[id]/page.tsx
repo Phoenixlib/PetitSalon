@@ -8,12 +8,12 @@ export default async function DogDetailPage(props: {
 }) {
   const params = await props.params;
 
-  const servicesP = prisma.service.findMany({
+  const services = await prisma.service.findMany({
     where: { isActive: true },
     select: { id: true, name: true },
   });
 
-  const dogP = prisma.dog.findUnique({
+  const dog = await prisma.dog.findUnique({
     where: { id: params.id },
     include: {
       owner: true,
@@ -38,8 +38,6 @@ export default async function DogDetailPage(props: {
       },
     },
   });
-
-  const [dog, services] = await Promise.all([dogP, servicesP]);
 
   if (!dog) notFound();
 

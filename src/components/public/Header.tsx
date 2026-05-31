@@ -27,6 +27,7 @@ const ADMIN_NAV = [
   { href: "/admin/galeria", label: "Galería" },
   { href: "/admin/resenas", label: "Reseñas" },
   { href: "/admin/campanas", label: "Campañas" },
+  { href: "/admin/configuracion", label: "Configuración" },
   {
     href: "https://app.cal.com/availability",
     label: "Horarios Cal.com",

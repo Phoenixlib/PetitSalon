@@ -17,6 +17,7 @@ const DogSchema = z.object({
   age: z.string().max(50).optional().nullable(),
   weight: z.string().max(50).optional().nullable(),
   notes: z.string().max(2000).optional().nullable(),
+  photo: z.string().optional().nullable(),
 });
 
 export type DogFormState = {
@@ -41,6 +42,7 @@ export async function updateDogAction(
       age: (formData.get("age") as string) || null,
       weight: (formData.get("weight") as string) || null,
       notes: (formData.get("notes") as string) || null,
+      photo: (formData.get("photo") as string) || null,
     };
 
     const parsed = DogSchema.safeParse(raw);
@@ -62,6 +64,7 @@ export async function updateDogAction(
         age: parsed.data.age || null,
         weight: parsed.data.weight || null,
         notes: parsed.data.notes || null,
+        photo: parsed.data.photo || null,
       },
     });
 
