@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useActionState } from "react";
+import { useState, useEffect, useActionState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { createManualAppointmentAction, ManualAppointmentFormState } from "@/app/admin/citas/actions";
 
@@ -33,16 +33,6 @@ interface Props {
   onSuccess: () => void;
 }
 
-function formatToLocalDatetimeLocal(date: Date) {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const y = date.getFullYear();
-  const m = pad(date.getMonth() + 1);
-  const d = pad(date.getDate());
-  const h = pad(date.getHours());
-  const min = pad(date.getMinutes());
-  return `${y}-${m}-${d}T${h}:${min}`;
-}
-
 export default function NuevaCitaModal({
   isOpen,
   onClose,
@@ -55,6 +45,12 @@ export default function NuevaCitaModal({
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [selectedOwner, setSelectedOwner] = useState<Owner | null>(null);
   const [selectedDogId, setSelectedDogId] = useState("");
+  const [selectedServiceId, setSelectedServiceId] = useState("");
+
+  const [selectedDate, setSelectedDate] = useState<string>("");  // "YYYY-MM-DD"
+  const [selectedTime, setSelectedTime] = useState<string>("");  // "HH:MM"
+  const [slots, setSlots] = useState<{ time: string; available: boolean }[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
   const [state, formAction, pending] = useActionState<ManualAppointmentFormState, FormData>(
     createManualAppointmentAction,
@@ -85,6 +81,7 @@ export default function NuevaCitaModal({
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
+  // Handle server action success
   useEffect(() => {
     if (state?.success) {
       onSuccess();
@@ -92,9 +89,60 @@ export default function NuevaCitaModal({
     }
   }, [state?.success, onSuccess, onClose]);
 
-  if (!isOpen) return null;
+  // Pre-fill date and time from initialDate
+  useEffect(() => {
+    if (initialDate && isOpen) {
+      const pad = (n: number) => String(n).padStart(2, "0");
+      const y = initialDate.getFullYear();
+      const m = pad(initialDate.getMonth() + 1);
+      const d = pad(initialDate.getDate());
+      setSelectedDate(`${y}-${m}-${d}`);
 
-  const defaultDateStr = initialDate ? formatToLocalDatetimeLocal(initialDate) : "";
+      const h = pad(initialDate.getHours());
+      const min = pad(initialDate.getMinutes());
+      // Check if it's a specific hour click (typically not 00:00:00)
+      if (h !== "00" || min !== "00") {
+        setSelectedTime(`${h}:${min}`);
+      }
+    }
+  }, [initialDate, isOpen]);
+
+  // Fetch available slots when service or date changes
+  useEffect(() => {
+    if (!selectedDate || !selectedServiceId) {
+      setSlots([]);
+      setSelectedTime("");
+      return;
+    }
+
+    const controller = new AbortController();
+    setLoadingSlots(true);
+
+    fetch(`/api/admin/available-slots?date=${selectedDate}&serviceId=${selectedServiceId}`, {
+      signal: controller.signal,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setSlots(data.slots || []);
+        // Reset selected time if it's not in the new slot options (or if we want a fresh choice)
+        setSelectedTime((prev) => {
+          if (data.slots?.some((s: any) => s.time === prev && s.available)) {
+            return prev;
+          }
+          return "";
+        });
+      })
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          console.error("Error fetching slots", err);
+        }
+      })
+      .finally(() => setLoadingSlots(false));
+
+    return () => controller.abort();
+  }, [selectedDate, selectedServiceId]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
@@ -114,7 +162,7 @@ export default function NuevaCitaModal({
           </h2>
           <button
             onClick={onClose}
-            className="rounded-full p-2 hover:bg-black/5 transition-colors"
+            className="rounded-full p-2 hover:bg-black/5 transition-colors cursor-pointer"
             style={{ color: "var(--ps-text-mid)" }}
           >
             ✕
@@ -147,7 +195,7 @@ export default function NuevaCitaModal({
               )}
               {owners.length > 0 && (
                 <div
-                  className="border rounded-lg max-h-48 overflow-y-auto divide-y"
+                  className="border rounded-lg max-h-48 overflow-y-auto divide-y bg-white"
                   style={{ borderColor: "var(--border)" }}
                 >
                   {owners.map((owner) => (
@@ -162,7 +210,7 @@ export default function NuevaCitaModal({
                           setSelectedDogId("");
                         }
                       }}
-                      className="w-full text-left px-4 py-2 hover:bg-neutral-50 text-sm transition-colors flex justify-between items-center"
+                      className="w-full text-left px-4 py-2 hover:bg-neutral-50 text-sm transition-colors flex justify-between items-center cursor-pointer"
                     >
                       <div>
                         <p className="font-semibold" style={{ color: "var(--ps-text)" }}>
@@ -208,7 +256,7 @@ export default function NuevaCitaModal({
                   setSelectedDogId("");
                   setSearchQuery("");
                 }}
-                className="text-xs font-semibold underline hover:opacity-85"
+                className="text-xs font-semibold underline hover:opacity-85 cursor-pointer"
                 style={{ color: "var(--ps-text-mid)" }}
               >
                 Cambiar
@@ -250,7 +298,7 @@ export default function NuevaCitaModal({
               </div>
             )}
 
-            {/* Select Servicio */}
+            {/* Step 3: Select Servicio */}
             <div className="space-y-1">
               <label className="text-sm font-medium" style={{ color: "var(--ps-text)" }}>
                 Servicio *
@@ -258,6 +306,8 @@ export default function NuevaCitaModal({
               <select
                 name="serviceId"
                 required
+                value={selectedServiceId}
+                onChange={(e) => setSelectedServiceId(e.target.value)}
                 className="w-full rounded-lg px-4 py-2 border focus:ring-2 focus:ring-[var(--primary)] bg-white text-sm"
                 style={{ borderColor: "var(--border)", color: "var(--ps-text)" }}
               >
@@ -271,21 +321,73 @@ export default function NuevaCitaModal({
               {state.errors?.serviceId && <p className="text-xs text-red-500">{state.errors.serviceId[0]}</p>}
             </div>
 
-            {/* Fecha y Hora */}
+            {/* Step 4: Fecha (Date Picker) */}
             <div className="space-y-1">
               <label className="text-sm font-medium" style={{ color: "var(--ps-text)" }}>
-                Fecha y Hora *
+                Fecha *
               </label>
               <input
-                name="date"
-                type="datetime-local"
-                defaultValue={defaultDateStr}
+                type="date"
+                value={selectedDate}
+                min={new Date().toISOString().split("T")[0]}
+                onChange={(e) => setSelectedDate(e.target.value)}
                 required
-                className="w-full rounded-lg px-4 py-2 border focus:ring-2 focus:ring-[var(--primary)] text-sm"
+                className="w-full rounded-lg px-4 py-2 border focus:ring-2 focus:ring-[var(--primary)] text-sm bg-white"
                 style={{ borderColor: "var(--border)", color: "var(--ps-text)" }}
               />
               {state.errors?.date && <p className="text-xs text-red-500">{state.errors.date[0]}</p>}
             </div>
+
+            {/* Step 5: Slots de Hora Disponibles */}
+            {selectedDate && selectedServiceId && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium" style={{ color: "var(--ps-text)" }}>
+                  Hora disponible *
+                </label>
+                {loadingSlots ? (
+                  <p className="text-xs animate-pulse font-medium" style={{ color: "var(--ps-text-mid)" }}>
+                    Cargando horarios disponibles...
+                  </p>
+                ) : slots.length === 0 ? (
+                  <p className="text-xs text-red-500 font-medium">No hay horarios disponibles para este día o servicio.</p>
+                ) : (
+                  <div className="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto p-1 border rounded-lg bg-neutral-50" style={{ borderColor: "var(--border)" }}>
+                    {slots.map((slot) => (
+                      <button
+                        key={slot.time}
+                        type="button"
+                        disabled={!slot.available}
+                        onClick={() => setSelectedTime(slot.time)}
+                        className={`py-2 px-1.5 rounded-lg text-xs font-semibold border transition-all text-center cursor-pointer ${
+                          !slot.available
+                            ? "opacity-30 cursor-not-allowed line-through"
+                            : selectedTime === slot.time
+                            ? "text-white border-transparent"
+                            : "border-[var(--border)] hover:border-[var(--primary)]"
+                        }`}
+                        style={
+                          selectedTime === slot.time
+                            ? { backgroundColor: "var(--primary)", color: "#fff", borderColor: "var(--primary)" }
+                            : slot.available
+                            ? { color: "var(--ps-text)", backgroundColor: "white" }
+                            : { color: "var(--ps-text-mid)", backgroundColor: "var(--ps-lila-pale)" }
+                        }
+                      >
+                        {slot.time}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {/* Hidden input to submit combined datetime */}
+                {selectedDate && selectedTime && (
+                  <input
+                    type="hidden"
+                    name="date"
+                    value={`${selectedDate}T${selectedTime}:00`}
+                  />
+                )}
+              </div>
+            )}
 
             {/* Estado */}
             <div className="space-y-1">
@@ -331,15 +433,15 @@ export default function NuevaCitaModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-full text-sm font-medium hover:bg-neutral-100 transition-colors"
+                className="px-4 py-2 rounded-full text-sm font-medium hover:bg-neutral-100 transition-colors cursor-pointer"
                 style={{ color: "var(--ps-text-mid)" }}
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                disabled={pending || !selectedOwner || selectedOwner.dogs.length === 0}
-                className="px-6 py-2 rounded-full text-sm font-bold text-white transition-all bg-[var(--primary)] hover:opacity-90 disabled:opacity-50"
+                disabled={pending || !selectedOwner || selectedOwner.dogs.length === 0 || !selectedDate || !selectedTime}
+                className="px-6 py-2 rounded-full text-sm font-bold text-white transition-all bg-[var(--primary)] hover:opacity-90 disabled:opacity-50 cursor-pointer"
               >
                 {pending ? "Guardando..." : "Crear Cita"}
               </button>

@@ -24,7 +24,6 @@ interface Service {
 interface Props {
   initialAppointments: AppointmentWithRelations[];
   services: Service[];
-  calComLink: string;
 }
 
 function appointmentToEvent(a: AppointmentWithRelations): EventInput {
@@ -54,7 +53,7 @@ function appointmentToEvent(a: AppointmentWithRelations): EventInput {
   };
 }
 
-export default function AgendaCalendar({ initialAppointments, services, calComLink }: Props) {
+export default function AgendaCalendar({ initialAppointments, services }: Props) {
   const [mounted, setMounted] = useState(false);
   const [events, setEvents] = useState<EventInput[]>(
     initialAppointments.map(appointmentToEvent),
@@ -158,18 +157,16 @@ export default function AgendaCalendar({ initialAppointments, services, calComLi
         </div>
         <div className="flex flex-wrap gap-2">
           {/* Bloquear Hora */}
-          {calComLink && (
-            <a
-              href={calComLink.startsWith("http") ? calComLink : `https://cal.com/${calComLink}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold transition-all border hover:bg-neutral-50 shadow-sm"
-              style={{ borderColor: "var(--border)", color: "var(--ps-text)" }}
-            >
-              <CalendarRange className="w-3.5 h-3.5 text-[var(--secondary)]" />
-              Bloquear Hora
-            </a>
-          )}
+          <a
+            href="https://app.cal.com/availability"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold transition-all border hover:bg-neutral-50 shadow-sm"
+            style={{ borderColor: "var(--border)", color: "var(--ps-text)" }}
+          >
+            <CalendarRange className="w-3.5 h-3.5 text-[var(--secondary)]" />
+            Bloquear Hora
+          </a>
           {/* Agendar Cita */}
           <button
             onClick={() => {
