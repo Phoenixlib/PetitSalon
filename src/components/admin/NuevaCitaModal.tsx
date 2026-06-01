@@ -28,7 +28,7 @@ interface Owner {
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  initialDate: Date | null;
+  initialDateStr: string | null;
   services: Service[];
   onSuccess: () => void;
 }
@@ -36,7 +36,7 @@ interface Props {
 export default function NuevaCitaModal({
   isOpen,
   onClose,
-  initialDate,
+  initialDateStr,
   services,
   onSuccess,
 }: Props) {
@@ -89,23 +89,21 @@ export default function NuevaCitaModal({
     }
   }, [state?.success, onSuccess, onClose]);
 
-  // Pre-fill date and time from initialDate
+  // Pre-fill date and time from initialDateStr
   useEffect(() => {
-    if (initialDate && isOpen) {
-      const pad = (n: number) => String(n).padStart(2, "0");
-      const y = initialDate.getFullYear();
-      const m = pad(initialDate.getMonth() + 1);
-      const d = pad(initialDate.getDate());
-      setSelectedDate(`${y}-${m}-${d}`);
+    if (initialDateStr && isOpen) {
+      // initialDateStr can be "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss-04:00"
+      const datePart = initialDateStr.substring(0, 10);
+      setSelectedDate(datePart);
 
-      const h = pad(initialDate.getHours());
-      const min = pad(initialDate.getMinutes());
-      // Check if it's a specific hour click (typically not 00:00:00)
-      if (h !== "00" || min !== "00") {
-        setSelectedTime(`${h}:${min}`);
+      if (initialDateStr.includes("T")) {
+        const timePart = initialDateStr.substring(11, 16);
+        if (timePart !== "00:00") {
+          setSelectedTime(timePart);
+        }
       }
     }
-  }, [initialDate, isOpen]);
+  }, [initialDateStr, isOpen]);
 
   // Fetch available slots when service or date changes
   useEffect(() => {
@@ -397,7 +395,7 @@ export default function NuevaCitaModal({
               <select
                 name="status"
                 required
-                defaultValue="CONFIRMED"
+                defaultValue="PENDING"
                 className="w-full rounded-lg px-4 py-2 border focus:ring-2 focus:ring-[var(--primary)] bg-white text-sm"
                 style={{ borderColor: "var(--border)", color: "var(--ps-text)" }}
               >

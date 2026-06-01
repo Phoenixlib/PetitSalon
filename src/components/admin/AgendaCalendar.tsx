@@ -60,7 +60,7 @@ export default function AgendaCalendar({ initialAppointments, services }: Props)
   );
   const [selectedAppointment, setSelectedAppointment] =
     useState<AppointmentWithRelations | null>(null);
-  const [clickedDate, setClickedDate] = useState<Date | null>(null);
+  const [clickedDateStr, setClickedDateStr] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [currentRange, setCurrentRange] = useState<{ startStr: string; endStr: string } | null>(null);
 
@@ -111,8 +111,8 @@ export default function AgendaCalendar({ initialAppointments, services }: Props)
     setSelectedAppointment(appointment);
   };
 
-  const handleDateClick = useCallback((arg: { date: Date }) => {
-    setClickedDate(arg.date);
+  const handleDateClick = useCallback((arg: { dateStr: string }) => {
+    setClickedDateStr(arg.dateStr);
     setIsCreateModalOpen(true);
   }, []);
 
@@ -170,7 +170,10 @@ export default function AgendaCalendar({ initialAppointments, services }: Props)
           {/* Agendar Cita */}
           <button
             onClick={() => {
-              setClickedDate(new Date());
+              // YYYY-MM-DD local time string
+              const d = new Date();
+              const pad = (n: number) => String(n).padStart(2, '0');
+              setClickedDateStr(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`);
               setIsCreateModalOpen(true);
             }}
             className="inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs font-bold text-white transition-all hover:opacity-90 shadow-sm cursor-pointer"
@@ -249,9 +252,9 @@ export default function AgendaCalendar({ initialAppointments, services }: Props)
               isOpen={isCreateModalOpen}
               onClose={() => {
                 setIsCreateModalOpen(false);
-                setClickedDate(null);
+                setClickedDateStr(null);
               }}
-              initialDate={clickedDate}
+              initialDateStr={clickedDateStr}
               services={services}
               onSuccess={handleCreateSuccess}
             />

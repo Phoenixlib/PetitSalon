@@ -26,6 +26,7 @@ const envSchema = z.object({
   CALCOM_WEBHOOK_SECRET: z.string().optional(),
   // Link de Cal.com: "usuario/tipo-de-evento" — expuesto al cliente (build-time)
   NEXT_PUBLIC_CALCOM_LINK: z.string().optional(),
+  CALCOM_API_KEY: z.string().min(1),
 
   // URL base de la app (para construir links en emails)
   APP_URL: z.string().url().optional(),

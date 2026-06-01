@@ -123,6 +123,41 @@ function verifySignature(rawBody: string, signature: string | null): boolean {
 // ---------------------------------------------------------------------------
 
 async function handleBookingCreated(payload: CalComBookingPayload) {
+  // 1. Verificar si viene metadata con appointmentId (cita creada por admin)
+  const appointmentIdFromMetadata = payload.metadata?.appointmentId;
+  if (appointmentIdFromMetadata) {
+    const existingAppointment = await prisma.appointment.findUnique({
+      where: { id: appointmentIdFromMetadata },
+    });
+    if (existingAppointment) {
+      if (existingAppointment.calComUid !== payload.uid) {
+        await prisma.appointment.update({
+          where: { id: appointmentIdFromMetadata },
+          data: { calComUid: payload.uid },
+        });
+        console.info(
+          `[calcom-webhook] Cita manual sincronizada con calComUid ${payload.uid} desde metadata.`,
+        );
+      } else {
+        console.info(
+          `[calcom-webhook] Cita manual ya sincronizada con calComUid ${payload.uid}.`,
+        );
+      }
+      return;
+    }
+  }
+
+  // 2. Fallback: Verificar si la cita ya existe por su calComUid
+  const existingByUid = await prisma.appointment.findUnique({
+    where: { calComUid: payload.uid },
+  });
+  if (existingByUid) {
+    console.info(
+      `[calcom-webhook] Cita ya existe en la base de datos con calComUid ${payload.uid}. Omitiendo creación duplicada.`,
+    );
+    return;
+  }
+
   const attendee = payload.attendees[0];
   if (!attendee) throw new Error("Reserva sin asistente");
 

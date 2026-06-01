@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { sendReviewRequestEmail } from "@/lib/email";
 import { env } from "@/env";
+import { after } from "next/server";
 
 async function requireAdmin() {
   const session = await auth();
@@ -95,16 +96,14 @@ export async function markDoneWithAttendanceAction(
     }
 
     // Transacción: cambiar estado + crear registro de atención (si existe input)
-    const operations: any[] = [
-      prisma.appointment.update({
+    await prisma.$transaction(async (tx) => {
+      await tx.appointment.update({
         where: { id: appointmentId },
         data: { status: "DONE" },
-      }),
-    ];
+      });
 
-    if (input) {
-      operations.push(
-        prisma.attendance.create({
+      if (input) {
+        await tx.attendance.create({
           data: {
             service: input.service.trim(),
             date: appointment.date,
@@ -112,11 +111,9 @@ export async function markDoneWithAttendanceAction(
             photos: validPhotos,
             dogId: appointment.dogId,
           },
-        }),
-      );
-    }
-
-    await prisma.$transaction(operations);
+        });
+      }
+    });
 
     // Crear reseña y enviar email si se solicitó y el dueño tiene email
     if (sendReviewLink) {
@@ -147,7 +144,8 @@ export async function markDoneWithAttendanceAction(
     revalidatePath("/admin");
 
     return { success: true };
-  } catch {
+  } catch (error) {
+    console.error("[admin] Error en markDoneWithAttendanceAction:", error);
     return { errors: { _form: ["Error al guardar. Intenta de nuevo."] } };
   }
 }
@@ -216,7 +214,7 @@ export async function createManualAppointmentAction(
       return { errors: parsed.error.flatten().fieldErrors };
     }
 
-    await prisma.appointment.create({
+    const newAppointment = await prisma.appointment.create({
       data: {
         dogId: parsed.data.dogId,
         serviceId: parsed.data.serviceId,
@@ -225,6 +223,122 @@ export async function createManualAppointmentAction(
         notes: parsed.data.notes,
       },
     });
+
+    // Intentar sincronizar con Cal.com (fire-and-forget seguro usando after)
+    if (env.CALCOM_API_KEY) {
+      after(async () => {
+        console.info("[admin] Iniciando sincronización con Cal.com...");
+        try {
+          // 1. Obtener datos del servicio y del dueño
+          const [service, dog] = await Promise.all([
+            prisma.service.findUnique({
+              where: { id: parsed.data.serviceId },
+              select: { name: true, calComLink: true },
+            }),
+            prisma.dog.findUnique({
+              where: { id: parsed.data.dogId },
+              select: {
+                name: true,
+                breed: true,
+                age: true,
+                weight: true,
+                owner: { select: { name: true, email: true, phone: true } },
+              },
+            }),
+          ]);
+
+          if (service?.calComLink) {
+            // 2. Parsear calComLink (puede ser URL completa o "username/slug")
+            let calPath = service.calComLink;
+            try {
+              calPath = new URL(service.calComLink).pathname.replace(/^\//, "");
+            } catch { /* ya es "username/slug" */ }
+
+            const parts = calPath.split("/");
+            if (parts.length >= 2) {
+              const username = parts[0];
+              const eventTypeSlug = parts.slice(1).join("/");
+
+              // Formatear el teléfono de manera segura para Cal.com
+              const rawPhone = dog?.owner.phone ?? "";
+              const formattedPhone = rawPhone
+                ? (rawPhone.startsWith("+") ? rawPhone : `+${rawPhone}`)
+                : "";
+
+              // 3. Construir payload para Cal.com
+              const payload = {
+                start: parsed.data.date.toISOString(),
+                eventTypeSlug,
+                username,
+                attendee: {
+                  name: dog?.owner.name ?? "Cliente",
+                  email: dog?.owner.email ?? "petitsalon.contacto@gmail.com",
+                  timeZone: "America/Santiago",
+                  language: "es",
+                  phoneNumber: formattedPhone,
+                },
+                bookingFieldsResponses: {
+                  servicio: service.name || "Servicio",
+                  nombre_perro: dog?.name || "Sin nombre",
+                  edad: dog?.age || "No especificada",
+                  raza_perro: dog?.breed || "Sin raza",
+                  peso: dog?.weight || "No especificado",
+                  telefono: formattedPhone,
+                  attendeePhoneNumber: formattedPhone,
+                },
+                metadata: {
+                  source: "admin-manual",
+                  appointmentId: newAppointment.id,
+                },
+              };
+
+              const calRes = await fetch("https://api.cal.com/v2/bookings", {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${env.CALCOM_API_KEY}`,
+                  "cal-api-version": "2024-08-13",
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+                signal: AbortSignal.timeout(8000),
+              });
+
+              if (calRes.ok) {
+                const calJson = (await calRes.json()) as {
+                  status: string;
+                  data?: { uid?: string };
+                };
+                if (calJson.status === "success" && calJson.data?.uid) {
+                  // 4. Guardar el uid en nuestra DB para idempotencia
+                  await prisma.appointment.update({
+                    where: { id: newAppointment.id },
+                    data: { calComUid: calJson.data.uid },
+                  });
+                  console.info(
+                    `[admin] Cita manual sincronizada con Cal.com. ID cita: ${newAppointment.id}, UID: ${calJson.data.uid}`,
+                  );
+                } else {
+                  console.error(
+                    `[admin] Cal.com respondió con éxito pero sin UID de booking:`,
+                    JSON.stringify(calJson),
+                  );
+                }
+              } else {
+                const errText = await calRes.text();
+                console.error(
+                  `[admin] Error en Cal.com booking API (${calRes.status}): ${errText}`,
+                );
+              }
+            }
+          }
+        } catch (calError) {
+          console.error(
+            `[admin] Excepción al sincronizar con Cal.com para cita ${newAppointment.id}:`,
+            calError,
+          );
+        }
+      });
+    }
 
     revalidatePath("/admin/agenda");
     revalidatePath("/admin/citas");

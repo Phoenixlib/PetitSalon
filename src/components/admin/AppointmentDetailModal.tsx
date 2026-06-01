@@ -130,14 +130,21 @@ export default function AppointmentDetailModal({
   const handleConfirmDone = (sendReview: boolean) => {
     if (!appointment) return;
     startTransition(async () => {
-      const result = await markDoneWithAttendanceAction(
-        appointment.id,
-        pendingFormData,
-        sendReview,
-      );
-      if (result.success) {
-        onStatusChange(appointment.id, "DONE");
-        onClose();
+      try {
+        const result = await markDoneWithAttendanceAction(
+          appointment.id,
+          pendingFormData,
+          sendReview,
+        );
+        if (result.success) {
+          onStatusChange(appointment.id, "DONE");
+          onClose();
+        } else {
+          console.error("Error from markDoneWithAttendanceAction:", result.errors);
+          alert(result.errors?._form?.[0] || "Error al marcar como realizado");
+        }
+      } catch (err) {
+        console.error("Unhandled error in handleConfirmDone:", err);
       }
     });
   };
