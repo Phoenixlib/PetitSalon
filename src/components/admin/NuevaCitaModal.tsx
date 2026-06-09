@@ -291,10 +291,10 @@ export default function NuevaCitaModal({
                       ))}
                     </div>
                   )}
+                  </div>
                   </>
                 )}
                 </div>
-              </div>
             ) : (
               <div
                 className="p-3 rounded-xl border flex items-center justify-between"
