@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { sendReviewRequestEmail } from "@/lib/email";
 import { env } from "@/env";
+import { createCalComBooking } from "@/lib/calcom";
 import { after } from "next/server";
 
 async function requireAdmin() {
@@ -233,7 +234,7 @@ export async function createManualAppointmentAction(
           const [service, dog] = await Promise.all([
             prisma.service.findUnique({
               where: { id: parsed.data.serviceId },
-              select: { name: true, calComLink: true },
+              select: { name: true, calComLink: true, calComEventTypeId: true },
             }),
             prisma.dog.findUnique({
               where: { id: parsed.data.dogId },
@@ -242,6 +243,7 @@ export async function createManualAppointmentAction(
                 breed: true,
                 age: true,
                 weight: true,
+                notes: true,
                 owner: { select: { name: true, email: true, phone: true } },
               },
             }),
@@ -266,67 +268,53 @@ export async function createManualAppointmentAction(
                 : "";
 
               // 3. Construir payload para Cal.com
-              const payload = {
-                start: parsed.data.date.toISOString(),
-                eventTypeSlug,
-                username,
-                attendee: {
-                  name: dog?.owner.name ?? "Cliente",
-                  email: dog?.owner.email ?? "petitsalon.contacto@gmail.com",
-                  timeZone: "America/Santiago",
-                  language: "es",
-                  phoneNumber: formattedPhone,
-                },
-                bookingFieldsResponses: {
-                  servicio: service.name || "Servicio",
-                  nombre_perro: dog?.name || "Sin nombre",
-                  edad: dog?.age || "No especificada",
-                  raza_perro: dog?.breed || "Sin raza",
-                  peso: dog?.weight || "No especificado",
-                  telefono: formattedPhone,
-                  attendeePhoneNumber: formattedPhone,
-                },
-                metadata: {
-                  source: "admin-manual",
-                  appointmentId: newAppointment.id,
-                },
+              const customFields = {
+                servicio: service.name || "Servicio",
+                nombre_perro: dog?.name || "Sin nombre",
+                edad: dog?.age || "No especificada",
+                raza_perro: dog?.breed || "Sin raza",
+                peso: dog?.weight || "No especificado",
+                dog_size: "No especificado",
+                dog_notes: parsed.data.notes || dog?.notes || "",
               };
 
-              const calRes = await fetch("https://api.cal.com/v2/bookings", {
-                method: "POST",
-                headers: {
-                  Authorization: `Bearer ${env.CALCOM_API_KEY}`,
-                  "cal-api-version": "2024-08-13",
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(payload),
-                signal: AbortSignal.timeout(8000),
-              });
+              let calRes = await createCalComBooking(
+                service.calComEventTypeId ?? 0, // Fallback if 0 but usually required
+                parsed.data.date.toISOString(),
+                dog?.owner.name ?? "Cliente",
+                dog?.owner.email ?? "petitsalon.contacto@gmail.com",
+                formattedPhone,
+                customFields
+              );
 
-              if (calRes.ok) {
-                const calJson = (await calRes.json()) as {
-                  status: string;
-                  data?: { uid?: string };
-                };
-                if (calJson.status === "success" && calJson.data?.uid) {
-                  // 4. Guardar el uid en nuestra DB para idempotencia
-                  await prisma.appointment.update({
-                    where: { id: newAppointment.id },
-                    data: { calComUid: calJson.data.uid },
-                  });
-                  console.info(
-                    `[admin] Cita manual sincronizada con Cal.com. ID cita: ${newAppointment.id}, UID: ${calJson.data.uid}`,
-                  );
-                } else {
-                  console.error(
-                    `[admin] Cal.com respondió con éxito pero sin UID de booking:`,
-                    JSON.stringify(calJson),
-                  );
-                }
+              // 3.1 Intentar fallback (sobrecupo) si falla la reserva principal y hay ID configurado
+              if ((!calRes || calRes.status !== "success") && env.CALCOM_FALLBACK_EVENT_TYPE_ID) {
+                console.info(
+                  `[admin] Reserva principal fallida. Intentando sobrecupo en evento de respaldo ID: ${env.CALCOM_FALLBACK_EVENT_TYPE_ID}`
+                );
+                calRes = await createCalComBooking(
+                  Number(env.CALCOM_FALLBACK_EVENT_TYPE_ID),
+                  parsed.data.date.toISOString(),
+                  dog?.owner.name ?? "Cliente",
+                  dog?.owner.email ?? "petitsalon.contacto@gmail.com",
+                  formattedPhone,
+                  customFields
+                );
+              }
+
+              if (calRes && calRes.status === "success" && calRes.data?.uid) {
+                // 4. Guardar el uid en nuestra DB para idempotencia
+                await prisma.appointment.update({
+                  where: { id: newAppointment.id },
+                  data: { calComUid: calRes.data.uid },
+                });
+                console.info(
+                  `[admin] Cita manual sincronizada con Cal.com. ID cita: ${newAppointment.id}, UID: ${calRes.data.uid}`,
+                );
               } else {
-                const errText = await calRes.text();
                 console.error(
-                  `[admin] Error en Cal.com booking API (${calRes.status}): ${errText}`,
+                  `[admin] Error en Cal.com booking API o sin UID de booking:`,
+                  JSON.stringify(calRes),
                 );
               }
             }

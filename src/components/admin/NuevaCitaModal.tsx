@@ -49,7 +49,7 @@ export default function NuevaCitaModal({
 
   const [selectedDate, setSelectedDate] = useState<string>("");  // "YYYY-MM-DD"
   const [selectedTime, setSelectedTime] = useState<string>("");  // "HH:MM"
-  const [slots, setSlots] = useState<{ time: string; available: boolean }[]>([]);
+  const [allowOverbooking, setAllowOverbooking] = useState(false);
   const [loadingSlots, setLoadingSlots] = useState(false);
 
   const [state, formAction, pending] = useActionState<ManualAppointmentFormState, FormData>(
@@ -105,40 +105,54 @@ export default function NuevaCitaModal({
     }
   }, [initialDateStr, isOpen]);
 
-  // Fetch available slots when service or date changes
+  // Fetch day appointments and blocked slots to check for clashes
+  const [dayAppointments, setDayAppointments] = useState<any[]>([]);
+  const [dayBlocks, setDayBlocks] = useState<any[]>([]);
+
   useEffect(() => {
-    if (!selectedDate || !selectedServiceId) {
-      setSlots([]);
-      setSelectedTime("");
+    if (!selectedDate || !isOpen) {
+      setDayAppointments([]);
+      setDayBlocks([]);
       return;
     }
 
-    const controller = new AbortController();
-    setLoadingSlots(true);
+    const startOfSelectedDay = new Date(`${selectedDate}T00:00:00`);
+    const startObj = new Date(startOfSelectedDay.getTime() - 24 * 60 * 60 * 1000).toISOString();
+    const endObj = new Date(startOfSelectedDay.getTime() + 24 * 60 * 60 * 1000).toISOString();
 
-    fetch(`/api/admin/available-slots?date=${selectedDate}&serviceId=${selectedServiceId}`, {
-      signal: controller.signal,
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setSlots(data.slots || []);
-        // Reset selected time if it's not in the new slot options (or if we want a fresh choice)
-        setSelectedTime((prev) => {
-          if (data.slots?.some((s: any) => s.time === prev && s.available)) {
-            return prev;
-          }
-          return "";
-        });
-      })
-      .catch((err) => {
-        if (err.name !== "AbortError") {
-          console.error("Error fetching slots", err);
-        }
-      })
-      .finally(() => setLoadingSlots(false));
+    const fetchAppts = fetch(`/api/admin/appointments?from=${startObj}&to=${endObj}`).then(res => res.json());
+    const fetchBlocks = fetch(`/api/admin/blocked-slots?from=${startObj}&to=${endObj}`).then(res => res.json());
 
-    return () => controller.abort();
-  }, [selectedDate, selectedServiceId]);
+    Promise.all([fetchAppts, fetchBlocks]).then(([appts, blocks]) => {
+      setDayAppointments(Array.isArray(appts) ? appts : []);
+      setDayBlocks(Array.isArray(blocks) ? blocks : []);
+    }).catch(err => {
+      console.error("Error fetching clash data", err);
+    });
+  }, [selectedDate, isOpen]);
+
+  // Check clashes
+  let hasClash = false;
+  const selectedService = services.find((s) => s.id === selectedServiceId);
+
+  if (selectedDate && selectedTime && selectedService && (dayAppointments.length > 0 || dayBlocks.length > 0)) {
+    const newStart = new Date(`${selectedDate}T${selectedTime}:00`);
+    const newEnd = new Date(newStart.getTime() + selectedService.duration * 60000);
+
+    const hasApptClash = dayAppointments.some((appt) => {
+      const apptStart = new Date(appt.date);
+      const apptEnd = new Date(apptStart.getTime() + appt.service.duration * 60000);
+      return newStart < apptEnd && newEnd > apptStart && appt.status !== "CANCELLED";
+    });
+
+    const hasBlockClash = dayBlocks.some((block) => {
+      const blockStart = new Date(block.startAt);
+      const blockEnd = new Date(block.endAt);
+      return newStart < blockEnd && newEnd > blockStart;
+    });
+
+    hasClash = hasApptClash || hasBlockClash;
+  }
 
   if (!isOpen) return null;
 
@@ -170,107 +184,166 @@ export default function NuevaCitaModal({
         {/* Content */}
         <div className="overflow-y-auto p-6 space-y-4">
           {/* Step 1: Owner Search & Select */}
-          {!selectedOwner ? (
-            <div className="space-y-2">
-              <label className="text-sm font-medium" style={{ color: "var(--ps-text)" }}>
-                Buscar Dueño *
-              </label>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Nombre del dueño o de la mascota..."
-                className="w-full rounded-lg px-4 py-2 border focus:ring-2 focus:ring-[var(--primary)] outline-none bg-white text-sm"
-                style={{ borderColor: "var(--border)", color: "var(--ps-text)" }}
-              />
-              {loadingSearch && (
-                <p className="text-xs animate-pulse" style={{ color: "var(--ps-text-mid)" }}>
-                  Buscando...
-                </p>
-              )}
-              {searchQuery && !loadingSearch && owners.length === 0 && (
-                <p className="text-xs text-red-500">No se encontraron clientes.</p>
-              )}
-              {owners.length > 0 && (
-                <div
-                  className="border rounded-lg max-h-48 overflow-y-auto divide-y bg-white"
-                  style={{ borderColor: "var(--border)" }}
-                >
-                  {owners.map((owner) => (
-                    <button
-                      key={owner.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedOwner(owner);
-                        if (owner.dogs.length > 0) {
-                          setSelectedDogId(owner.dogs[0].id);
-                        } else {
-                          setSelectedDogId("");
-                        }
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-neutral-50 text-sm transition-colors flex justify-between items-center cursor-pointer"
-                    >
-                      <div>
-                        <p className="font-semibold" style={{ color: "var(--ps-text)" }}>
-                          {owner.name}
-                        </p>
-                        <p className="text-xs" style={{ color: "var(--ps-text-mid)" }}>
-                          {owner.phone} {owner.email ? `| ${owner.email}` : ""}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <span
-                          className="inline-block text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full"
-                          style={{ backgroundColor: "var(--ps-lila-pale)", color: "var(--primary)" }}
-                        >
-                          {owner.dogs.length === 1 ? "1 mascota" : `${owner.dogs.length} mascotas`}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
+          <div className="space-y-4">
+            {!selectedOwner ? (
+              <div className="space-y-2">
+                <div className="flex justify-between items-end">
+                  <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--ps-text-mid)" }}>
+                    Cliente *
+                  </label>
+                  <span className="text-[10px] font-bold" style={{ color: "var(--primary)" }}>
+                    Búsqueda de Dueño
+                  </span>
                 </div>
-              )}
-            </div>
-          ) : (
-            <div
-              className="p-3 rounded-lg border flex items-center justify-between"
-              style={{ borderColor: "var(--border)", backgroundColor: "var(--ps-lila-pale)" }}
-            >
-              <div>
-                <p className="text-xs uppercase tracking-wider font-bold" style={{ color: "var(--primary)" }}>
-                  Cliente Seleccionado
-                </p>
-                <p className="font-bold text-sm" style={{ color: "var(--ps-text)" }}>
-                  {selectedOwner.name}
-                </p>
-                <p className="text-xs" style={{ color: "var(--ps-text-mid)" }}>
-                  {selectedOwner.phone}
-                </p>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Busca por nombre del dueño o mascota..."
+                    className="w-full px-4 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-1 transition-colors"
+                    style={{ borderColor: "var(--border)", color: "var(--ps-text)", outlineColor: "var(--primary)" }}
+                  />
+                  {loadingSearch && (
+                    <p className="text-[10px] absolute right-3 top-3 animate-pulse" style={{ color: "var(--ps-text-mid)" }}>
+                      Buscando...
+                    </p>
+                  )}
+                  {searchQuery && !loadingSearch && owners.length === 0 && (
+                    <div className="absolute z-10 w-full mt-1 border rounded-xl bg-white shadow-xl p-4 text-center text-sm" style={{ borderColor: "var(--border)", color: "var(--ps-text-mid)" }}>
+                      No se encontraron clientes.
+                    </div>
+                  )}
+                  {owners.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 border rounded-xl max-h-48 overflow-y-auto divide-y bg-white shadow-xl" style={{ borderColor: "var(--border)" }}>
+                      {owners.map((owner) => (
+                        <button
+                          key={owner.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedOwner(owner);
+                            if (owner.dogs.length > 0) {
+                              setSelectedDogId(owner.dogs[0].id);
+                            } else {
+                              setSelectedDogId("");
+                            }
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-neutral-50 text-sm transition-colors flex justify-between items-center cursor-pointer"
+                        >
+                          <div>
+                            <p className="font-bold" style={{ color: "var(--ps-text)" }}>
+                              {owner.name}
+                            </p>
+                            <p className="text-[11px] font-medium" style={{ color: "var(--ps-text-mid)" }}>
+                              {owner.phone} {owner.email ? `| ${owner.email}` : ""}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <span
+                              className="inline-block text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full"
+                              style={{ backgroundColor: "var(--ps-lila-pale)", color: "var(--primary)" }}
+                            >
+                              {owner.dogs.length === 1 ? "1 mascota" : `${owner.dogs.length} mascotas`}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedOwner(null);
-                  setSelectedDogId("");
-                  setSearchQuery("");
-                }}
-                className="text-xs font-semibold underline hover:opacity-85 cursor-pointer"
-                style={{ color: "var(--ps-text-mid)" }}
+            ) : (
+              <div
+                className="p-3 rounded-xl border flex items-center justify-between"
+                style={{ borderColor: "var(--primary)", backgroundColor: "var(--ps-lila-pale)" }}
               >
-                Cambiar
-              </button>
-            </div>
-          )}
+                <div>
+                  <p className="font-bold text-sm" style={{ color: "var(--ps-text)" }}>
+                    {selectedOwner.name}
+                  </p>
+                  <p className="text-[11px] font-medium" style={{ color: "var(--ps-text-mid)" }}>
+                    {selectedOwner.phone}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedOwner(null);
+                    setSelectedDogId("");
+                    setSearchQuery("");
+                  }}
+                  className="text-xs font-bold underline hover:opacity-85 cursor-pointer"
+                  style={{ color: "var(--primary)" }}
+                >
+                  Cambiar
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Form for creation */}
           <form action={formAction} className="space-y-4">
             {/* Hidden Input for Dog ID */}
             <input type="hidden" name="dogId" value={selectedDogId} />
 
+            {/* Fecha y Hora en una fila */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1 space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--ps-text-mid)" }}>
+                  Fecha *
+                </label>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  min={new Date().toISOString().split("T")[0]}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  required
+                  className="w-full px-4 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-1 transition-colors"
+                  style={{ borderColor: "var(--border)", color: "var(--ps-text)", outlineColor: "var(--primary)" }}
+                />
+                {state.errors?.date && <p className="text-xs text-red-500">{state.errors.date[0]}</p>}
+              </div>
+              <div className="flex-1 space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--ps-text-mid)" }}>
+                  Hora *
+                </label>
+                <input
+                  type="time"
+                  value={selectedTime}
+                  onChange={(e) => setSelectedTime(e.target.value)}
+                  required
+                  className="w-full px-4 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-1 transition-colors"
+                  style={{ borderColor: "var(--border)", color: "var(--ps-text)", outlineColor: "var(--primary)" }}
+                />
+                {/* Hidden input to submit combined datetime */}
+                {selectedDate && selectedTime && (
+                  <input type="hidden" name="date" value={`${selectedDate}T${selectedTime}:00`} />
+                )}
+              </div>
+            </div>
+
+            {hasClash && (
+              <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100 flex flex-col gap-3">
+                <div className="flex items-start gap-2">
+                  <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                  <span className="text-sm font-bold">El horario seleccionado está ocupado por otra cita o bloqueo.</span>
+                </div>
+                <label className="flex items-center gap-2 text-sm font-medium cursor-pointer ml-7">
+                  <input
+                    type="checkbox"
+                    checked={allowOverbooking}
+                    onChange={(e) => setAllowOverbooking(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300 text-[var(--primary)] focus:ring-[var(--primary)]"
+                  />
+                  Habilitar sobrecupo (ignorar advertencia)
+                </label>
+              </div>
+            )}
+
             {/* Select Mascota */}
             {selectedOwner && (
-              <div className="space-y-1">
-                <label className="text-sm font-medium" style={{ color: "var(--ps-text)" }}>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--ps-text-mid)" }}>
                   Mascota *
                 </label>
                 {selectedOwner.dogs.length === 0 ? (
@@ -282,8 +355,8 @@ export default function NuevaCitaModal({
                     value={selectedDogId}
                     onChange={(e) => setSelectedDogId(e.target.value)}
                     required
-                    className="w-full rounded-lg px-4 py-2 border focus:ring-2 focus:ring-[var(--primary)] bg-white text-sm"
-                    style={{ borderColor: "var(--border)", color: "var(--ps-text)" }}
+                    className="w-full px-4 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-1 transition-colors"
+                    style={{ borderColor: "var(--border)", color: "var(--ps-text)", outlineColor: "var(--primary)" }}
                   >
                     {selectedOwner.dogs.map((dog) => (
                       <option key={dog.id} value={dog.id}>
@@ -296,9 +369,9 @@ export default function NuevaCitaModal({
               </div>
             )}
 
-            {/* Step 3: Select Servicio */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium" style={{ color: "var(--ps-text)" }}>
+            {/* Select Servicio */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--ps-text-mid)" }}>
                 Servicio *
               </label>
               <select
@@ -306,8 +379,8 @@ export default function NuevaCitaModal({
                 required
                 value={selectedServiceId}
                 onChange={(e) => setSelectedServiceId(e.target.value)}
-                className="w-full rounded-lg px-4 py-2 border focus:ring-2 focus:ring-[var(--primary)] bg-white text-sm"
-                style={{ borderColor: "var(--border)", color: "var(--ps-text)" }}
+                className="w-full px-4 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-1 transition-colors"
+                style={{ borderColor: "var(--border)", color: "var(--ps-text)", outlineColor: "var(--primary)" }}
               >
                 <option value="">Selecciona un servicio</option>
                 {services.map((s) => (
@@ -319,85 +392,17 @@ export default function NuevaCitaModal({
               {state.errors?.serviceId && <p className="text-xs text-red-500">{state.errors.serviceId[0]}</p>}
             </div>
 
-            {/* Step 4: Fecha (Date Picker) */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium" style={{ color: "var(--ps-text)" }}>
-                Fecha *
-              </label>
-              <input
-                type="date"
-                value={selectedDate}
-                min={new Date().toISOString().split("T")[0]}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                required
-                className="w-full rounded-lg px-4 py-2 border focus:ring-2 focus:ring-[var(--primary)] text-sm bg-white"
-                style={{ borderColor: "var(--border)", color: "var(--ps-text)" }}
-              />
-              {state.errors?.date && <p className="text-xs text-red-500">{state.errors.date[0]}</p>}
-            </div>
-
-            {/* Step 5: Slots de Hora Disponibles */}
-            {selectedDate && selectedServiceId && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium" style={{ color: "var(--ps-text)" }}>
-                  Hora disponible *
-                </label>
-                {loadingSlots ? (
-                  <p className="text-xs animate-pulse font-medium" style={{ color: "var(--ps-text-mid)" }}>
-                    Cargando horarios disponibles...
-                  </p>
-                ) : slots.length === 0 ? (
-                  <p className="text-xs text-red-500 font-medium">No hay horarios disponibles para este día o servicio.</p>
-                ) : (
-                  <div className="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto p-1 border rounded-lg bg-neutral-50" style={{ borderColor: "var(--border)" }}>
-                    {slots.map((slot) => (
-                      <button
-                        key={slot.time}
-                        type="button"
-                        disabled={!slot.available}
-                        onClick={() => setSelectedTime(slot.time)}
-                        className={`py-2 px-1.5 rounded-lg text-xs font-semibold border transition-all text-center cursor-pointer ${
-                          !slot.available
-                            ? "opacity-30 cursor-not-allowed line-through"
-                            : selectedTime === slot.time
-                            ? "text-white border-transparent"
-                            : "border-[var(--border)] hover:border-[var(--primary)]"
-                        }`}
-                        style={
-                          selectedTime === slot.time
-                            ? { backgroundColor: "var(--primary)", color: "#fff", borderColor: "var(--primary)" }
-                            : slot.available
-                            ? { color: "var(--ps-text)", backgroundColor: "white" }
-                            : { color: "var(--ps-text-mid)", backgroundColor: "var(--ps-lila-pale)" }
-                        }
-                      >
-                        {slot.time}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {/* Hidden input to submit combined datetime */}
-                {selectedDate && selectedTime && (
-                  <input
-                    type="hidden"
-                    name="date"
-                    value={`${selectedDate}T${selectedTime}:00`}
-                  />
-                )}
-              </div>
-            )}
-
             {/* Estado */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium" style={{ color: "var(--ps-text)" }}>
-                Estado *
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--ps-text-mid)" }}>
+                Estado Inicial *
               </label>
               <select
                 name="status"
                 required
                 defaultValue="PENDING"
-                className="w-full rounded-lg px-4 py-2 border focus:ring-2 focus:ring-[var(--primary)] bg-white text-sm"
-                style={{ borderColor: "var(--border)", color: "var(--ps-text)" }}
+                className="w-full px-4 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-1 transition-colors"
+                style={{ borderColor: "var(--border)", color: "var(--ps-text)", outlineColor: "var(--primary)" }}
               >
                 <option value="PENDING">Pendiente</option>
                 <option value="CONFIRMED">Confirmada</option>
@@ -406,22 +411,22 @@ export default function NuevaCitaModal({
             </div>
 
             {/* Notas */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium" style={{ color: "var(--ps-text)" }}>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--ps-text-mid)" }}>
                 Notas de la cita
               </label>
               <textarea
                 name="notes"
-                rows={3}
+                rows={2}
                 placeholder="Detalles sobre el corte, temperamento, etc..."
-                className="w-full rounded-lg px-4 py-2 border focus:ring-2 focus:ring-[var(--primary)] text-sm"
-                style={{ borderColor: "var(--border)", color: "var(--ps-text)" }}
+                className="w-full px-4 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-1 transition-colors resize-none"
+                style={{ borderColor: "var(--border)", color: "var(--ps-text)", outlineColor: "var(--primary)" }}
               />
               {state.errors?.notes && <p className="text-xs text-red-500">{state.errors.notes[0]}</p>}
             </div>
 
             {state.errors?._form && (
-              <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 font-medium">
+              <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 font-medium border border-red-100">
                 {state.errors._form[0]}
               </p>
             )}
@@ -431,17 +436,19 @@ export default function NuevaCitaModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-full text-sm font-medium hover:bg-neutral-100 transition-colors cursor-pointer"
+                className="px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest hover:bg-neutral-100 transition-colors cursor-pointer"
                 style={{ color: "var(--ps-text-mid)" }}
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                disabled={pending || !selectedOwner || selectedOwner.dogs.length === 0 || !selectedDate || !selectedTime}
-                className="px-6 py-2 rounded-full text-sm font-bold text-white transition-all bg-[var(--primary)] hover:opacity-90 disabled:opacity-50 cursor-pointer"
+                disabled={pending || !selectedOwner || selectedOwner.dogs.length === 0 || !selectedDate || !selectedTime || (hasClash && !allowOverbooking)}
+                className="px-8 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest text-white transition-all shadow-md hover:opacity-90 disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+                style={{ backgroundColor: "var(--primary)" }}
               >
-                {pending ? "Guardando..." : "Crear Cita"}
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                {pending ? "Guardando..." : "Guardar Reserva"}
               </button>
             </div>
           </form>

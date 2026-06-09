@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { createCalComEventType, updateCalComEventType, deleteCalComEventType } from "@/lib/calcom";
 
 const ServiceSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio").max(100),
@@ -54,7 +55,37 @@ export async function createServiceAction(
       return { errors: parsed.error.flatten().fieldErrors };
     }
 
-    await prisma.service.create({ data: parsed.data });
+    let calComEventTypeId: number | null = null;
+    let calComLink: string | null = parsed.data.calComLink || null;
+    let calComSlug: string | null = null;
+
+    try {
+      const siteConfig = await prisma.siteConfig.findUnique({ where: { key: "address" } });
+      const address = siteConfig?.value || "Carvajal 0330, La Cisterna";
+
+      const calEvent = await createCalComEventType(
+        parsed.data.name,
+        parsed.data.duration,
+        parsed.data.description || undefined,
+        address
+      );
+      if (calEvent) {
+        calComEventTypeId = calEvent.id;
+        calComSlug = calEvent.slug;
+        calComLink = calEvent.bookingUrl || `https://cal.com/${process.env.NEXT_PUBLIC_CALCOM_USERNAME || "petitsalon"}/${calEvent.slug}`;
+      }
+    } catch (error) {
+      console.error("Cal.com event type creation failed:", error);
+    }
+
+    await prisma.service.create({ 
+      data: {
+        ...parsed.data,
+        calComEventTypeId,
+        calComSlug,
+        calComLink
+      }
+    });
     revalidatePath("/admin/servicios");
     revalidatePath("/");
     return { success: true };
@@ -87,7 +118,62 @@ export async function updateServiceAction(
       return { errors: parsed.error.flatten().fieldErrors };
     }
 
-    await prisma.service.update({ where: { id }, data: parsed.data });
+    const existing = await prisma.service.findUnique({ where: { id } });
+    if (!existing) throw new Error("Servicio no encontrado");
+
+    let calComEventTypeId = existing.calComEventTypeId;
+    let calComLink = parsed.data.calComLink || existing.calComLink;
+    let calComSlug = existing.calComSlug;
+
+    if (calComEventTypeId) {
+      try {
+        const siteConfig = await prisma.siteConfig.findUnique({ where: { key: "address" } });
+        const address = siteConfig?.value || "Carvajal 0330, La Cisterna";
+
+        const calEvent = await updateCalComEventType(
+          calComEventTypeId,
+          parsed.data.name,
+          parsed.data.duration,
+          parsed.data.description || undefined,
+          address
+        );
+        if (calEvent) {
+          calComSlug = calEvent.slug;
+          calComLink = calEvent.bookingUrl || `https://cal.com/${process.env.NEXT_PUBLIC_CALCOM_USERNAME || "petitsalon"}/${calEvent.slug}`;
+        }
+      } catch (error) {
+        console.error("Cal.com event update failed:", error);
+      }
+    } else {
+      try {
+        const siteConfig = await prisma.siteConfig.findUnique({ where: { key: "address" } });
+        const address = siteConfig?.value || "Carvajal 0330, La Cisterna";
+
+        const calEvent = await createCalComEventType(
+          parsed.data.name,
+          parsed.data.duration,
+          parsed.data.description || undefined,
+          address
+        );
+        if (calEvent) {
+          calComEventTypeId = calEvent.id;
+          calComSlug = calEvent.slug;
+          calComLink = calEvent.bookingUrl || `https://cal.com/${process.env.NEXT_PUBLIC_CALCOM_USERNAME || "petitsalon"}/${calEvent.slug}`;
+        }
+      } catch (error) {
+        console.error("Cal.com event creation failed on update:", error);
+      }
+    }
+
+    await prisma.service.update({ 
+      where: { id }, 
+      data: {
+        ...parsed.data,
+        calComEventTypeId,
+        calComSlug,
+        calComLink
+      } 
+    });
     revalidatePath("/admin/servicios");
     revalidatePath("/");
     return { success: true };
@@ -125,6 +211,14 @@ export async function deleteServiceAction(
       };
     }
 
+    const existing = await prisma.service.findUnique({ where: { id } });
+    if (existing?.calComEventTypeId) {
+      try {
+        await deleteCalComEventType(existing.calComEventTypeId);
+      } catch (err) {
+        console.error("Cal.com event deletion failed:", err);
+      }
+    }
     await prisma.service.delete({ where: { id } });
     revalidatePath("/admin/servicios");
     revalidatePath("/");
