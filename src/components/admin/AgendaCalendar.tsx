@@ -38,6 +38,7 @@ interface Service {
 interface Props {
   initialAppointments: AppointmentWithRelations[];
   services: Service[];
+  initialAvailabilityRules: any[];
 }
 
 const STATUS_STYLES: Record<AppointmentStatus, { bg: string; text: string; border: string }> = {
@@ -68,7 +69,7 @@ const isHourAvailable = (date: Date, hour: number, availabilityRules: any[]) => 
   });
 };
 
-export default function AgendaCalendar({ initialAppointments, services }: Props) {
+export default function AgendaCalendar({ initialAppointments, services, initialAvailabilityRules }: Props) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -77,7 +78,7 @@ export default function AgendaCalendar({ initialAppointments, services }: Props)
   // Data fetching state
   const [appointments, setAppointments] = useState<AppointmentWithRelations[]>(initialAppointments);
   const [blockedSlots, setBlockedSlots] = useState<any[]>([]);
-  const [availabilityRules, setAvailabilityRules] = useState<any[]>([]);
+  const [availabilityRules, setAvailabilityRules] = useState<any[]>(initialAvailabilityRules);
   const [isFetching, setIsFetching] = useState(false);
   const [currentRange, setCurrentRange] = useState<{ startStr: string; endStr: string } | null>(null);
 
@@ -106,22 +107,6 @@ export default function AgendaCalendar({ initialAppointments, services }: Props)
     setMounted(true);
   }, []);
 
-  // Fetch Rules only once or on demand
-  useEffect(() => {
-    if (mounted) {
-      fetch("/api/admin/availability-rules")
-        .then(r => {
-           console.log("Response status /api/admin/availability-rules:", r.status);
-           return r.ok ? r.json() : [];
-        })
-        .then(data => {
-           console.log("Data returned from /api/admin/availability-rules:", data);
-           setAvailabilityRules(data);
-        })
-        .catch(console.error);
-    }
-  }, [mounted]);
-
   const fetchAppointmentsAndBlocks = useCallback(async (start: Date, end: Date) => {
     const startStr = start.toISOString();
     const endStr = end.toISOString();
@@ -131,9 +116,10 @@ export default function AgendaCalendar({ initialAppointments, services }: Props)
     setCurrentRange({ startStr, endStr });
     setIsFetching(true);
     try {
-      const [apptsRes, blocksRes] = await Promise.all([
+      const [apptsRes, blocksRes, rulesRes] = await Promise.all([
         fetch(`/api/admin/appointments?from=${startStr}&to=${endStr}`),
-        fetch(`/api/admin/blocked-slots?from=${startStr}&to=${endStr}`)
+        fetch(`/api/admin/blocked-slots?from=${startStr}&to=${endStr}`),
+        fetch(`/api/admin/availability-rules`)
       ]);
 
       if (apptsRes.ok) {
@@ -141,6 +127,9 @@ export default function AgendaCalendar({ initialAppointments, services }: Props)
       }
       if (blocksRes.ok) {
         setBlockedSlots(await blocksRes.json());
+      }
+      if (rulesRes.ok) {
+        setAvailabilityRules(await rulesRes.json());
       }
     } catch (err) {
       console.error("Error fetching agenda data", err);
@@ -451,7 +440,7 @@ export default function AgendaCalendar({ initialAppointments, services }: Props)
               )}
             </button>
             <a
-              href="https://app.cal.com/availability"
+              href={`https://app.cal.com/availability/${process.env.NEXT_PUBLIC_CALCOM_SCHEDULE_ID || "1515358"}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center hover:bg-gray-50 transition-colors text-[var(--ps-text)] px-3 py-2 sm:px-4 sm:py-2 rounded-xl text-xs font-bold uppercase gap-2 border border-gray-200 shadow-sm"

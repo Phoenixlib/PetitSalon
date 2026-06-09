@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import AgendaCalendar from "@/components/admin/AgendaCalendar";
 import type { AppointmentWithRelations } from "@/types";
+import { getCalComScheduleAvailability } from "@/lib/calcom";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Agenda — Petit Salón Admin" };
@@ -52,6 +53,8 @@ export default async function AgendaPage() {
     },
   });
 
+  const availabilityRules = await getCalComScheduleAvailability();
+
   return (
     <div className="space-y-6">
       <div>
@@ -91,6 +94,7 @@ export default async function AgendaPage() {
       <AgendaCalendar
         initialAppointments={appointments}
         services={services}
+        initialAvailabilityRules={availabilityRules}
       />
     </div>
   );

@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     const rules = await getCalComScheduleAvailability();
     return NextResponse.json(rules);
   } catch (error) {
-    console.error("Error fetching availability rules:", error);
+    console.error("Error in GET /api/admin/availability-rules:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

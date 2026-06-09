@@ -182,6 +182,11 @@ const ManualAppointmentSchema = z.object({
   date: z.coerce.date(),
   status: z.enum(["PENDING", "CONFIRMED", "DONE", "CANCELLED"]),
   notes: z.string().max(1000).optional().nullable(),
+  newOwnerName: z.string().optional(),
+  newOwnerPhone: z.string().optional(),
+  newOwnerEmail: z.string().optional(),
+  newDogName: z.string().optional(),
+  newDogBreed: z.string().optional(),
 });
 
 export type ManualAppointmentFormState = {
@@ -194,6 +199,7 @@ export type ManualAppointmentFormState = {
     _form?: string[];
   };
   success?: boolean;
+  waLink?: string;
 };
 
 export async function createManualAppointmentAction(
@@ -208,6 +214,11 @@ export async function createManualAppointmentAction(
       date: formData.get("date") as string,
       status: formData.get("status") as string,
       notes: (formData.get("notes") as string) || null,
+      newOwnerName: (formData.get("newOwnerName") as string) || undefined,
+      newOwnerPhone: (formData.get("newOwnerPhone") as string) || undefined,
+      newOwnerEmail: (formData.get("newOwnerEmail") as string) || undefined,
+      newDogName: (formData.get("newDogName") as string) || undefined,
+      newDogBreed: (formData.get("newDogBreed") as string) || undefined,
     };
 
     const parsed = ManualAppointmentSchema.safeParse(raw);
@@ -215,9 +226,45 @@ export async function createManualAppointmentAction(
       return { errors: parsed.error.flatten().fieldErrors };
     }
 
+    let dogId = parsed.data.dogId;
+    let ownerPhone = "";
+    let ownerName = "";
+    let dogName = "";
+
+    if (dogId === "new") {
+      if (!parsed.data.newOwnerName || !parsed.data.newOwnerPhone || !parsed.data.newDogName || !parsed.data.newDogBreed) {
+         return { errors: { _form: ["Faltan datos del nuevo cliente o mascota."] } };
+      }
+      const newOwner = await prisma.owner.create({
+        data: {
+          name: parsed.data.newOwnerName,
+          phone: parsed.data.newOwnerPhone,
+          email: parsed.data.newOwnerEmail || null,
+          dogs: {
+             create: {
+                name: parsed.data.newDogName,
+                breed: parsed.data.newDogBreed,
+             }
+          }
+        },
+        include: { dogs: true }
+      });
+      dogId = newOwner.dogs[0].id;
+      ownerPhone = newOwner.phone;
+      ownerName = newOwner.name;
+      dogName = newOwner.dogs[0].name;
+    } else {
+      const dog = await prisma.dog.findUnique({ where: { id: dogId }, include: { owner: true } });
+      if (dog) {
+         ownerPhone = dog.owner.phone;
+         ownerName = dog.owner.name;
+         dogName = dog.name;
+      }
+    }
+
     const newAppointment = await prisma.appointment.create({
       data: {
-        dogId: parsed.data.dogId,
+        dogId: dogId,
         serviceId: parsed.data.serviceId,
         date: parsed.data.date,
         status: parsed.data.status,
@@ -332,7 +379,30 @@ export async function createManualAppointmentAction(
     revalidatePath("/admin/citas");
     revalidatePath("/admin");
 
-    return { success: true };
+    const getCleanPhone = (phone: string) => {
+      let p = phone.replace(/[^\d+]/g, '');
+      if (p.startsWith('9') && p.length === 8) p = '+569' + p;
+      else if (p.startsWith('9') && p.length === 9) p = '+56' + p;
+      else if (!p.startsWith('+')) p = '+' + p;
+      return p;
+    };
+
+    let waLink: string | undefined;
+    try {
+      const serviceObj = await prisma.service.findUnique({ where: { id: parsed.data.serviceId } });
+      const serviceName = serviceObj?.name || "Servicio";
+      const dateObj = new Date(parsed.data.date);
+      const cleanPhone = getCleanPhone(ownerPhone);
+      const formattedDateStr = dateObj.toLocaleDateString("es-CL", { weekday: "long", day: "numeric", month: "long" });
+      const formattedTimeStr = dateObj.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
+
+      const waMessage = `Hola ${ownerName}, te escribo de Petitsalon para confirmarte que la cita para *${dogName}* (${serviceName}) ha sido agendada con éxito.\n\n*Detalles de la cita:*\n📅 *Fecha:* ${formattedDateStr}\n⏰ *Hora:* ${formattedTimeStr} hrs\n📍 *Ubicación:* Manuel Rodriguez 1993, Iquique\n\n¡Te esperamos!`;
+      waLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMessage)}` : undefined;
+    } catch (e) {
+      console.error("Error generating waLink:", e);
+    }
+
+    return { success: true, waLink };
   } catch (error) {
     return { errors: { _form: ["Error al crear la cita manual"] } };
   }

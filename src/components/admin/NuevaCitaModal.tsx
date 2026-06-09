@@ -47,6 +47,13 @@ export default function NuevaCitaModal({
   const [selectedDogId, setSelectedDogId] = useState("");
   const [selectedServiceId, setSelectedServiceId] = useState("");
 
+  const [isCreatingOwner, setIsCreatingOwner] = useState(false);
+  const [newOwnerName, setNewOwnerName] = useState("");
+  const [newOwnerPhone, setNewOwnerPhone] = useState("");
+  const [newOwnerEmail, setNewOwnerEmail] = useState("");
+  const [newDogName, setNewDogName] = useState("");
+  const [newDogBreed, setNewDogBreed] = useState("");
+
   const [selectedDate, setSelectedDate] = useState<string>("");  // "YYYY-MM-DD"
   const [selectedTime, setSelectedTime] = useState<string>("");  // "HH:MM"
   const [allowOverbooking, setAllowOverbooking] = useState(false);
@@ -84,10 +91,17 @@ export default function NuevaCitaModal({
   // Handle server action success
   useEffect(() => {
     if (state?.success) {
+      if (state.waLink) {
+        try {
+          window.open(state.waLink, "_blank");
+        } catch (e) {
+          console.error("Error opening waLink", e);
+        }
+      }
       onSuccess();
       onClose();
     }
-  }, [state?.success, onSuccess, onClose]);
+  }, [state?.success, state?.waLink, onSuccess, onClose]);
 
   // Pre-fill date and time from initialDateStr
   useEffect(() => {
@@ -191,11 +205,38 @@ export default function NuevaCitaModal({
                   <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--ps-text-mid)" }}>
                     Cliente *
                   </label>
-                  <span className="text-[10px] font-bold" style={{ color: "var(--primary)" }}>
-                    Búsqueda de Dueño
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsCreatingOwner(!isCreatingOwner)}
+                    className="text-xs font-bold underline hover:opacity-85 cursor-pointer"
+                    style={{ color: "var(--primary)" }}
+                  >
+                    {isCreatingOwner ? "Buscar cliente existente" : "+ Agregar cliente y mascota"}
+                  </button>
                 </div>
-                <div className="relative">
+                
+                {isCreatingOwner ? (
+                  <div className="p-4 rounded-xl border space-y-4" style={{ borderColor: "var(--primary)", backgroundColor: "var(--ps-lila-pale)" }}>
+                    <div className="space-y-1">
+                       <label className="text-[10px] font-bold uppercase tracking-wider text-teal/70" style={{ color: "var(--ps-text-mid)" }}>Datos del Cliente</label>
+                       <div className="grid grid-cols-2 gap-3">
+                         <input type="text" name="newOwnerName" required value={newOwnerName} onChange={(e) => setNewOwnerName(e.target.value)} placeholder="Nombre del dueño" className="w-full px-3 py-2 bg-white border rounded-lg text-sm" style={{ borderColor: "var(--border)", color: "var(--ps-text)", outlineColor: "var(--primary)" }} />
+                         <input type="text" name="newOwnerPhone" required value={newOwnerPhone} onChange={(e) => setNewOwnerPhone(e.target.value)} placeholder="Teléfono (+569...)" className="w-full px-3 py-2 bg-white border rounded-lg text-sm" style={{ borderColor: "var(--border)", color: "var(--ps-text)", outlineColor: "var(--primary)" }} />
+                       </div>
+                       <input type="email" name="newOwnerEmail" value={newOwnerEmail} onChange={(e) => setNewOwnerEmail(e.target.value)} placeholder="Email (opcional)" className="w-full px-3 py-2 bg-white border rounded-lg text-sm" style={{ borderColor: "var(--border)", color: "var(--ps-text)", outlineColor: "var(--primary)" }} />
+                    </div>
+                    <div className="space-y-1">
+                       <label className="text-[10px] font-bold uppercase tracking-wider text-teal/70" style={{ color: "var(--ps-text-mid)" }}>Datos de la Mascota</label>
+                       <div className="grid grid-cols-2 gap-3">
+                         <input type="text" name="newDogName" required value={newDogName} onChange={(e) => setNewDogName(e.target.value)} placeholder="Nombre" className="w-full px-3 py-2 bg-white border rounded-lg text-sm" style={{ borderColor: "var(--border)", color: "var(--ps-text)", outlineColor: "var(--primary)" }} />
+                         <input type="text" name="newDogBreed" required value={newDogBreed} onChange={(e) => setNewDogBreed(e.target.value)} placeholder="Raza" className="w-full px-3 py-2 bg-white border rounded-lg text-sm" style={{ borderColor: "var(--border)", color: "var(--ps-text)", outlineColor: "var(--primary)" }} />
+                       </div>
+                    </div>
+                    <input type="hidden" name="dogId" value="new" />
+                  </div>
+                ) : (
+                  <>
+                  <div className="relative">
                   <input
                     type="text"
                     value={searchQuery}
@@ -250,6 +291,8 @@ export default function NuevaCitaModal({
                       ))}
                     </div>
                   )}
+                  </>
+                )}
                 </div>
               </div>
             ) : (
@@ -283,8 +326,8 @@ export default function NuevaCitaModal({
 
           {/* Form for creation */}
           <form action={formAction} className="space-y-4">
-            {/* Hidden Input for Dog ID */}
-            <input type="hidden" name="dogId" value={selectedDogId} />
+            {/* Hidden Input for Dog ID si no estamos creando */}
+            {!isCreatingOwner && <input type="hidden" name="dogId" value={selectedDogId} />}
 
             {/* Fecha y Hora en una fila */}
             <div className="flex flex-col sm:flex-row gap-4">
@@ -341,7 +384,7 @@ export default function NuevaCitaModal({
             )}
 
             {/* Select Mascota */}
-            {selectedOwner && (
+            {!isCreatingOwner && selectedOwner && (
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--ps-text-mid)" }}>
                   Mascota *
@@ -443,7 +486,7 @@ export default function NuevaCitaModal({
               </button>
               <button
                 type="submit"
-                disabled={pending || !selectedOwner || selectedOwner.dogs.length === 0 || !selectedDate || !selectedTime || (hasClash && !allowOverbooking)}
+                disabled={pending || (!isCreatingOwner && (!selectedOwner || selectedOwner.dogs.length === 0)) || !selectedDate || !selectedTime || (hasClash && !allowOverbooking)}
                 className="px-8 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest text-white transition-all shadow-md hover:opacity-90 disabled:opacity-50 flex items-center gap-2 cursor-pointer"
                 style={{ backgroundColor: "var(--primary)" }}
               >
