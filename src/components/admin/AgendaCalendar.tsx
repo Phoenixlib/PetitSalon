@@ -118,7 +118,7 @@ export default function AgendaCalendar({ initialAppointments, services, initialA
     try {
       const [apptsRes, blocksRes, rulesRes] = await Promise.all([
         fetch(`/api/admin/appointments?from=${startStr}&to=${endStr}`),
-        fetch(`/api/admin/blocked-slots?from=${startStr}&to=${endStr}`),
+        fetch(`/api/admin/blocked-slots?start=${startStr}&end=${endStr}`),
         fetch(`/api/admin/availability-rules`)
       ]);
 
