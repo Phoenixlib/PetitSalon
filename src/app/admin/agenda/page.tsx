@@ -16,6 +16,7 @@ export default async function AgendaPage() {
     await prisma.appointment.findMany({
       where: {
         date: { gte: from, lte: to },
+        status: { not: "CANCELLED" },
       },
       orderBy: { date: "asc" },
       select: {
@@ -75,7 +76,6 @@ export default async function AgendaPage() {
           { label: "Pendiente", bg: "#fbbf24", text: "#78350f" },
           { label: "Confirmada", bg: "#3b82f6", text: "#ffffff" },
           { label: "Realizada", bg: "#22c55e", text: "#ffffff" },
-          { label: "Cancelada", bg: "#d1d5db", text: "#6b7280" },
         ].map(({ label, bg, text }) => (
           <span
             key={label}

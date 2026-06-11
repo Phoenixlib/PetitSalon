@@ -678,6 +678,7 @@ export default function AgendaCalendar({ initialAppointments, services, initialA
               initialDateStr={initialNewCitaDate}
               services={services}
               onSuccess={handleCreateSuccess}
+              availabilityRules={availabilityRules}
             />
           )}
 

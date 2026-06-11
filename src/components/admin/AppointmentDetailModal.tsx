@@ -55,6 +55,7 @@ export default function AppointmentDetailModal({
   const [step, setStep] = useState<Step>(initialStep);
   const [pendingFormData, setPendingFormData] = useState<{
     service: string;
+    notes: string | null;
     photos: string[];
   } | null>(null);
   const [photos, setPhotos] = useState<File[]>([]);

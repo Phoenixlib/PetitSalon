@@ -283,6 +283,8 @@ export async function createManualAppointmentAction(
       }
     }
 
+    const allowOverbooking = formData.get("allowOverbooking") === "true";
+
     const newAppointment = await prisma.appointment.create({
       data: {
         dogId: dogId,
@@ -346,28 +348,69 @@ export async function createManualAppointmentAction(
                 dog_notes: parsed.data.notes || dog?.notes || "",
               };
 
-              let calRes = await createCalComBooking(
-                service.calComEventTypeId ?? 0, // Fallback if 0 but usually required
-                parsed.data.date.toISOString(),
-                dog?.owner.name ?? "Cliente",
-                dog?.owner.email ?? "petitsalon.contacto@gmail.com",
-                formattedPhone,
-                customFields
-              );
+              let calRes = null;
+              const useFallbackDirectly = allowOverbooking && env.CALCOM_FALLBACK_EVENT_TYPE_ID;
 
-              // 3.1 Intentar fallback (sobrecupo) si falla la reserva principal y hay ID configurado
-              if ((!calRes || calRes.status !== "success") && env.CALCOM_FALLBACK_EVENT_TYPE_ID) {
+              if (useFallbackDirectly) {
                 console.info(
-                  `[admin] Reserva principal fallida. Intentando sobrecupo en evento de respaldo ID: ${env.CALCOM_FALLBACK_EVENT_TYPE_ID}`
+                  `[admin] Cita marcada como sobrecupo. Reservando directamente en evento de respaldo ID: ${env.CALCOM_FALLBACK_EVENT_TYPE_ID}`
                 );
-                calRes = await createCalComBooking(
-                  Number(env.CALCOM_FALLBACK_EVENT_TYPE_ID),
-                  parsed.data.date.toISOString(),
-                  dog?.owner.name ?? "Cliente",
-                  dog?.owner.email ?? "petitsalon.contacto@gmail.com",
-                  formattedPhone,
-                  customFields
+                try {
+                  calRes = await createCalComBooking(
+                    Number(env.CALCOM_FALLBACK_EVENT_TYPE_ID),
+                    parsed.data.date.toISOString(),
+                    dog?.owner.name ?? "Cliente",
+                    dog?.owner.email ?? "petitsalon.contacto@gmail.com",
+                    formattedPhone,
+                    customFields
+                  );
+                } catch (fallbackError) {
+                  console.error(
+                    `[admin] Excepción en reserva de sobrecupo directa (ID: ${env.CALCOM_FALLBACK_EVENT_TYPE_ID}):`,
+                    fallbackError
+                  );
+                }
+              } else {
+                console.info(
+                  `[admin] Reservando en evento principal ID: ${service.calComEventTypeId}`
                 );
+                try {
+                  calRes = await createCalComBooking(
+                    service.calComEventTypeId ?? 0,
+                    parsed.data.date.toISOString(),
+                    dog?.owner.name ?? "Cliente",
+                    dog?.owner.email ?? "petitsalon.contacto@gmail.com",
+                    formattedPhone,
+                    customFields
+                  );
+                } catch (primaryError) {
+                  console.warn(
+                    `[admin] Error en reserva principal Cal.com (ID: ${service.calComEventTypeId}):`,
+                    primaryError
+                  );
+                }
+
+                // 3.1 Intentar fallback (sobrecupo) si falla la reserva principal y hay ID configurado
+                if ((!calRes || calRes.status !== "success") && env.CALCOM_FALLBACK_EVENT_TYPE_ID) {
+                  console.info(
+                    `[admin] Reserva principal fallida o rechazada. Intentando sobrecupo en evento de respaldo ID: ${env.CALCOM_FALLBACK_EVENT_TYPE_ID}`
+                  );
+                  try {
+                    calRes = await createCalComBooking(
+                      Number(env.CALCOM_FALLBACK_EVENT_TYPE_ID),
+                      parsed.data.date.toISOString(),
+                      dog?.owner.name ?? "Cliente",
+                      dog?.owner.email ?? "petitsalon.contacto@gmail.com",
+                      formattedPhone,
+                      customFields
+                    );
+                  } catch (fallbackError) {
+                    console.error(
+                      `[admin] Excepción en reserva de sobrecupo secundaria (ID: ${env.CALCOM_FALLBACK_EVENT_TYPE_ID}):`,
+                      fallbackError
+                    );
+                  }
+                }
               }
 
               if (calRes && calRes.status === "success" && calRes.data?.uid) {

@@ -90,7 +90,7 @@ export async function createServiceAction(
           if (match) {
             calComEventTypeId = match.id;
             calComSlug = match.slug;
-            calComLink = match.bookingUrl || parsed.data.calComLink;
+            calComLink = (match.bookingUrl || parsed.data.calComLink || null) as string | null;
           }
         }
       } catch (e) {
