@@ -381,7 +381,7 @@ export default function NuevaCitaModal({
                   <input
                     type="hidden"
                     name="date"
-                    value={`${selectedDate}T${selectedTime}:00`}
+                    value={new Date(`${selectedDate}T${selectedTime}:00`).toISOString()}
                   />
                 )}
               </div>

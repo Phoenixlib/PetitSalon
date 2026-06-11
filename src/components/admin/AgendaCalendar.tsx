@@ -217,7 +217,7 @@ export default function AgendaCalendar({ initialAppointments, services }: Props)
             right: "dayGridMonth,timeGridWeek,timeGridDay",
           }}
           locale={esLocale}
-          timeZone="America/Santiago"
+          timeZone="local"
           events={events}
           datesSet={handleDatesSet}
           eventClick={handleEventClick}

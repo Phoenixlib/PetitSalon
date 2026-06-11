@@ -259,11 +259,41 @@ export async function createManualAppointmentAction(
               const username = parts[0];
               const eventTypeSlug = parts.slice(1).join("/");
 
-              // Formatear el teléfono de manera segura para Cal.com
+              // Formatear el teléfono de manera segura para Cal.com (formato chileno)
               const rawPhone = dog?.owner.phone ?? "";
-              const formattedPhone = rawPhone
-                ? (rawPhone.startsWith("+") ? rawPhone : `+${rawPhone}`)
-                : "";
+              let formattedPhone = "";
+              if (rawPhone) {
+                const clean = rawPhone.replace(/[^\d]/g, ""); // Extraer solo dígitos
+                if (clean.length === 8) {
+                  // Ej: 12345678 -> +56912345678
+                  formattedPhone = `+569${clean}`;
+                } else if (clean.length === 9 && clean.startsWith("9")) {
+                  // Ej: 912345678 -> +56912345678
+                  formattedPhone = `+56${clean}`;
+                } else if (clean.length === 11 && clean.startsWith("56")) {
+                  // Ej: 56912345678 -> +56912345678
+                  formattedPhone = `+${clean}`;
+                } else {
+                  // Fallback: agregar '+' si no lo tiene
+                  formattedPhone = rawPhone.startsWith("+") ? rawPhone : `+${rawPhone}`;
+                }
+                
+                // Actualizar el número en la base de datos si logramos corregirlo
+                if (dog?.owner && formattedPhone !== rawPhone && formattedPhone.startsWith("+569") && formattedPhone.length === 12) {
+                  try {
+                    // Para esto necesitamos el id del owner, que actualmente no traemos en la consulta inicial
+                    // Haremos un update filtrando por email o un update simple si tuvieramos el owner.id
+                    // Como no trajimos el owner.id en la consulta anterior, actualizamos usando la relación
+                    await prisma.owner.updateMany({
+                      where: { email: dog.owner.email, name: dog.owner.name },
+                      data: { phone: formattedPhone },
+                    });
+                    console.info(`[admin] Teléfono de cliente corregido en DB de ${rawPhone} a ${formattedPhone}`);
+                  } catch (e) {
+                    console.error("[admin] No se pudo actualizar el teléfono corregido en DB:", e);
+                  }
+                }
+              }
 
               // 3. Construir payload para Cal.com
               const payload = {
@@ -292,7 +322,7 @@ export async function createManualAppointmentAction(
                 },
               };
 
-              const calRes = await fetch("https://api.cal.com/v2/bookings", {
+              let calRes = await fetch("https://api.cal.com/v2/bookings", {
                 method: "POST",
                 headers: {
                   Authorization: `Bearer ${env.CALCOM_API_KEY}`,
@@ -302,6 +332,33 @@ export async function createManualAppointmentAction(
                 body: JSON.stringify(payload),
                 signal: AbortSignal.timeout(8000),
               });
+
+              if (!calRes.ok) {
+                const errText = await calRes.text();
+                // Si falla por número inválido, reintentamos con un número genérico válido
+                if (calRes.status === 400 && errText.includes("invalid_number")) {
+                  console.warn("[admin] Número inválido detectado por Cal.com. Reintentando con fallback...");
+                  payload.attendee.phoneNumber = "+56999999999";
+                  payload.bookingFieldsResponses.telefono = "+56999999999";
+                  payload.bookingFieldsResponses.attendeePhoneNumber = "+56999999999";
+                  
+                  calRes = await fetch("https://api.cal.com/v2/bookings", {
+                    method: "POST",
+                    headers: {
+                      Authorization: `Bearer ${env.CALCOM_API_KEY}`,
+                      "cal-api-version": "2024-08-13",
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(payload),
+                    signal: AbortSignal.timeout(8000),
+                  });
+                } else {
+                  console.error(
+                    `[admin] Error en Cal.com booking API (${calRes.status}): ${errText}`,
+                  );
+                  return; // Stop processing if it's another error
+                }
+              }
 
               if (calRes.ok) {
                 const calJson = (await calRes.json()) as {
@@ -323,11 +380,6 @@ export async function createManualAppointmentAction(
                     JSON.stringify(calJson),
                   );
                 }
-              } else {
-                const errText = await calRes.text();
-                console.error(
-                  `[admin] Error en Cal.com booking API (${calRes.status}): ${errText}`,
-                );
               }
             }
           }
