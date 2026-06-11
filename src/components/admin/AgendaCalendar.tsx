@@ -93,7 +93,7 @@ export default function AgendaCalendar({ initialAppointments, services, initialA
   const [selectedBlock, setSelectedBlock] = useState<any | null>(null);
 
   // Context Menu State
-  const [contextMenu, setContextMenu] = useState<{ x: number, y: number, dateStr: string, isOut: boolean } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number, y: number, dateStr: string, isOut: boolean, isBlocked: boolean } | null>(null);
 
   // Date Picker State
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -220,11 +220,20 @@ export default function AgendaCalendar({ initialAppointments, services, initialA
     const cellDate = setHours(setMinutes(startOfDay(date), 0), hour);
     const isOut = !isHourAvailable(date, hour, availabilityRules);
 
+    const cellStart = cellDate.getTime();
+    const cellEnd = cellStart + 60 * 60 * 1000;
+    const isBlocked = blockedSlots.some(block => {
+      const blockStart = new Date(block.startAt).getTime();
+      const blockEnd = new Date(block.endAt).getTime();
+      return (cellStart < blockEnd && cellEnd > blockStart);
+    });
+
     setContextMenu({
       x: e.clientX,
       y: e.clientY,
       dateStr: format(cellDate, "yyyy-MM-dd'T'HH:mm:ss"),
       isOut,
+      isBlocked,
     });
   };
 
@@ -241,7 +250,7 @@ export default function AgendaCalendar({ initialAppointments, services, initialA
   }, []);
 
   const handleActionCreateCita = () => {
-    if (contextMenu) {
+    if (contextMenu && !contextMenu.isBlocked) {
       setInitialNewCitaDate(contextMenu.dateStr);
       setShowNewCitaModal(true);
     }
@@ -631,12 +640,13 @@ export default function AgendaCalendar({ initialAppointments, services, initialA
             </div>
             <button
               onClick={handleActionCreateCita}
-              className="w-full text-left px-4 py-2.5 text-xs font-semibold text-[var(--ps-text)] hover:bg-gray-50 transition-colors flex items-center gap-2"
+              disabled={contextMenu.isBlocked}
+              className={`w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-gray-50 transition-colors flex items-center gap-2 ${contextMenu.isBlocked ? "text-gray-400 cursor-not-allowed" : "text-[var(--ps-text)]"}`}
             >
-              <Plus size={14} className="text-[var(--primary)]" />
-              {contextMenu.isOut ? "Agendar Cita (Sobre Cupo)" : "Agendar Cita"}
+              <Plus size={14} className={contextMenu.isBlocked ? "text-gray-400" : "text-[var(--primary)]"} />
+              {contextMenu.isBlocked ? "Horario Bloqueado" : contextMenu.isOut ? "Agendar Cita (Sobre Cupo)" : "Agendar Cita"}
             </button>
-            {!contextMenu.isOut && (
+            {!contextMenu.isOut && !contextMenu.isBlocked && (
               <button
                 onClick={handleActionBlockSlot}
                 className="w-full text-left px-4 py-2.5 text-xs font-semibold text-[var(--ps-text)] hover:bg-gray-50 transition-colors flex items-center gap-2"

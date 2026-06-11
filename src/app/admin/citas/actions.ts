@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { sendReviewRequestEmail } from "@/lib/email";
 import { env } from "@/env";
-import { createCalComBooking } from "@/lib/calcom";
+import { createCalComBooking, cancelCalComBooking, rescheduleCalComBooking } from "@/lib/calcom";
 import { after } from "next/server";
 
 async function requireAdmin() {
@@ -35,6 +35,26 @@ export async function updateAppointmentStatusAction(
     if (!parsed.success) {
       return { errors: { _form: ["Estado inválido"] } };
     }
+    
+    // Obtener la cita actual para verificar calComUid
+    const appointment = await prisma.appointment.findUnique({
+      where: { id }
+    });
+
+    if (!appointment) {
+      return { errors: { _form: ["Cita no encontrada"] } };
+    }
+
+    // Si se está cancelando y tiene un UID de Cal.com, cancelar en Cal.com primero
+    if (parsed.data === "CANCELLED" && appointment.calComUid) {
+      try {
+        await cancelCalComBooking(appointment.calComUid, "Cancelada desde el panel de administración");
+      } catch (calError) {
+        console.error("[admin] Error cancelando en Cal.com:", calError);
+        return { errors: { _form: ["No se pudo cancelar la cita en Cal.com. Intenta de nuevo."] } };
+      }
+    }
+
     await prisma.appointment.update({
       where: { id },
       data: { status: parsed.data },
@@ -43,7 +63,8 @@ export async function updateAppointmentStatusAction(
     revalidatePath("/admin/citas");
     revalidatePath("/admin");
     return { success: true };
-  } catch {
+  } catch (error) {
+    console.error("[admin] Error en updateAppointmentStatusAction:", error);
     return { errors: { _form: ["Error al actualizar el estado."] } };
   }
 }
@@ -404,7 +425,63 @@ export async function createManualAppointmentAction(
 
     return { success: true, waLink };
   } catch (error) {
+    console.error("[admin] Error en createManualAppointmentAction:", error);
     return { errors: { _form: ["Error al crear la cita manual"] } };
+  }
+}
+
+export type RescheduleAppointmentState = {
+  errors?: { _form?: string[] };
+  success?: boolean;
+};
+
+export async function rescheduleAppointmentAction(
+  id: string,
+  newDateIso: string,
+  _prevState: RescheduleAppointmentState
+): Promise<RescheduleAppointmentState> {
+  try {
+    await requireAdmin();
+
+    const appointment = await prisma.appointment.findUnique({
+      where: { id },
+    });
+
+    if (!appointment) {
+      return { errors: { _form: ["Cita no encontrada."] } };
+    }
+
+    const newDate = new Date(newDateIso);
+    if (isNaN(newDate.getTime())) {
+      return { errors: { _form: ["Fecha inválida."] } };
+    }
+
+    // Si tiene un UID de Cal.com, reagendar externamente
+    if (appointment.calComUid) {
+      try {
+        const calRes = await rescheduleCalComBooking(appointment.calComUid, newDate);
+        if (!calRes || calRes.status !== "success") {
+          return { errors: { _form: ["No se pudo reagendar en Cal.com."] } };
+        }
+      } catch (calError) {
+        console.error(`[admin] Error reagendando cita ${id} en Cal.com:`, calError);
+        return { errors: { _form: ["Error de conexión con Cal.com al reagendar."] } };
+      }
+    }
+
+    await prisma.appointment.update({
+      where: { id },
+      data: { date: newDate },
+    });
+
+    revalidatePath("/admin/agenda");
+    revalidatePath("/admin/citas");
+    revalidatePath("/admin");
+
+    return { success: true };
+  } catch (error) {
+    console.error("[admin] Error en rescheduleAppointmentAction:", error);
+    return { errors: { _form: ["Error al reagendar la cita."] } };
   }
 }
 

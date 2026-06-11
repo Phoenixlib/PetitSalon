@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { createCalComEventType, updateCalComEventType, deleteCalComEventType } from "@/lib/calcom";
+import { createCalComEventType, updateCalComEventType, deleteCalComEventType, getCalComEventTypes } from "@/lib/calcom";
 
 const ServiceSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio").max(100),
@@ -59,23 +59,79 @@ export async function createServiceAction(
     let calComLink: string | null = parsed.data.calComLink || null;
     let calComSlug: string | null = null;
 
-    try {
-      const siteConfig = await prisma.siteConfig.findUnique({ where: { key: "address" } });
-      const address = siteConfig?.value || "Carvajal 0330, La Cisterna";
+    const siteConfig = await prisma.siteConfig.findUnique({ where: { key: "address" } });
+    const address = siteConfig?.value || "Carvajal 0330, La Cisterna";
 
-      const calEvent = await createCalComEventType(
-        parsed.data.name,
-        parsed.data.duration,
-        parsed.data.description || undefined,
-        address
-      );
-      if (calEvent) {
-        calComEventTypeId = calEvent.id;
-        calComSlug = calEvent.slug;
-        calComLink = calEvent.bookingUrl || `https://cal.com/${process.env.NEXT_PUBLIC_CALCOM_USERNAME || "petitsalon"}/${calEvent.slug}`;
+    // Siempre intentar buscar si el event type ya existe en Cal.com por slug
+    let slug = null;
+    if (parsed.data.calComLink) {
+      try {
+        const urlObj = new URL(parsed.data.calComLink);
+        const parts = urlObj.pathname.split("/").filter(Boolean);
+        slug = parts[parts.length - 1];
+      } catch {
+        const parts = parsed.data.calComLink.split("/").filter(Boolean);
+        slug = parts[parts.length - 1];
       }
-    } catch (error) {
-      console.error("Cal.com event type creation failed:", error);
+    } else {
+      slug = parsed.data.name
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+    }
+
+    if (slug) {
+      try {
+        const eventTypes = await getCalComEventTypes();
+        if (eventTypes) {
+          const match = eventTypes.find(e => e.slug === slug);
+          if (match) {
+            calComEventTypeId = match.id;
+            calComSlug = match.slug;
+            calComLink = match.bookingUrl || parsed.data.calComLink;
+          }
+        }
+      } catch (e) {
+        console.error("Failed to match event type by slug:", e);
+      }
+    }
+
+    if (calComEventTypeId) {
+      // Si logramos enlazarlo a uno existente, lo actualizamos con los datos del formulario
+      try {
+        const calEvent = await updateCalComEventType(
+          calComEventTypeId,
+          parsed.data.name,
+          parsed.data.duration,
+          parsed.data.description || undefined,
+          address
+        );
+        if (calEvent) {
+          calComSlug = calEvent.slug;
+          calComLink = calEvent.bookingUrl || `https://cal.com/${process.env.NEXT_PUBLIC_CALCOM_USERNAME || "petitsalon"}/${calEvent.slug}`;
+        }
+      } catch (error) {
+        console.error("Cal.com event update failed on create:", error);
+      }
+    } else {
+      // Si no existe, creamos uno nuevo
+      try {
+        const calEvent = await createCalComEventType(
+          parsed.data.name,
+          parsed.data.duration,
+          parsed.data.description || undefined,
+          address
+        );
+        if (calEvent) {
+          calComEventTypeId = calEvent.id;
+          calComSlug = calEvent.slug;
+          calComLink = calEvent.bookingUrl || `https://cal.com/${process.env.NEXT_PUBLIC_CALCOM_USERNAME || "petitsalon"}/${calEvent.slug}`;
+        }
+      } catch (error) {
+        console.error("Cal.com event type creation failed:", error);
+      }
     }
 
     await prisma.service.create({ 
@@ -125,11 +181,49 @@ export async function updateServiceAction(
     let calComLink = parsed.data.calComLink || existing.calComLink;
     let calComSlug = existing.calComSlug;
 
+    const siteConfig = await prisma.siteConfig.findUnique({ where: { key: "address" } });
+    const address = siteConfig?.value || "Carvajal 0330, La Cisterna";
+
+    // Siempre intentar buscar si el event type ya existe en Cal.com por slug si no hay ID
+    if (!calComEventTypeId) {
+      let slug = null;
+      if (calComLink) {
+        try {
+          const urlObj = new URL(calComLink);
+          const parts = urlObj.pathname.split("/").filter(Boolean);
+          slug = parts[parts.length - 1];
+        } catch {
+          const parts = calComLink.split("/").filter(Boolean);
+          slug = parts[parts.length - 1];
+        }
+      } else {
+        slug = parsed.data.name
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "");
+      }
+
+      if (slug) {
+        try {
+          const eventTypes = await getCalComEventTypes();
+          if (eventTypes) {
+            const match = eventTypes.find(e => e.slug === slug);
+            if (match) {
+              calComEventTypeId = match.id;
+              calComSlug = match.slug;
+              calComLink = match.bookingUrl || calComLink;
+            }
+          }
+        } catch (e) {
+          console.error("Failed to match event type by slug during update:", e);
+        }
+      }
+    }
+
     if (calComEventTypeId) {
       try {
-        const siteConfig = await prisma.siteConfig.findUnique({ where: { key: "address" } });
-        const address = siteConfig?.value || "Carvajal 0330, La Cisterna";
-
         const calEvent = await updateCalComEventType(
           calComEventTypeId,
           parsed.data.name,
@@ -146,9 +240,6 @@ export async function updateServiceAction(
       }
     } else {
       try {
-        const siteConfig = await prisma.siteConfig.findUnique({ where: { key: "address" } });
-        const address = siteConfig?.value || "Carvajal 0330, La Cisterna";
-
         const calEvent = await createCalComEventType(
           parsed.data.name,
           parsed.data.duration,

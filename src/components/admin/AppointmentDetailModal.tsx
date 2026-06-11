@@ -7,6 +7,7 @@ import {
   updateAppointmentStatusAction,
   markDoneWithAttendanceAction,
   toggleWhatsappSentAction,
+  rescheduleAppointmentAction,
 } from "@/app/admin/citas/actions";
 import { useCloudinaryUpload } from "@/hooks/useCloudinaryUpload";
 import { getWhatsappLink, WhatsappTemplate } from "@/lib/whatsapp";
@@ -54,11 +55,12 @@ export default function AppointmentDetailModal({
   const [step, setStep] = useState<Step>(initialStep);
   const [pendingFormData, setPendingFormData] = useState<{
     service: string;
-    notes: string | null;
     photos: string[];
   } | null>(null);
   const [photos, setPhotos] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+  const [isRescheduling, setIsRescheduling] = useState(false);
+  const [newDate, setNewDate] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploading, uploadFiles, error: uploadError } = useCloudinaryUpload();
 
@@ -95,7 +97,35 @@ export default function AppointmentDetailModal({
       );
       if (result.success) {
         onStatusChange(appointment.id, newStatus);
+        if (newStatus === "CANCELLED") {
+           onClose();
+        }
+      } else {
+        alert(result.errors?._form?.[0] || "Error al actualizar estado");
+      }
+    });
+  };
+
+  const handleReschedule = () => {
+    if (!appointment || !newDate) return;
+    startTransition(async () => {
+      const d = new Date(newDate);
+      const result = await rescheduleAppointmentAction(
+        appointment.id,
+        d.toISOString(),
+        {}
+      );
+      if (result.success) {
+        if (onAppointmentUpdate) {
+          onAppointmentUpdate({
+            ...appointment,
+            date: d,
+          });
+        }
+        setIsRescheduling(false);
         onClose();
+      } else {
+        alert(result.errors?._form?.[0] || "Error al reagendar");
       }
     });
   };
@@ -389,14 +419,57 @@ export default function AppointmentDetailModal({
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
-                      window.open("https://app.cal.com/bookings/upcoming", "_blank");
-                      onClose();
-                    }}
-                    className="w-full rounded-full py-2.5 font-semibold text-gray-700 bg-gray-200 transition-opacity hover:bg-gray-300"
+                    onClick={() => handleStatusChange("CANCELLED")}
+                    disabled={isPending}
+                    className="w-full rounded-full py-2.5 font-semibold text-gray-700 bg-gray-200 transition-opacity hover:bg-gray-300 disabled:opacity-50"
                   >
-                    Cancelar Cita
+                    {isPending ? "Procesando..." : "Cancelar Cita"}
                   </button>
+                  {isRescheduling ? (
+                    <div className="flex flex-col gap-2 mt-4 p-4 border border-gray-100 rounded-xl bg-gray-50">
+                      <label className="text-xs font-semibold text-[var(--ps-text-mid)]">Nueva Fecha y Hora:</label>
+                      <input 
+                        type="datetime-local" 
+                        value={newDate} 
+                        onChange={e => setNewDate(e.target.value)}
+                        className="p-2 border rounded-lg text-sm bg-white"
+                      />
+                      <div className="flex gap-2 mt-2">
+                         <button
+                           type="button"
+                           onClick={handleReschedule}
+                           disabled={isPending || !newDate}
+                           className="flex-1 rounded-full py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                           style={{ backgroundColor: "var(--primary)" }}
+                         >
+                           Confirmar
+                         </button>
+                         <button
+                           type="button"
+                           onClick={() => setIsRescheduling(false)}
+                           className="flex-1 rounded-full py-2 text-sm font-semibold text-gray-700 bg-gray-200 transition-opacity hover:bg-gray-300 disabled:opacity-50"
+                         >
+                           Cancelar
+                         </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        // Setup current date in datetime-local format
+                        const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+                        const localISOTime = (new Date(new Date(appointment.date).getTime() - tzoffset)).toISOString().slice(0, 16);
+                        setNewDate(localISOTime);
+                        setIsRescheduling(true);
+                      }}
+                      disabled={isPending}
+                      className="w-full rounded-full py-2.5 font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                      style={{ backgroundColor: "var(--secondary)" }}
+                    >
+                      Reagendar Cita
+                    </button>
+                  )}
                 </>
               )}
 
@@ -422,11 +495,9 @@ export default function AppointmentDetailModal({
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        window.open("https://app.cal.com/bookings/upcoming", "_blank");
-                        onClose();
-                      }}
-                      className="flex-1 rounded-full py-2.5 font-semibold text-gray-700 bg-gray-200 transition-opacity hover:bg-gray-300"
+                      onClick={() => handleStatusChange("CANCELLED")}
+                      disabled={isPending}
+                      className="flex-1 rounded-full py-2.5 font-semibold text-gray-700 bg-gray-200 transition-opacity hover:bg-gray-300 disabled:opacity-50"
                     >
                       Cancelar Cita
                     </button>

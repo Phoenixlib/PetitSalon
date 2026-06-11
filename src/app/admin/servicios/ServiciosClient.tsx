@@ -10,8 +10,6 @@ import {
 } from "./actions";
 import ServiceModal from "@/components/admin/ServiceModal";
 import CategoryModal from "@/components/admin/CategoryModal";
-import CalComManual from "@/components/admin/CalComManual";
-
 type Service = {
   id: string;
   name: string;
@@ -187,7 +185,6 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
         </div>
       </div>
 
-      <CalComManual />
 
       {errorMsg && (
         <div

@@ -258,6 +258,41 @@ export async function createCalComEventType(
 }
 
 /**
+ * Fetches all Event Types from Cal.com
+ */
+export async function getCalComEventTypes(): Promise<CalComEventTypeResponse["data"][] | null> {
+  if (!env.CALCOM_API_KEY) {
+    console.warn("CALCOM_API_KEY not set. Skipping Cal.com get event types.");
+    return null;
+  }
+
+  const baseUrl = env.CALCOM_API_URL || "https://api.cal.com/v2";
+  const url = `${baseUrl}/event-types`;
+
+  try {
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${env.CALCOM_API_KEY}`,
+        "cal-api-version": "2024-06-14",
+      },
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("Failed to get event types from Cal.com:", errText);
+      throw new Error(`Cal.com error: ${res.statusText} (${errText})`);
+    }
+
+    const payload = await res.json() as { status: string; data: CalComEventTypeResponse["data"][] };
+    return payload.data;
+  } catch (error) {
+    console.error("Error calling Cal.com get event types API:", error);
+    throw error;
+  }
+}
+
+/**
  * Updates an Event Type on Cal.com.
  */
 export async function updateCalComEventType(

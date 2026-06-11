@@ -79,13 +79,29 @@ export async function POST(req: Request) {
       }
 
       if (!owner) {
-        owner = await prisma.owner.create({
-          data: {
-            name: ownerName,
-            email: attendee.email || null,
-            phone: ownerPhone,
-          },
-        });
+        try {
+          owner = await prisma.owner.create({
+            data: {
+              name: ownerName,
+              email: attendee.email || null,
+              phone: ownerPhone,
+            },
+          });
+        } catch (e: any) {
+          if (e.code === "P2002") {
+            owner = await prisma.owner.findFirst({
+              where: {
+                OR: [
+                  { email: attendee.email || undefined },
+                  { phone: ownerPhone },
+                ],
+              },
+            });
+            if (!owner) throw e;
+          } else {
+            throw e;
+          }
+        }
       } else {
         await prisma.owner.update({
           where: { id: owner.id },
@@ -107,16 +123,27 @@ export async function POST(req: Request) {
       });
 
       if (!dog) {
-        dog = await prisma.dog.create({
-          data: {
-            name: String(dogName),
-            breed: String(dogBreed),
-            age: dogAge ? String(dogAge) : null,
-            weight: dogWeight ? String(dogWeight) : null,
-            notes: dogNotes ? String(dogNotes) : null,
-            ownerId: owner.id
+        try {
+          dog = await prisma.dog.create({
+            data: {
+              name: String(dogName),
+              breed: String(dogBreed),
+              age: dogAge ? String(dogAge) : null,
+              weight: dogWeight ? String(dogWeight) : null,
+              notes: dogNotes ? String(dogNotes) : null,
+              ownerId: owner.id
+            }
+          });
+        } catch (e: any) {
+          if (e.code === "P2002") {
+            dog = await prisma.dog.findFirst({
+              where: { ownerId: owner.id, name: String(dogName) }
+            });
+            if (!dog) throw e;
+          } else {
+            throw e;
           }
-        });
+        }
       }
 
       let serviceId: string | null = null;
