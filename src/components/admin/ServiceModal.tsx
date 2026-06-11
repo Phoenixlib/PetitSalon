@@ -187,7 +187,7 @@ export default function ServiceModal({
               <input
                 name="price"
                 type="number"
-                autoComplete="off"
+                autoComplete="new-password"
                 defaultValue={service?.price ?? ""}
                 placeholder="15000"
                 min={0}
@@ -213,7 +213,7 @@ export default function ServiceModal({
               <input
                 name="duration"
                 type="number"
-                autoComplete="off"
+                autoComplete="new-password"
                 defaultValue={service?.duration ?? ""}
                 placeholder="60"
                 min={5}

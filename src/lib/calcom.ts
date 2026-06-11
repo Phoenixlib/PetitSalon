@@ -224,7 +224,7 @@ export async function createCalComEventType(
       body: JSON.stringify({
         title,
         slug,
-        lengthInMinutes,
+        length: lengthInMinutes,
         description: description || "",
         locations: [{ type: "address", address: address || "Carvajal 0330, La Cisterna", public: true }],
         scheduleId: env.CALCOM_SCHEDULE_ID ? Number(env.CALCOM_SCHEDULE_ID) : undefined,
@@ -328,7 +328,7 @@ export async function updateCalComEventType(
       body: JSON.stringify({
         title,
         slug,
-        lengthInMinutes,
+        length: lengthInMinutes,
         description: description || "",
         locations: [{ type: "address", address: address || "Carvajal 0330, La Cisterna", public: true }],
         scheduleId: env.CALCOM_SCHEDULE_ID ? Number(env.CALCOM_SCHEDULE_ID) : undefined,

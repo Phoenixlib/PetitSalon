@@ -155,16 +155,26 @@ export default function AgendaCalendar({ initialAppointments, services, initialA
   }, [router, refetch]);
 
   const handleStatusChange = (id: string, newStatus: AppointmentStatus) => {
-    setAppointments((prev) =>
-      prev.map((app) => (app.id === id ? { ...app, status: newStatus } : app))
-    );
+    if (newStatus === "CANCELLED") {
+      setAppointments((prev) => prev.filter((app) => app.id !== id));
+      setSelectedAppt(null); // Optional: close modal if open
+    } else {
+      setAppointments((prev) =>
+        prev.map((app) => (app.id === id ? { ...app, status: newStatus } : app))
+      );
+    }
   };
 
   const handleAppointmentUpdate = (updated: AppointmentWithRelations) => {
-    setAppointments((prev) =>
-      prev.map((app) => (app.id === updated.id ? updated : app))
-    );
-    setSelectedAppt(updated);
+    if (updated.status === "CANCELLED") {
+      setAppointments((prev) => prev.filter((app) => app.id !== updated.id));
+      setSelectedAppt(null);
+    } else {
+      setAppointments((prev) =>
+        prev.map((app) => (app.id === updated.id ? updated : app))
+      );
+      setSelectedAppt(updated);
+    }
   };
 
   // Dynamic hours calculation
