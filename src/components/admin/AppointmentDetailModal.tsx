@@ -62,6 +62,7 @@ export default function AppointmentDetailModal({
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [isRescheduling, setIsRescheduling] = useState(false);
   const [newDate, setNewDate] = useState("");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploading, uploadFiles, error: uploadError } = useCloudinaryUpload();
 
@@ -70,6 +71,7 @@ export default function AppointmentDetailModal({
       setStep(initialStep);
       setPhotos([]);
       setPhotoPreviews([]);
+      setErrorMsg(null);
     }
   }, [appointment?.id, initialStep]);
 
@@ -90,6 +92,7 @@ export default function AppointmentDetailModal({
 
   const handleStatusChange = (newStatus: AppointmentStatus) => {
     if (!appointment) return;
+    setErrorMsg(null);
     startTransition(async () => {
       const result = await updateAppointmentStatusAction(
         appointment.id,
@@ -102,13 +105,14 @@ export default function AppointmentDetailModal({
            onClose();
         }
       } else {
-        alert(result.errors?._form?.[0] || "Error al actualizar estado");
+        setErrorMsg(result.errors?._form?.[0] || "Error al actualizar estado");
       }
     });
   };
 
   const handleReschedule = () => {
     if (!appointment || !newDate) return;
+    setErrorMsg(null);
     startTransition(async () => {
       const d = new Date(newDate);
       const result = await rescheduleAppointmentAction(
@@ -126,7 +130,7 @@ export default function AppointmentDetailModal({
         setIsRescheduling(false);
         onClose();
       } else {
-        alert(result.errors?._form?.[0] || "Error al reagendar");
+        setErrorMsg(result.errors?._form?.[0] || "Error al reagendar");
       }
     });
   };
@@ -160,6 +164,7 @@ export default function AppointmentDetailModal({
 
   const handleConfirmDone = (sendReview: boolean) => {
     if (!appointment) return;
+    setErrorMsg(null);
     startTransition(async () => {
       try {
         const result = await markDoneWithAttendanceAction(
@@ -172,7 +177,7 @@ export default function AppointmentDetailModal({
           onClose();
         } else {
           console.error("Error from markDoneWithAttendanceAction:", result.errors);
-          alert(result.errors?._form?.[0] || "Error al marcar como realizado");
+          setErrorMsg(result.errors?._form?.[0] || "Error al marcar como realizado");
         }
       } catch (err) {
         console.error("Unhandled error in handleConfirmDone:", err);
@@ -407,6 +412,11 @@ export default function AppointmentDetailModal({
             </div>
 
             <div className="flex flex-col gap-2 mt-6">
+              {errorMsg && (
+                <div className="p-3 mb-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+                  {errorMsg}
+                </div>
+              )}
               {appointment.status === "PENDING" && (
                 <>
                   <button

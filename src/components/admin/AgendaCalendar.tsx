@@ -162,6 +162,9 @@ export default function AgendaCalendar({ initialAppointments, services, initialA
       setAppointments((prev) =>
         prev.map((app) => (app.id === id ? { ...app, status: newStatus } : app))
       );
+      setSelectedAppt((prev) =>
+        prev && prev.id === id ? { ...prev, status: newStatus } : prev
+      );
     }
   };
 

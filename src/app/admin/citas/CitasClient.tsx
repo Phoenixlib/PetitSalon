@@ -621,6 +621,9 @@ export default function CitasClient({
                   a.id === id ? { ...a, status: newStatus } : a,
                 ),
               );
+              setSelectedApp((prev) =>
+                prev && prev.id === id ? { ...prev, status: newStatus } : prev
+              );
             }}
             onAppointmentUpdate={(updated) => {
               setAppointments((prev) =>

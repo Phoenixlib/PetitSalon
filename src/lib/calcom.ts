@@ -169,7 +169,7 @@ export async function rescheduleCalComBooking(bookingUid: string, newDate: Date)
       headers: {
         "Authorization": `Bearer ${env.CALCOM_API_KEY}`,
         "Content-Type": "application/json",
-        "cal-api-version": "2024-06-14",
+        "cal-api-version": "2024-08-13",
       },
       body: JSON.stringify({
         start: newDate.toISOString(),
@@ -178,8 +178,17 @@ export async function rescheduleCalComBooking(bookingUid: string, newDate: Date)
 
     if (!res.ok) {
       const errText = await res.text();
+      let errorMessage = "Error desconocido de Cal.com";
+      try {
+        const errorJson = JSON.parse(errText);
+        if (errorJson?.error?.message) {
+          errorMessage = errorJson.error.message;
+        }
+      } catch (e) {
+        // Parsing error ignored
+      }
       console.error(`Failed to reschedule booking ${bookingUid} on Cal.com:`, errText);
-      throw new Error(`Cal.com error: ${res.statusText} (${errText})`);
+      throw new Error(errorMessage);
     }
 
     return await res.json() as CalComRescheduleResponse;

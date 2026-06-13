@@ -521,9 +521,15 @@ export async function rescheduleAppointmentAction(
         if (!calRes || calRes.status !== "success") {
           return { errors: { _form: ["No se pudo reagendar en Cal.com."] } };
         }
-      } catch (calError) {
+      } catch (calError: any) {
         console.error(`[admin] Error reagendando cita ${id} en Cal.com:`, calError);
-        return { errors: { _form: ["Error de conexión con Cal.com al reagendar."] } };
+        let errorMsg = calError instanceof Error ? calError.message : "Error de conexión con Cal.com al reagendar.";
+        
+        if (errorMsg === "User either already has booking at this time or is not available") {
+          errorMsg = "Horario no disponible. Ya existe una reserva o el horario está bloqueado en Cal.com.";
+        }
+        
+        return { errors: { _form: [errorMsg] } };
       }
     }
 
