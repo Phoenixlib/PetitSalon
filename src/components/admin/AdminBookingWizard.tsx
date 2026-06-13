@@ -317,25 +317,18 @@ export default function AdminBookingWizard({
                   return (
                     <button
                       key={service.id}
-                      disabled={!hasLink}
                       onClick={() => handleSelectService(service)}
-                      className={`w-full text-left border rounded-xl p-4 flex justify-between items-center transition-colors ${
-                        hasLink 
-                          ? "border-neutral-200 hover:border-[var(--primary)] hover:bg-purple-50"
-                          : "border-neutral-100 bg-neutral-50 opacity-60 cursor-not-allowed"
-                      }`}
-                      title={!hasLink ? "Servicio sin link de Cal.com asignado" : undefined}
+                      className="w-full text-left border rounded-xl p-4 flex justify-between items-center transition-colors border-neutral-200 hover:border-[var(--primary)] hover:bg-purple-50"
                     >
                       <div>
                         <span className="font-medium block">
                           {service.name}
-                          {!hasLink && <span className="ml-2 text-xs font-normal text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full">⚠️ Sin link de Cal.com</span>}
                         </span>
                         <span className="text-sm text-neutral-500 block">
                           {formatPrice(service.price)} • {service.duration} min
                         </span>
                       </div>
-                      {hasLink && <span className="text-[var(--primary)]">→</span>}
+                      <span className="text-[var(--primary)]">→</span>
                     </button>
                   );
                 })}

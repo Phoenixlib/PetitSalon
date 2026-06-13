@@ -26,6 +26,8 @@ export async function GET(request: NextRequest) {
     ["PENDING", "CONFIRMED", "DONE", "CANCELLED"].includes(status)
   ) {
     where.status = status;
+  } else {
+    where.status = { not: "CANCELLED" };
   }
 
   const appointments = await prisma.appointment.findMany({

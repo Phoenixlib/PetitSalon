@@ -6,7 +6,6 @@ import {
   updateServiceAction,
   ServiceFormState,
 } from "@/app/admin/servicios/actions";
-import CalComManual from "./CalComManual";
 type Service = {
   id: string;
   name: string;
@@ -188,6 +187,7 @@ export default function ServiceModal({
               <input
                 name="price"
                 type="number"
+                autoComplete="new-password"
                 defaultValue={service?.price ?? ""}
                 placeholder="15000"
                 min={0}
@@ -213,6 +213,7 @@ export default function ServiceModal({
               <input
                 name="duration"
                 type="number"
+                autoComplete="new-password"
                 defaultValue={service?.duration ?? ""}
                 placeholder="60"
                 min={5}
@@ -250,49 +251,7 @@ export default function ServiceModal({
             )}
           </div>
 
-          {/* Link de Cal.com */}
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between mb-0.5">
-              <label
-                className="text-sm font-medium"
-                style={{ color: "var(--ps-text)" }}
-              >
-                Enlace de Cal.com{" "}
-                <span style={{ color: "var(--ps-text-mid)", fontWeight: 400 }}>
-                  (opcional)
-                </span>
-              </label>
-              <a
-                href="https://app.cal.com/event-types"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[10px] font-bold uppercase tracking-wider transition-opacity hover:opacity-70"
-                style={{ color: "var(--ps-gold)" }}
-              >
-                ↗ Ver Event Types en Cal.com
-              </a>
-            </div>
-            <input
-              type="text"
-              name="calComLink"
-              defaultValue={service?.calComLink || ""}
-              placeholder="Ej: Baño y Secado Perro Pequeño"
-              className="w-full rounded-xl px-4 py-2.5 text-sm transition-shadow focus:outline-none focus:ring-2"
-              style={{
-                backgroundColor: "#f9fafb",
-                border: "1px solid var(--border)",
-              }}
-            />
-            {state.errors && "calComLink" in state.errors && (
-              <p className="text-xs text-red-500 mt-1">
-                {(state.errors as any).calComLink?.[0]}
-              </p>
-            )}
 
-            <div className="mt-2">
-              <CalComManual />
-            </div>
-          </div>
 
           {state.errors?._form && (
             <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">

@@ -69,6 +69,9 @@ model Service {
   description  String?
   isActive     Boolean          @default(true)
   calComLink   String?          @map("cal_com_link")
+  calComEventTypeId Int?
+  calComOverbookingEventTypeId Int?
+  calComSlug   String?
   categoryId   String?
   order        Int              @default(0)
   appointments Appointment[]
@@ -145,4 +148,13 @@ enum ReviewStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+model BlockedSlot {
+  id                String   @id @default(cuid())
+  startAt           DateTime
+  endAt             DateTime
+  reason            String?
+  calComOverrideId  Int?     
+  createdAt         DateTime @default(now())
 }

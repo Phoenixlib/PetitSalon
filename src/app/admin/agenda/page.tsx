@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import AgendaCalendar from "@/components/admin/AgendaCalendar";
 import type { AppointmentWithRelations } from "@/types";
+import { getCalComScheduleAvailability } from "@/lib/calcom";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Agenda — Petit Salón Admin" };
@@ -15,6 +16,7 @@ export default async function AgendaPage() {
     await prisma.appointment.findMany({
       where: {
         date: { gte: from, lte: to },
+        status: { not: "CANCELLED" },
       },
       orderBy: { date: "asc" },
       select: {
@@ -52,6 +54,8 @@ export default async function AgendaPage() {
     },
   });
 
+  const availabilityRules = await getCalComScheduleAvailability();
+
   return (
     <div className="space-y-6">
       <div>
@@ -72,7 +76,6 @@ export default async function AgendaPage() {
           { label: "Pendiente", bg: "#fbbf24", text: "#78350f" },
           { label: "Confirmada", bg: "#3b82f6", text: "#ffffff" },
           { label: "Realizada", bg: "#22c55e", text: "#ffffff" },
-          { label: "Cancelada", bg: "#d1d5db", text: "#6b7280" },
         ].map(({ label, bg, text }) => (
           <span
             key={label}
@@ -91,6 +94,7 @@ export default async function AgendaPage() {
       <AgendaCalendar
         initialAppointments={appointments}
         services={services}
+        initialAvailabilityRules={availabilityRules}
       />
     </div>
   );
