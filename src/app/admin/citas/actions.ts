@@ -320,12 +320,6 @@ export async function createManualAppointmentAction(
           ]);
 
           if (service?.calComEventTypeId) {
-            // Formatear el teléfono de manera segura para Cal.com
-            const rawPhone = dog?.owner.phone ?? "";
-            const formattedPhone = rawPhone
-              ? (rawPhone.startsWith("+") ? rawPhone : `+${rawPhone}`)
-              : "";
-
             // 3. Construir payload para Cal.com
             const customFields = {
               servicio: service.name || "Servicio",
@@ -391,7 +385,6 @@ export async function createManualAppointmentAction(
                   `[admin] Excepción en reserva de sobrecupo directa (ID: ${service.calComOverbookingEventTypeId}):`,
                   fallbackError
                 );
-              }
               }
             } else {
               console.info(

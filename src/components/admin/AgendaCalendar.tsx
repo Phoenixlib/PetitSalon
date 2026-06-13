@@ -414,46 +414,7 @@ export default function AgendaCalendar({ initialAppointments, services, initialA
           <div className="flex items-center gap-3">
             <button onClick={handlePrevWeek} className="p-2 hover:bg-gray-50 rounded-full text-[var(--ps-text)] transition-colors"><ChevronLeft size={20} /></button>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-2 lg:p-4">
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
-          @media (max-width: 1023px) {
-            .fc .fc-toolbar.fc-header-toolbar {
-              flex-direction: column;
-              gap: 12px;
-            }
-            .fc .fc-toolbar-title {
-              font-size: 1.25rem !important;
-            }
-            .fc .fc-button {
-              padding: 0.4em 0.6em;
-              font-size: 0.85em;
-            }
-            .fc .fc-timegrid-slot-label {
-              font-size: 0.75rem;
-            }
-          }
-        `,
-          }}
-        />
-        <FullCalendar
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          headerToolbar={false}
-          locale={esLocale}
-          timeZone="local"
-          events={events}
-          datesSet={handleDatesSet}
-          eventClick={handleEventClick}
-          dateClick={handleDateClick}
-          height={700}
-          slotMinTime="08:00:00"
-          slotMaxTime="20:00:00"
-          allDaySlot={false}
-          selectable={true}
-          selectMirror={true}
-        />
+
             <div className="relative date-picker-container">
               <button
                 type="button"
@@ -707,7 +668,6 @@ export default function AgendaCalendar({ initialAppointments, services, initialA
             )}
           </div>
         )}
->>>>>>> dev-agenda
 
         <AnimatePresence>
           {selectedAppt && (
