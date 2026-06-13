@@ -383,7 +383,14 @@ export async function deleteServiceAction(
       try {
         await deleteCalComEventType(existing.calComEventTypeId);
       } catch (err) {
-        console.error("Cal.com event deletion failed:", err);
+        console.error("Cal.com primary event deletion failed:", err);
+      }
+    }
+    if (existing?.calComOverbookingEventTypeId) {
+      try {
+        await deleteCalComEventType(existing.calComOverbookingEventTypeId);
+      } catch (err) {
+        console.error("Cal.com overbooking event deletion failed:", err);
       }
     }
     await prisma.service.delete({ where: { id } });
