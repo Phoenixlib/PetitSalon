@@ -28,7 +28,7 @@ const envSchema = z.object({
   NEXT_PUBLIC_CALCOM_LINK: z.string().optional(),
   CALCOM_API_URL: z.string().url().optional(),
   CALCOM_SCHEDULE_ID: z.string().optional(),
-  CALCOM_FALLBACK_EVENT_TYPE_ID: z.string().optional(),
+  CALCOM_OVERBOOKING_SCHEDULE_ID: z.string().optional(),
   CALCOM_API_KEY: z.string().min(1),
 
   // URL base de la app (para construir links en emails)

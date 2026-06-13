@@ -70,6 +70,7 @@ model Service {
   isActive     Boolean          @default(true)
   calComLink   String?          @map("cal_com_link")
   calComEventTypeId Int?
+  calComOverbookingEventTypeId Int?
   calComSlug   String?
   categoryId   String?
   order        Int              @default(0)

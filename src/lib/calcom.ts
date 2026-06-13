@@ -196,14 +196,17 @@ export async function createCalComEventType(
   title: string,
   lengthInMinutes: number,
   description?: string,
-  address?: string
+  address?: string,
+  scheduleId?: number,
+  hidden?: boolean,
+  slugOverride?: string
 ): Promise<CalComEventTypeResponse["data"] | null> {
   if (!env.CALCOM_API_KEY) {
     console.warn("CALCOM_API_KEY not set. Skipping Cal.com event type creation.");
     return null;
   }
 
-  const slug = title
+  const slug = slugOverride || title
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -224,10 +227,11 @@ export async function createCalComEventType(
       body: JSON.stringify({
         title,
         slug,
-        length: lengthInMinutes,
+        lengthInMinutes: lengthInMinutes,
         description: description || "",
+        hidden: hidden ?? false,
         locations: [{ type: "address", address: address || "Carvajal 0330, La Cisterna", public: true }],
-        scheduleId: env.CALCOM_SCHEDULE_ID ? Number(env.CALCOM_SCHEDULE_ID) : undefined,
+        scheduleId: scheduleId ?? (env.CALCOM_SCHEDULE_ID ? Number(env.CALCOM_SCHEDULE_ID) : undefined),
         disableGuests: true,
         bookingFields: [
           { type: "name",     slug: "name", label: "Nombre completo del dueño", required: true },
@@ -300,14 +304,17 @@ export async function updateCalComEventType(
   title: string,
   lengthInMinutes: number,
   description?: string,
-  address?: string
+  address?: string,
+  scheduleId?: number,
+  hidden?: boolean,
+  slugOverride?: string
 ): Promise<CalComEventTypeResponse["data"] | null> {
   if (!env.CALCOM_API_KEY) {
     console.warn("CALCOM_API_KEY not set. Skipping Cal.com event type update.");
     return null;
   }
 
-  const slug = title
+  const slug = slugOverride || title
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -328,10 +335,11 @@ export async function updateCalComEventType(
       body: JSON.stringify({
         title,
         slug,
-        length: lengthInMinutes,
+        lengthInMinutes: lengthInMinutes,
         description: description || "",
+        hidden: hidden ?? false,
         locations: [{ type: "address", address: address || "Carvajal 0330, La Cisterna", public: true }],
-        scheduleId: env.CALCOM_SCHEDULE_ID ? Number(env.CALCOM_SCHEDULE_ID) : undefined,
+        scheduleId: scheduleId ?? (env.CALCOM_SCHEDULE_ID ? Number(env.CALCOM_SCHEDULE_ID) : undefined),
         disableGuests: true,
         bookingFields: [
           { type: "name",     slug: "name", label: "Nombre completo del dueño", required: true },

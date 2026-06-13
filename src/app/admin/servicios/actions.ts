@@ -15,7 +15,6 @@ const ServiceSchema = z.object({
   duration: z.coerce.number().int().min(5, "Mínimo 5 minutos"),
   description: z.string().max(3000).optional().nullable(),
   categoryId: z.string().optional().nullable(),
-  calComLink: z.string().max(255).optional().nullable(),
 });
 
 export type ServiceFormState = {
@@ -47,7 +46,6 @@ export async function createServiceAction(
       duration: Number(formData.get("duration")),
       description: (formData.get("description") as string) || null,
       categoryId: (formData.get("categoryId") as string) || null,
-      calComLink: (formData.get("calComLink") as string) || null,
     };
 
     const parsed = ServiceSchema.safeParse(raw);
@@ -56,31 +54,20 @@ export async function createServiceAction(
     }
 
     let calComEventTypeId: number | null = null;
-    let calComLink: string | null = parsed.data.calComLink || null;
+    let calComOverbookingEventTypeId: number | null = null;
+    let calComLink: string | null = null;
     let calComSlug: string | null = null;
 
     const siteConfig = await prisma.siteConfig.findUnique({ where: { key: "address" } });
     const address = siteConfig?.value || "Carvajal 0330, La Cisterna";
 
     // Siempre intentar buscar si el event type ya existe en Cal.com por slug
-    let slug = null;
-    if (parsed.data.calComLink) {
-      try {
-        const urlObj = new URL(parsed.data.calComLink);
-        const parts = urlObj.pathname.split("/").filter(Boolean);
-        slug = parts[parts.length - 1];
-      } catch {
-        const parts = parsed.data.calComLink.split("/").filter(Boolean);
-        slug = parts[parts.length - 1];
-      }
-    } else {
-      slug = parsed.data.name
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
-    }
+    const slug = parsed.data.name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
 
     if (slug) {
       try {
@@ -90,7 +77,12 @@ export async function createServiceAction(
           if (match) {
             calComEventTypeId = match.id;
             calComSlug = match.slug;
-            calComLink = (match.bookingUrl || parsed.data.calComLink || null) as string | null;
+            calComLink = match.bookingUrl || null;
+          }
+          
+          const overbookingMatch = eventTypes.find(e => e.slug === `${slug}-sobrecupo`);
+          if (overbookingMatch) {
+            calComOverbookingEventTypeId = overbookingMatch.id;
           }
         }
       } catch (e) {
@@ -98,6 +90,7 @@ export async function createServiceAction(
       }
     }
 
+    // --- MAIN EVENT TYPE ---
     if (calComEventTypeId) {
       // Si logramos enlazarlo a uno existente, lo actualizamos con los datos del formulario
       try {
@@ -134,10 +127,49 @@ export async function createServiceAction(
       }
     }
 
+    // --- OVERBOOKING EVENT TYPE ---
+    const overbookingScheduleId = process.env.CALCOM_OVERBOOKING_SCHEDULE_ID ? Number(process.env.CALCOM_OVERBOOKING_SCHEDULE_ID) : undefined;
+    if (overbookingScheduleId) {
+      if (calComOverbookingEventTypeId) {
+        try {
+          await updateCalComEventType(
+            calComOverbookingEventTypeId,
+            parsed.data.name, // Keep the same name as the user requested
+            parsed.data.duration,
+            parsed.data.description || undefined,
+            address,
+            overbookingScheduleId,
+            true, // hidden
+            calComSlug ? `${calComSlug}-sobrecupo` : undefined // explicit slug override
+          );
+        } catch (error) {
+          console.error("Cal.com overbooking event update failed on create:", error);
+        }
+      } else {
+        try {
+          const calEvent = await createCalComEventType(
+            parsed.data.name, // Same name
+            parsed.data.duration,
+            parsed.data.description || undefined,
+            address,
+            overbookingScheduleId,
+            true, // hidden
+            calComSlug ? `${calComSlug}-sobrecupo` : undefined
+          );
+          if (calEvent) {
+            calComOverbookingEventTypeId = calEvent.id;
+          }
+        } catch (error) {
+          console.error("Cal.com overbooking event type creation failed:", error);
+        }
+      }
+    }
+
     await prisma.service.create({ 
       data: {
         ...parsed.data,
         calComEventTypeId,
+        calComOverbookingEventTypeId,
         calComSlug,
         calComLink
       }
@@ -166,7 +198,6 @@ export async function updateServiceAction(
       duration: Number(formData.get("duration")),
       description: (formData.get("description") as string) || null,
       categoryId: (formData.get("categoryId") as string) || null,
-      calComLink: (formData.get("calComLink") as string) || null,
     };
 
     const parsed = ServiceSchema.safeParse(raw);
@@ -178,14 +209,15 @@ export async function updateServiceAction(
     if (!existing) throw new Error("Servicio no encontrado");
 
     let calComEventTypeId = existing.calComEventTypeId;
-    let calComLink = parsed.data.calComLink || existing.calComLink;
+    let calComOverbookingEventTypeId = existing.calComOverbookingEventTypeId;
+    let calComLink = existing.calComLink;
     let calComSlug = existing.calComSlug;
 
     const siteConfig = await prisma.siteConfig.findUnique({ where: { key: "address" } });
     const address = siteConfig?.value || "Carvajal 0330, La Cisterna";
 
     // Siempre intentar buscar si el event type ya existe en Cal.com por slug si no hay ID
-    if (!calComEventTypeId) {
+    if (!calComEventTypeId || !calComOverbookingEventTypeId) {
       let slug = null;
       if (calComLink) {
         try {
@@ -210,10 +242,14 @@ export async function updateServiceAction(
           const eventTypes = await getCalComEventTypes();
           if (eventTypes) {
             const match = eventTypes.find(e => e.slug === slug);
-            if (match) {
+            if (match && !calComEventTypeId) {
               calComEventTypeId = match.id;
               calComSlug = match.slug;
               calComLink = match.bookingUrl || calComLink;
+            }
+            const overbookingMatch = eventTypes.find(e => e.slug === `${slug}-sobrecupo`);
+            if (overbookingMatch && !calComOverbookingEventTypeId) {
+              calComOverbookingEventTypeId = overbookingMatch.id;
             }
           }
         } catch (e) {
@@ -256,11 +292,50 @@ export async function updateServiceAction(
       }
     }
 
+    // --- OVERBOOKING EVENT TYPE ---
+    const overbookingScheduleId = process.env.CALCOM_OVERBOOKING_SCHEDULE_ID ? Number(process.env.CALCOM_OVERBOOKING_SCHEDULE_ID) : undefined;
+    if (overbookingScheduleId) {
+      if (calComOverbookingEventTypeId) {
+        try {
+          await updateCalComEventType(
+            calComOverbookingEventTypeId,
+            parsed.data.name, // Keep the same name as the user requested
+            parsed.data.duration,
+            parsed.data.description || undefined,
+            address,
+            overbookingScheduleId,
+            true, // hidden
+            calComSlug ? `${calComSlug}-sobrecupo` : undefined // explicit slug override
+          );
+        } catch (error) {
+          console.error("Cal.com overbooking event update failed on update:", error);
+        }
+      } else {
+        try {
+          const calEvent = await createCalComEventType(
+            parsed.data.name, // Same name
+            parsed.data.duration,
+            parsed.data.description || undefined,
+            address,
+            overbookingScheduleId,
+            true, // hidden
+            calComSlug ? `${calComSlug}-sobrecupo` : undefined
+          );
+          if (calEvent) {
+            calComOverbookingEventTypeId = calEvent.id;
+          }
+        } catch (error) {
+          console.error("Cal.com overbooking event type creation failed on update:", error);
+        }
+      }
+    }
+
     await prisma.service.update({ 
       where: { id }, 
       data: {
         ...parsed.data,
         calComEventTypeId,
+        calComOverbookingEventTypeId,
         calComSlug,
         calComLink
       } 
