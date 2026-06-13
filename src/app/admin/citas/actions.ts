@@ -304,7 +304,7 @@ export async function createManualAppointmentAction(
           const [service, dog] = await Promise.all([
             prisma.service.findUnique({
               where: { id: parsed.data.serviceId },
-              select: { name: true, calComLink: true, calComEventTypeId: true },
+              select: { name: true, calComLink: true, calComEventTypeId: true, calComOverbookingEventTypeId: true },
             }),
             prisma.dog.findUnique({
               where: { id: parsed.data.dogId },
@@ -319,41 +319,70 @@ export async function createManualAppointmentAction(
             }),
           ]);
 
-          if (service?.calComLink) {
-            // 2. Parsear calComLink (puede ser URL completa o "username/slug")
-            let calPath = service.calComLink;
-            try {
-              calPath = new URL(service.calComLink).pathname.replace(/^\//, "");
-            } catch { /* ya es "username/slug" */ }
+          if (service?.calComEventTypeId) {
+            // Formatear el teléfono de manera segura para Cal.com
+            const rawPhone = dog?.owner.phone ?? "";
+            const formattedPhone = rawPhone
+              ? (rawPhone.startsWith("+") ? rawPhone : `+${rawPhone}`)
+              : "";
 
-            const parts = calPath.split("/");
-            if (parts.length >= 2) {
-              const username = parts[0];
-              const eventTypeSlug = parts.slice(1).join("/");
+            // 3. Construir payload para Cal.com
+            const customFields = {
+              servicio: service.name || "Servicio",
+              nombre_perro: dog?.name || "Sin nombre",
+              edad: dog?.age || "No especificada",
+              raza_perro: dog?.breed || "Sin raza",
+              peso: dog?.weight || "No especificado",
+              dog_size: "No especificado",
+              dog_notes: parsed.data.notes || dog?.notes || "",
+            };
 
-              // Formatear el teléfono de manera segura para Cal.com
-              const rawPhone = dog?.owner.phone ?? "";
-              const formattedPhone = rawPhone
-                ? (rawPhone.startsWith("+") ? rawPhone : `+${rawPhone}`)
-                : "";
+            let calRes = null;
+            const useFallbackDirectly = allowOverbooking && !!service.calComOverbookingEventTypeId;
 
-              // 3. Construir payload para Cal.com
-              const customFields = {
-                servicio: service.name || "Servicio",
-                nombre_perro: dog?.name || "Sin nombre",
-                edad: dog?.age || "No especificada",
-                raza_perro: dog?.breed || "Sin raza",
-                peso: dog?.weight || "No especificado",
-                dog_size: "No especificado",
-                dog_notes: parsed.data.notes || dog?.notes || "",
-              };
+            if (useFallbackDirectly && service.calComOverbookingEventTypeId) {
+              console.info(
+                `[admin] Cita marcada como sobrecupo. Reservando directamente en evento de respaldo ID: ${service.calComOverbookingEventTypeId}`
+              );
+              try {
+                calRes = await createCalComBooking(
+                  service.calComOverbookingEventTypeId,
+                  parsed.data.date.toISOString(),
+                  dog?.owner.name ?? "Cliente",
+                  dog?.owner.email ?? "petitsalon.contacto@gmail.com",
+                  formattedPhone,
+                  customFields
+                );
+              } catch (fallbackError) {
+                console.error(
+                  `[admin] Excepción en reserva de sobrecupo directa (ID: ${service.calComOverbookingEventTypeId}):`,
+                  fallbackError
+                );
+              }
+            } else {
+              console.info(
+                `[admin] Reservando en evento principal ID: ${service.calComEventTypeId}`
+              );
+              try {
+                calRes = await createCalComBooking(
+                  service.calComEventTypeId,
+                  parsed.data.date.toISOString(),
+                  dog?.owner.name ?? "Cliente",
+                  dog?.owner.email ?? "petitsalon.contacto@gmail.com",
+                  formattedPhone,
+                  customFields
+                );
+              } catch (primaryError) {
+                console.warn(
+                  `[admin] Error en reserva principal Cal.com (ID: ${service.calComEventTypeId}):`,
+                  primaryError
+                );
+              }
 
-              let calRes = null;
-              const useFallbackDirectly = allowOverbooking && service.calComOverbookingEventTypeId;
-
-              if (useFallbackDirectly && service.calComOverbookingEventTypeId) {
+              // 3.1 Intentar fallback (sobrecupo) si falla la reserva principal y hay ID configurado
+              if ((!calRes || calRes.status !== "success") && service.calComOverbookingEventTypeId) {
                 console.info(
-                  `[admin] Cita marcada como sobrecupo. Reservando directamente en evento de respaldo ID: ${service.calComOverbookingEventTypeId}`
+                  `[admin] Reserva principal fallida o rechazada. Intentando sobrecupo en evento de respaldo ID: ${service.calComOverbookingEventTypeId}`
                 );
                 try {
                   calRes = await createCalComBooking(
@@ -366,68 +395,27 @@ export async function createManualAppointmentAction(
                   );
                 } catch (fallbackError) {
                   console.error(
-                    `[admin] Excepción en reserva de sobrecupo directa (ID: ${service.calComOverbookingEventTypeId}):`,
+                    `[admin] Excepción en reserva de sobrecupo secundaria (ID: ${service.calComOverbookingEventTypeId}):`,
                     fallbackError
                   );
                 }
-              } else {
-                console.info(
-                  `[admin] Reservando en evento principal ID: ${service.calComEventTypeId}`
-                );
-                try {
-                  calRes = await createCalComBooking(
-                    service.calComEventTypeId ?? 0,
-                    parsed.data.date.toISOString(),
-                    dog?.owner.name ?? "Cliente",
-                    dog?.owner.email ?? "petitsalon.contacto@gmail.com",
-                    formattedPhone,
-                    customFields
-                  );
-                } catch (primaryError) {
-                  console.warn(
-                    `[admin] Error en reserva principal Cal.com (ID: ${service.calComEventTypeId}):`,
-                    primaryError
-                  );
-                }
-
-                // 3.1 Intentar fallback (sobrecupo) si falla la reserva principal y hay ID configurado
-                if ((!calRes || calRes.status !== "success") && service.calComOverbookingEventTypeId) {
-                  console.info(
-                    `[admin] Reserva principal fallida o rechazada. Intentando sobrecupo en evento de respaldo ID: ${service.calComOverbookingEventTypeId}`
-                  );
-                  try {
-                    calRes = await createCalComBooking(
-                      service.calComOverbookingEventTypeId,
-                      parsed.data.date.toISOString(),
-                      dog?.owner.name ?? "Cliente",
-                      dog?.owner.email ?? "petitsalon.contacto@gmail.com",
-                      formattedPhone,
-                      customFields
-                    );
-                  } catch (fallbackError) {
-                    console.error(
-                      `[admin] Excepción en reserva de sobrecupo secundaria (ID: ${service.calComOverbookingEventTypeId}):`,
-                      fallbackError
-                    );
-                  }
-                }
               }
+            }
 
-              if (calRes && calRes.status === "success" && calRes.data?.uid) {
-                // 4. Guardar el uid en nuestra DB para idempotencia
-                await prisma.appointment.update({
-                  where: { id: newAppointment.id },
-                  data: { calComUid: calRes.data.uid },
-                });
-                console.info(
-                  `[admin] Cita manual sincronizada con Cal.com. ID cita: ${newAppointment.id}, UID: ${calRes.data.uid}`,
-                );
-              } else {
-                console.error(
-                  `[admin] Error en Cal.com booking API o sin UID de booking:`,
-                  JSON.stringify(calRes),
-                );
-              }
+            if (calRes && calRes.status === "success" && calRes.data?.uid) {
+              // 4. Guardar el uid en nuestra DB para idempotencia
+              await prisma.appointment.update({
+                where: { id: newAppointment.id },
+                data: { calComUid: calRes.data.uid },
+              });
+              console.info(
+                `[admin] Cita manual sincronizada con Cal.com. ID cita: ${newAppointment.id}, UID: ${calRes.data.uid}`,
+              );
+            } else {
+              console.error(
+                `[admin] Error en Cal.com booking API o sin UID de booking:`,
+                JSON.stringify(calRes),
+              );
             }
           }
         } catch (calError) {

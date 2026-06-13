@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createCalComEventType, updateCalComEventType, deleteCalComEventType, getCalComEventTypes } from "@/lib/calcom";
+import { env } from "@/env";
 
 const ServiceSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio").max(100),
@@ -128,7 +129,7 @@ export async function createServiceAction(
     }
 
     // --- OVERBOOKING EVENT TYPE ---
-    const overbookingScheduleId = process.env.CALCOM_OVERBOOKING_SCHEDULE_ID ? Number(process.env.CALCOM_OVERBOOKING_SCHEDULE_ID) : undefined;
+    const overbookingScheduleId = env.CALCOM_OVERBOOKING_SCHEDULE_ID ? Number(env.CALCOM_OVERBOOKING_SCHEDULE_ID) : undefined;
     if (overbookingScheduleId) {
       if (calComOverbookingEventTypeId) {
         try {
@@ -293,7 +294,7 @@ export async function updateServiceAction(
     }
 
     // --- OVERBOOKING EVENT TYPE ---
-    const overbookingScheduleId = process.env.CALCOM_OVERBOOKING_SCHEDULE_ID ? Number(process.env.CALCOM_OVERBOOKING_SCHEDULE_ID) : undefined;
+    const overbookingScheduleId = env.CALCOM_OVERBOOKING_SCHEDULE_ID ? Number(env.CALCOM_OVERBOOKING_SCHEDULE_ID) : undefined;
     if (overbookingScheduleId) {
       if (calComOverbookingEventTypeId) {
         try {
