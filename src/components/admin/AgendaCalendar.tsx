@@ -57,14 +57,15 @@ const isHourAvailable = (date: Date, hour: number, availabilityRules: any[]) => 
   if (rules.length === 0) return false;
 
   const timeInMins = hour * 60;
-  const timeToMins = (timeStr: string) => {
+  const timeToMins = (timeStr: string, isEnd = false) => {
+    if (isEnd && timeStr === "00:00") return 24 * 60;
     const [h, m] = timeStr.split(":").map(Number);
     return (h ?? 0) * 60 + (m ?? 0);
   };
 
   return rules.some(r => {
     const startMins = timeToMins(r.startTime);
-    const endMins = timeToMins(r.endTime);
+    const endMins = timeToMins(r.endTime, true);
     return timeInMins >= startMins && timeInMins < endMins;
   });
 };
@@ -183,15 +184,24 @@ export default function AgendaCalendar({ initialAppointments, services, initialA
   // Dynamic hours calculation
   const dynamicHoursRange = useMemo(() => {
     let minH = 8;
-    let maxH = 20;
+    let maxH = 21; // Muestra por defecto hasta las 21:00 (las horas de la grilla llegarán hasta las 20:00 para cubrir el bloque 20-21)
+
+    let maxAvailabilityOrApptH = 0;
 
     availabilityRules.forEach(rule => {
       const startH = parseInt(rule.startTime.split(':')[0] || "8", 10);
-      let endH = parseInt(rule.endTime.split(':')[0] || "20", 10);
+      let endH = parseInt(rule.endTime.split(':')[0] || "21", 10);
       const endM = parseInt(rule.endTime.split(':')[1] || "0", 10);
-      if (endM > 0) endH += 1;
+      if (rule.endTime === "00:00") {
+        endH = 24;
+      } else if (endM > 0) {
+        endH += 1;
+      }
+      
       if (startH < minH) minH = startH;
-      if (endH > maxH) maxH = endH;
+      if (endH > maxAvailabilityOrApptH) {
+        maxAvailabilityOrApptH = endH;
+      }
     });
 
     appointments.forEach(appt => {
@@ -199,10 +209,19 @@ export default function AgendaCalendar({ initialAppointments, services, initialA
       const startH = startObj.getHours();
       const endH = startH + Math.ceil(appt.service.duration / 60);
       if (startH < minH) minH = startH;
-      if (endH > maxH) maxH = endH;
+      if (endH > maxAvailabilityOrApptH) {
+        maxAvailabilityOrApptH = endH;
+      }
     });
 
-    if (maxH < 20) maxH = 20;
+    // Añadir 2 horas de sobrecupo (buffer) si se detecta disponibilidad o citas, pero siempre al menos hasta las 21:00
+    if (maxAvailabilityOrApptH > 0) {
+      const neededMax = maxAvailabilityOrApptH + 2;
+      if (neededMax > maxH) {
+        maxH = neededMax;
+      }
+    }
+
     if (minH > 8) minH = 8;
 
     maxH = Math.min(24, maxH);

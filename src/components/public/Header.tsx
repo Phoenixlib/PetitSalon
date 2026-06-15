@@ -29,7 +29,7 @@ const ADMIN_NAV = [
   { href: "/admin/campanas", label: "Campañas" },
   { href: "/admin/configuracion", label: "Configuración" },
   {
-    href: "https://app.cal.com/availability",
+    href: "https://app.cal.com/availability/1515358",
     label: "Horarios Cal.com",
     external: true,
   },

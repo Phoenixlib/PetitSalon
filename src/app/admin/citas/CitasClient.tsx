@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import type { AppointmentWithRelations, AppointmentStatus } from "@/types";
 import { updateAppointmentStatusAction } from "./actions";
@@ -80,18 +80,7 @@ export default function CitasClient({
     setAppointments(initialAppointments);
   }, [initialAppointments]);
 
-  // Debounce search input
-  useEffect(() => {
-    if (search === currentSearch) return;
-
-    const timer = setTimeout(() => {
-      updateUrl({ q: search, page: 1 });
-    }, 400);
-
-    return () => clearTimeout(timer);
-  }, [search, currentSearch]);
-
-  const updateUrl = (params: {
+  const updateUrl = useCallback((params: {
     page?: number;
     q?: string;
     status?: string;
@@ -127,7 +116,18 @@ export default function CitasClient({
     startTransition(() => {
       router.push(`${pathname}?${newParams.toString()}`);
     });
-  };
+  }, [router, pathname]);
+
+  // Debounce search input
+  useEffect(() => {
+    if (search === currentSearch) return;
+
+    const timer = setTimeout(() => {
+      updateUrl({ q: search, page: 1 });
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [search, currentSearch, updateUrl]);
 
   const handleStatusChange = (id: string, newStatus: AppointmentStatus) => {
     startTransition(async () => {
@@ -138,12 +138,15 @@ export default function CitasClient({
             app.id === id ? { ...app, status: newStatus } : app,
           ),
         );
+      } else {
+        alert(result.errors?._form?.[0] || "Error al actualizar estado");
       }
     });
   };
 
   // Filtrar en cliente solo el estado para ocultar inmediatamente citas editadas
   const filteredAppointments = appointments.filter((app) => {
+    if (currentStatus === "ALL" && app.status === "CANCELLED") return false;
     if (currentStatus !== "ALL" && app.status !== currentStatus) return false;
     return true;
   });
@@ -339,10 +342,13 @@ export default function CitasClient({
                                 Confirmar
                               </button>
                               <button
-                                onClick={() =>
-                                  window.open("https://app.cal.com/bookings/upcoming", "_blank")
-                                }
-                                className="text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md transition-colors"
+                                onClick={() => {
+                                  if (window.confirm("¿Seguro que deseas cancelar esta cita?")) {
+                                    handleStatusChange(app.id, "CANCELLED");
+                                  }
+                                }}
+                                disabled={isPending}
+                                className="text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
                               >
                                 Cancelar
                               </button>
@@ -371,10 +377,13 @@ export default function CitasClient({
                                 ⟲ Revertir
                               </button>
                               <button
-                                onClick={() =>
-                                  window.open("https://app.cal.com/bookings/upcoming", "_blank")
-                                }
-                                className="text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md transition-colors"
+                                onClick={() => {
+                                  if (window.confirm("¿Seguro que deseas cancelar esta cita?")) {
+                                    handleStatusChange(app.id, "CANCELLED");
+                                  }
+                                }}
+                                disabled={isPending}
+                                className="text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
                               >
                                 Cancelar
                               </button>
@@ -498,10 +507,13 @@ export default function CitasClient({
                           Confirmar
                         </button>
                         <button
-                          onClick={() =>
-                            window.open("https://app.cal.com/bookings/upcoming", "_blank")
-                          }
-                          className="flex-1 text-sm font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 py-2.5 rounded-lg transition-colors"
+                          onClick={() => {
+                            if (window.confirm("¿Seguro que deseas cancelar esta cita?")) {
+                              handleStatusChange(app.id, "CANCELLED");
+                            }
+                          }}
+                          disabled={isPending}
+                          className="flex-1 text-sm font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 py-2.5 rounded-lg transition-colors disabled:opacity-50"
                         >
                           Cancelar
                         </button>
@@ -527,10 +539,13 @@ export default function CitasClient({
                           ⟲ Revertir
                         </button>
                         <button
-                          onClick={() =>
-                            window.open("https://app.cal.com/bookings/upcoming", "_blank")
-                          }
-                          className="flex-1 text-sm font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 py-2.5 rounded-lg transition-colors"
+                          onClick={() => {
+                            if (window.confirm("¿Seguro que deseas cancelar esta cita?")) {
+                              handleStatusChange(app.id, "CANCELLED");
+                            }
+                          }}
+                          disabled={isPending}
+                          className="flex-1 text-sm font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 py-2.5 rounded-lg transition-colors disabled:opacity-50"
                         >
                           Cancelar
                         </button>

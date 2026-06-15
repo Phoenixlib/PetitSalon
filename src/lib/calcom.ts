@@ -496,7 +496,8 @@ function formatInSantiago(date: Date) {
 }
 
 // --- Helpers Matemáticos para Sustracción de Disponibilidad ---
-function timeToMins(t: string): number {
+function timeToMins(t: string, isEnd = false): number {
+  if (isEnd && t === "00:00") return 24 * 60;
   const [h, m] = t.split(":").map(Number);
   return (h || 0) * 60 + (m || 0);
 }
@@ -516,7 +517,7 @@ function getBaseAvailabilityForDate(dateStr: string, availability: CalComAvailab
   const windows: {start: number, end: number}[] = [];
   for (const rule of availability) {
     if (rule.days.includes(dayOfWeek)) {
-      windows.push({ start: timeToMins(rule.startTime), end: timeToMins(rule.endTime) });
+      windows.push({ start: timeToMins(rule.startTime), end: timeToMins(rule.endTime, true) });
     }
   }
 
@@ -597,6 +598,11 @@ function intersectWindows(a: {start: number, end: number}[], b: {start: number, 
 
 async function updateCalComOverrides(scheduleId: string, overrides: CalComOverrideItem[]) {
   const patchUrl = `${env.CALCOM_API_URL ?? "https://api.cal.com/v2"}/schedules/${scheduleId}`;
+  const normalizedOverrides = overrides.map(o => ({
+    ...o,
+    startTime: o.startTime === "24:00" ? "00:00" : o.startTime,
+    endTime: o.endTime === "24:00" ? "00:00" : o.endTime,
+  }));
   const res = await fetch(patchUrl, {
     method: "PATCH",
     headers: {
@@ -604,7 +610,7 @@ async function updateCalComOverrides(scheduleId: string, overrides: CalComOverri
       "Content-Type": "application/json",
       "cal-api-version": "2024-06-11",
     },
-    body: JSON.stringify({ overrides }),
+    body: JSON.stringify({ overrides: normalizedOverrides }),
   });
   if (!res.ok) {
     const errText = await res.text();
@@ -651,13 +657,13 @@ export async function createCalComScheduleOverride(
       if (targetDateOverrides.length === 1 && firstOverride && firstOverride.startTime === "00:00" && firstOverride.endTime === "00:00") {
         currentWindows = [];
       } else {
-        currentWindows = targetDateOverrides.map(o => ({ start: timeToMins(o.startTime), end: timeToMins(o.endTime) }));
+        currentWindows = targetDateOverrides.map(o => ({ start: timeToMins(o.startTime), end: timeToMins(o.endTime, true) }));
       }
     } else {
       currentWindows = [...baseAvail];
     }
 
-    const newWindows = subtractBlock(currentWindows, timeToMins(startSantiago.time), timeToMins(endSantiago.time));
+    const newWindows = subtractBlock(currentWindows, timeToMins(startSantiago.time), timeToMins(endSantiago.time, true));
 
     let newDateOverrides: CalComOverrideItem[] = [];
     if (newWindows.length === 0) {
@@ -717,10 +723,10 @@ export async function deleteCalComScheduleOverride(
 
     const firstOverride = targetDateOverrides[0];
     if (!(targetDateOverrides.length === 1 && firstOverride && firstOverride.startTime === "00:00" && firstOverride.endTime === "00:00")) {
-      currentWindows = targetDateOverrides.map(o => ({ start: timeToMins(o.startTime), end: timeToMins(o.endTime) }));
+      currentWindows = targetDateOverrides.map(o => ({ start: timeToMins(o.startTime), end: timeToMins(o.endTime, true) }));
     }
 
-    const newWindowsAdded = addBlock(currentWindows, timeToMins(startSantiago.time), timeToMins(endSantiago.time));
+    const newWindowsAdded = addBlock(currentWindows, timeToMins(startSantiago.time), timeToMins(endSantiago.time, true));
     const newWindows = intersectWindows(newWindowsAdded, baseAvail);
 
     let newDateOverrides: CalComOverrideItem[] = [];
@@ -759,6 +765,13 @@ function parseDateTimeInSantiago(dateStr: string, timeStr: string): Date {
     offset = offsetPart.replace("GMT", "");
   }
   if (offset === "") offset = "+00:00";
+  
+  if (timeStr === "24:00") {
+    const nextDay = new Date(`${dateStr}T12:00:00Z`);
+    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+    const nextDayStr = nextDay.toISOString().split('T')[0];
+    return new Date(`${nextDayStr}T00:00:00${offset}`);
+  }
   
   return new Date(`${dateStr}T${timeStr}:00${offset}`);
 }

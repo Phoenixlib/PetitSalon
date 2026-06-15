@@ -10,10 +10,13 @@ interface Props {
   onSuccess: () => void;
 }
 
-const GENERATED_TIMES = Array.from({ length: 37 }, (_, i) => {
-  const hour = Math.floor(i / 3) + 8; // Start at 08:00
+const GENERATED_TIMES = Array.from({ length: 73 }, (_, i) => {
+  const hour = Math.floor(i / 3);
   const minute = (i % 3) * 20;
-  if (hour > 20 || (hour === 20 && minute > 0)) return null;
+  if (hour === 24) {
+    if (minute > 0) return null;
+    return "24:00";
+  }
   return `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
 }).filter(Boolean) as string[];
 
@@ -107,8 +110,18 @@ export default function BloqueoHorasModal({
         setErrorMsg("Por favor, selecciona una hora de inicio y término.");
         return;
       }
-      startAt = new Date(`${selectedDate}T${selectedTime}:00`);
-      endAt = new Date(`${selectedDate}T${endTime}:00`);
+      
+      if (selectedTime === "24:00") {
+        startAt = new Date(`${selectedDate}T23:59:59`);
+      } else {
+        startAt = new Date(`${selectedDate}T${selectedTime}:00`);
+      }
+
+      if (endTime === "24:00") {
+        endAt = new Date(`${selectedDate}T23:59:59`);
+      } else {
+        endAt = new Date(`${selectedDate}T${endTime}:00`);
+      }
 
       if (endAt <= startAt) {
         setErrorMsg("La hora de término debe ser posterior a la hora de inicio.");
@@ -237,7 +250,7 @@ export default function BloqueoHorasModal({
                     disabled={isFullDay}
                     className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-[var(--ps-text)] focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] transition-colors appearance-none cursor-pointer disabled:bg-gray-50"
                   >
-                    {GENERATED_TIMES.map((time) => (
+                    {GENERATED_TIMES.filter(t => t !== "24:00").map((time) => (
                       <option key={time} value={time}>
                         {time} hrs
                       </option>

@@ -71,7 +71,7 @@ export default function AdminSidebar({ userName, pendingReviewsCount = 0 }: Admi
       badge: 0,
     },
     {
-      href: "https://app.cal.com/availability",
+      href: "https://app.cal.com/availability/1515358",
       label: "Horarios Cal.com",
       icon: Clock,
       exact: false,

@@ -178,7 +178,8 @@ export default function NuevaCitaModal({
       if (rules.length === 0) {
         isOutsideAvailability = true; // Closed day
       } else {
-        const timeToMins = (timeStr: string) => {
+        const timeToMins = (timeStr: string, isEnd = false) => {
+          if (isEnd && timeStr === "00:00") return 24 * 60;
           const [h, m] = timeStr.split(":").map(Number);
           return (h ?? 0) * 60 + (m ?? 0);
         };
@@ -187,7 +188,7 @@ export default function NuevaCitaModal({
 
         const fits = rules.some(r => {
           const ruleStartMins = timeToMins(r.startTime);
-          const ruleEndMins = timeToMins(r.endTime);
+          const ruleEndMins = timeToMins(r.endTime, true);
           return startMins >= ruleStartMins && endMins <= ruleEndMins;
         });
         isOutsideAvailability = !fits;
