@@ -223,7 +223,7 @@ export default function NuevaCitaModal({
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto p-6 space-y-4">
+        <form action={formAction} className="overflow-y-auto p-6 space-y-4 flex-1">
           {/* Step 1: Owner Search & Select */}
           <div className="space-y-4">
             {!selectedOwner ? (
@@ -268,6 +268,11 @@ export default function NuevaCitaModal({
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                      }
+                    }}
                     placeholder="Busca por nombre del dueño o mascota..."
                     className="w-full px-4 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-1 transition-colors"
                     style={{ borderColor: "var(--border)", color: "var(--ps-text)", outlineColor: "var(--primary)" }}
@@ -351,8 +356,8 @@ export default function NuevaCitaModal({
             )}
           </div>
 
-          {/* Form for creation */}
-          <form action={formAction} className="space-y-4">
+          {/* Form fields container */}
+          <div className="space-y-4">
             {/* Hidden Input for Dog ID si no estamos creando */}
             {!isCreatingOwner && <input type="hidden" name="dogId" value={selectedDogId} />}
 
@@ -527,8 +532,8 @@ export default function NuevaCitaModal({
                 {pending ? "Guardando..." : "Guardar Reserva"}
               </button>
             </div>
-          </form>
-        </div>
+          </div>
+        </form>
       </motion.div>
     </div>
   );
