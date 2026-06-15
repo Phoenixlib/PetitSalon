@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import CitasClient from "./CitasClient";
 import type { AppointmentWithRelations, AppointmentStatus } from "@/types";
-import Link from "next/link";
+import { getCalComScheduleAvailability } from "@/lib/calcom";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Citas — Petit Salón Admin" };
@@ -73,35 +73,29 @@ export default async function CitasPage(props: {
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
+  const services = await prisma.service.findMany({
+    where: { isActive: true },
+    orderBy: { order: "asc" },
+    select: {
+      id: true,
+      name: true,
+      price: true,
+      duration: true,
+    },
+  });
+
+  const availabilityRules = await getCalComScheduleAvailability();
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1
-            className="text-2xl lg:text-3xl font-bold tracking-tight"
-            style={{ color: "var(--ps-text)" }}
-          >
-            Citas
-          </h1>
-          <p className="text-sm mt-1" style={{ color: "var(--ps-text-mid)" }}>
-            Historial y gestión de todas las citas.
-          </p>
-        </div>
-        <Link
-          href="/admin/citas/nueva"
-          className="bg-[var(--primary)] text-white px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-all shadow-md text-center sm:px-4 sm:py-2 sm:rounded-lg sm:font-medium sm:shadow-sm"
-        >
-          + Nueva Cita
-        </Link>
-      </div>
-      <CitasClient
-        initialAppointments={appointments}
-        currentPage={page}
-        totalPages={totalPages}
-        totalCount={totalCount}
-        currentSearch={q}
-        currentStatus={status}
-      />
-    </div>
+    <CitasClient
+      initialAppointments={appointments}
+      currentPage={page}
+      totalPages={totalPages}
+      totalCount={totalCount}
+      currentSearch={q}
+      currentStatus={status}
+      services={services}
+      availabilityRules={availabilityRules}
+    />
   );
 }

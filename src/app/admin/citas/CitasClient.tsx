@@ -6,8 +6,18 @@ import type { AppointmentWithRelations, AppointmentStatus } from "@/types";
 import { updateAppointmentStatusAction } from "./actions";
 import AppointmentDetailModal from "@/components/admin/AppointmentDetailModal";
 import { AnimatePresence } from "framer-motion";
+import dynamic from "next/dynamic";
+
+const NuevaCitaModal = dynamic(() => import("@/components/admin/NuevaCitaModal"), { ssr: false });
 
 const ITEMS_PER_PAGE = 20;
+
+interface Service {
+  id: string;
+  name: string;
+  price: number;
+  duration: number;
+}
 
 interface Props {
   initialAppointments: AppointmentWithRelations[];
@@ -16,6 +26,8 @@ interface Props {
   totalCount: number;
   currentSearch: string;
   currentStatus: "ALL" | AppointmentStatus;
+  services: Service[];
+  availabilityRules: any[];
 }
 
 const TABS: { id: "ALL" | AppointmentStatus; label: string }[] = [
@@ -47,12 +59,15 @@ export default function CitasClient({
   totalCount,
   currentSearch,
   currentStatus,
+  services,
+  availabilityRules,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const [appointments, setAppointments] = useState(initialAppointments);
   const [search, setSearch] = useState(currentSearch);
   const [isPending, startTransition] = useTransition();
+  const [showNewCitaModal, setShowNewCitaModal] = useState(false);
 
   const [selectedApp, setSelectedApp] =
     useState<AppointmentWithRelations | null>(null);
@@ -139,6 +154,26 @@ export default function CitasClient({
       {isPending && (
         <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 via-pink-500 to-purple-600 animate-pulse z-50" />
       )}
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1
+            className="text-2xl lg:text-3xl font-bold tracking-tight"
+            style={{ color: "var(--ps-text)" }}
+          >
+            Citas
+          </h1>
+          <p className="text-sm mt-1" style={{ color: "var(--ps-text-mid)" }}>
+            Historial y gestión de todas las citas.
+          </p>
+        </div>
+        <button
+          onClick={() => setShowNewCitaModal(true)}
+          className="bg-[var(--primary)] text-white px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-all shadow-md text-center sm:px-4 sm:py-2 sm:rounded-lg sm:font-medium sm:shadow-sm cursor-pointer"
+        >
+          + Nueva Cita
+        </button>
+      </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         {/* Tabs de estado */}
@@ -634,6 +669,20 @@ export default function CitasClient({
           />
         )}
       </AnimatePresence>
+
+      {showNewCitaModal && (
+        <NuevaCitaModal
+          isOpen={showNewCitaModal}
+          onClose={() => setShowNewCitaModal(false)}
+          initialDateStr={null}
+          services={services}
+          onSuccess={() => {
+            setShowNewCitaModal(false);
+            router.refresh();
+          }}
+          availabilityRules={availabilityRules}
+        />
+      )}
     </div>
   );
 }
