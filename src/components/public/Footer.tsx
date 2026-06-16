@@ -114,7 +114,7 @@ export default function Footer({ whatsapp }: { whatsapp: string }) {
         {/* Bottom */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-xs" style={{ color: "oklch(1 0 0 / 0.35)" }}>
-            <p>© {year} Petit Salón. Todos los derechos reservados. Desarrolado por FinixDev</p>
+            <p>© {year} Petit Salón. Todos los derechos reservados. Desarrollado por FinixDev</p>
             <span className="hidden sm:inline">•</span>
             <Link href="/politicas" className="hover:text-white transition-colors">
               Políticas de Servicio
