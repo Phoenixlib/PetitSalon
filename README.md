@@ -1,105 +1,157 @@
 # 🐾 Petitsalon — Gestión Integral de Peluquería Canina
 
-Bienvenido al repositorio de **Petitsalon**, una plataforma moderna diseñada para la gestión eficiente de una peluquería canina, combinando una landing page atractiva para clientes con un potente panel administrativo para la gestión del negocio.
+Bienvenido al repositorio de **Petitsalon**, una plataforma moderna diseñada para la gestión eficiente de una peluquería canina. El sistema combina una landing page pública atractiva y dinámica para clientes, junto con un potente panel administrativo privado para la dueña del negocio.
 
 ---
 
-## 🚀 Vision General
+## 🚀 Visión General del Sistema
 
-Petitsalon es una aplicación web de alto rendimiento construida con las últimas tecnologías web. El sistema se divide en dos áreas principales:
+La plataforma está diseñada con una arquitectura de dos caras:
 
-1.  **Landing Pública:** Una vitrina elegante que muestra servicios, galería de trabajos (antes/después), testimonios y facilita el contacto directo vía WhatsApp y reserva de citas.
-2.  **Panel de Administración:** Una herramienta privada para la dueña del negocio donde gestiona la agenda (FullCalendar), fichas clínicas de perros, base de datos de clientes y catálogo de servicios.
+1. **Landing Pública (Sin Autenticación):** Vitrina elegante que muestra servicios, galería de trabajos, reseñas, y facilita el agendamiento y contacto directo. Los clientes no necesitan crear cuenta.
+2. **Panel de Administración (Privado):** Herramienta exclusiva para la administración del negocio. Permite gestionar citas (vía FullCalendar), llevar el historial clínico y estético de las mascotas, administrar clientes, editar servicios, enviar campañas de email, moderar reseñas y modificar el contenido del sitio web.
 
 ---
 
 ## 🛠️ Stack Tecnológico
 
+El proyecto está construido priorizando rendimiento, developer experience y costo cero de infraestructura ($0/mes) mediante el uso estratégico de plataformas serverless.
+
 | Capa | Tecnología |
 | :--- | :--- |
-| **Framework** | [Next.js 15](https://nextjs.org/) (App Router) |
-| **Lenguaje** | [TypeScript](https://www.typescriptlang.org/) |
-| **Estilos** | [Tailwind CSS 4](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/) |
-| **Animaciones** | [Framer Motion](https://www.framer.com/motion/) |
-| **Base de Datos** | [Neon](https://neon.tech/) (PostgreSQL Serverless) |
-| **ORM** | [Prisma](https://www.prisma.io/) |
-| **Autenticación** | [NextAuth.js v5](https://authjs.dev/) (Auth.js) |
-| **Imágenes** | [Cloudinary](https://cloudinary.com/) |
-| **Calendario** | [FullCalendar](https://fullcalendar.io/) & [Cal.com](https://cal.com/) |
+| **Framework** | Next.js 16 (App Router) + TypeScript |
+| **Hosting** | Vercel Hobby |
+| **Base de Datos** | Neon (PostgreSQL Serverless) con `@neondatabase/serverless` |
+| **ORM** | Prisma 6 |
+| **Autenticación** | NextAuth.js v5 (Auth.js) - Credentials |
+| **Estilos & UI** | Tailwind CSS 4, shadcn/ui, Framer Motion |
+| **Imágenes** | Cloudinary (Subida directa desde el browser) |
+| **Reservas & Calendario** | Cal.com (Embed + Webhooks) y FullCalendar |
+| **Formularios & Validaciones** | react-hook-form, Zod |
+| **Emailing** | Nodemailer (Campañas) y TipTap (Editor WYSIWYG) |
 
 ---
 
-## ✨ Características Principales
+## 🗺️ Arquitectura de Rutas
 
-### 🌐 Cara Pública
-- **Diseño Mobile-First:** Optimizado para smartphones, donde ocurre la mayoría de las interacciones.
-- **Galería Dinámica:** Visualización de trabajos realizados con efectos suaves de transición.
-- **Reserva Inteligente:** Integración con Cal.com para agendamiento automatizado.
-- **SEO Optimizado:** Estructura semántica y metadatos para mejor visibilidad en buscadores.
+### Cara Pública `(public)`
+- `/` - Landing page: Hero, servicios destacados, galería, reseñas, FAQ.
+- `/servicios` - Detalle completo de precios y servicios.
+- `/contacto` - Formulario de contacto y link directo a WhatsApp.
+- `/reservar` - Embed de reservas con Cal.com y datos bancarios para abono.
+- `/resena/[token]` - Formulario de evaluación post-atención (acceso único por token).
 
-### 🔐 Panel Administrativo (Solo Dueña)
-- **Dashboard de Métricas:** Resumen rápido de citas del día y estados.
-- **Agenda Interactiva:** Gestión visual de citas con arrastrar y soltar (Drag & Drop).
-- **Fichas Caninas:** Historial detallado por mascota (alergias, temperamento, fotos de visitas).
-- **Gestión de Clientes:** Base de datos centralizada de dueños con contacto rápido.
-- **Control de Servicios:** CRUD completo para actualizar precios y descripciones en tiempo real.
+### Panel de Administración `/admin`
+- `/admin` - Dashboard principal y métricas.
+- `/admin/agenda` - Vista de calendario interactiva (FullCalendar).
+- `/admin/citas` - Listado y gestión de estados de citas.
+- `/admin/perros` - Fichas caninas (historial, edad, notas de comportamiento).
+- `/admin/clientes` - Base de datos de dueños.
+- `/admin/servicios` - CRUD de servicios y categorías (drag & drop).
+- `/admin/galeria` - Gestión de fotos.
+- `/admin/resenas` - Tablero Kanban para moderar reseñas (Pendiente → Aprobada/Rechazada).
+- `/admin/campanas` - Creación y envío masivo de correos (editor TipTap).
+- `/admin/contenido` - Gestión dinámica del sitio web (Contacto, FAQ, Mapa, Cuentas Bancarias).
 
 ---
 
-## 📦 Instalación y Configuración
+## ⚙️ Variables de Entorno
 
-Para ejecutar este proyecto localmente, sigue estos pasos:
+Para ejecutar este proyecto, copia el archivo `.env.example` a `.env` o `.env.local` y configura las siguientes variables obligatorias:
 
-1.  **Clonar el repositorio:**
-    ```bash
-    git clone https://github.com/tu-usuario/petitsalon.git
-    cd petitsalon
-    ```
+```env
+# Base de datos (Neon PostgreSQL)
+DATABASE_URL="postgres://user:pass@ep-host.region.aws.neon.tech/neondb?sslmode=require&pgbouncer=true&connect_timeout=10"
+DIRECT_URL="postgres://user:pass@ep-host.region.aws.neon.tech/neondb?sslmode=require"
 
-2.  **Instalar dependencias:**
-    ```bash
-    npm install
-    ```
+# Autenticación
+NEXTAUTH_SECRET="tu_secreto_super_seguro"
 
-3.  **Configurar variables de entorno:**
-    Crea un archivo `.env.local` basado en `.env.example` (si existe) o agrega las siguientes claves:
-    - `DATABASE_URL`: Conexión a Neon PostgreSQL.
-    - `NEXTAUTH_SECRET`: Secreto para la autenticación.
-    - `CLOUDINARY_URL`: Configuración de Cloudinary.
-    - `NEXT_PUBLIC_CALCOM_LINK`: Tu link de Cal.com.
+# Cal.com
+CALCOM_WEBHOOK_SECRET="secreto_hmac_webhook"
+NEXT_PUBLIC_CALCOM_LINK="usuario/tipo-evento"
 
-4.  **Sincronizar la base de datos:**
-    ```bash
-    npx prisma generate
-    npx prisma db push
-    ```
+# Cloudinary
+CLOUDINARY_CLOUD_NAME="tu_cloud_name"
+CLOUDINARY_API_KEY="tu_api_key"
+CLOUDINARY_API_SECRET="tu_api_secret"
 
-5.  **Iniciar el servidor de desarrollo:**
-    ```bash
-    npm run dev
-    ```
+# Nodemailer (Campañas)
+EMAIL_HOST="smtp.tuhost.com"
+EMAIL_PORT="465"
+EMAIL_USER="tu_correo"
+EMAIL_PASS="tu_contraseña"
+```
+
+---
+
+## 📦 Instalación y Desarrollo Local
+
+1. **Clonar el repositorio:**
+   ```bash
+   git clone <URL_DEL_REPOSITORIO>
+   cd petitsalon
+   ```
+
+2. **Instalar dependencias:**
+   ```bash
+   npm install
+   ```
+
+3. **Configurar Prisma y Base de Datos:**
+   Asegúrate de que tus credenciales de base de datos estén listas en `.env`.
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   # Opcional: npx prisma db seed (si cuentas con un archivo de seeding)
+   ```
+
+4. **Iniciar el servidor:**
+   ```bash
+   npm run dev
+   ```
+
+El proyecto estará corriendo en `http://localhost:3000`.
+
+---
+
+## 🛑 Reglas Innegociables y Buenas Prácticas
+
+Todo el código que se integre a este proyecto debe regirse por las siguientes directrices (Documentadas a fondo en `SKILL.md`):
+
+1. **Production-First:** Cero errores TypeScript o ESLint (`npm run build` debe pasar en verde).
+2. **Mobile-First Estricto:** La UI del panel de administración está pensada primero para visualización en celular. Se prefieren *Cards* en lugar de tablas horizontales.
+3. **Variables de Entorno seguras:** Utilizar siempre validación con `Zod` (ubicado en `src/env.ts`). Nunca leer `process.env` directamente en los componentes.
+4. **Server Actions vs API Routes:** Utilizar Server Actions (`"use server"`) y `useActionState` para mutaciones desde el panel administrativo. Los Route Handlers (`/api/...`) se reservan para webhooks y endpoints públicos.
+5. **No Hydration Mismatch:** Manejar correctamente fechas y zonas horarias (`America/Santiago`) desde el cliente.
+6. **Manejo de Imágenes:** Todas las imágenes se redimensionan en el cliente vía Canvas (si superan 1600px) y se suben *directamente* a Cloudinary mediante URL firmada. El servidor Next.js **nunca** debe procesar o almacenar binarios.
+7. **Type-Safety End-to-End:** Prohibido usar `any`.
+8. **Tokens CSS:** Los estilos deben utilizar las variables definidas (`var(--primary)`, `var(--secondary)`, etc.). No forzar clases de colores (e.g. `bg-blue-500`) en la UI.
 
 ---
 
 ## 🎨 Identidad Visual
 
-El proyecto utiliza una paleta de colores cuidadosamente seleccionada para transmitir calidez y profesionalismo:
-- **Terracota Cálido:** Para acentos y botones principales.
-- **Verde Salvia:** Para elementos de naturaleza y bienestar.
-- **Blanco Roto:** Como base para una lectura descansada.
-- **Tipografías:** *Playfair Display* (Elegancia en títulos) e *Inter* (Claridad en cuerpo).
+El diseño utiliza una identidad vibrante y moderna basada en tokens CSS:
+
+- **Primario (`--primary`):** Azul Cian Vibrante (`#42c2ed`)
+- **Secundario (`--secondary`):** Magenta (`#e91e63`)
+- **Acento (`--accent`):** Amarillo Intenso (`#faa61a`)
+- **Pasteles de fondo:** Tonos suaves (Cyan, Pink, Peach, Yellow) para tarjetas y fondos ligeros.
+- **Tipografías:** *Playfair Display* (Títulos) e *Inter* (Cuerpo).
 
 ---
 
-## 📈 Roadmap
+## 🧪 Pruebas (Testing)
 
-- [x] Sprint 1: Fundación y despliegue en Vercel.
-- [x] Sprint 2: Autenticación y Panel Admin base.
-- [x] Sprint 3: Catálogo de servicios dinámico.
-- [ ] Sprint 4: BookingWizard personalizado.
-- [ ] Sprint 5: Gestión avanzada de fichas y Cloudinary.
-- [ ] Sprint 6: Integración completa de Agenda.
+El sistema soporta distintos flujos de testing mediante **Playwright**:
+- E2E Testing (Page Object Model).
+- API Testing.
+- Visual Regression Testing.
+- Accessibility Auditing (WCAG).
+
+*(Ver carpeta `.agents/skills` para mayor documentación sobre los comandos)*
 
 ---
 
-Desarrollado con ❤️ para los consentidos del hogar.
+Desarrollado para asegurar el bienestar, organización y cariño hacia las mascotas. 🐶✂️
