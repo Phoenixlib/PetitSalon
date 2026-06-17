@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { parseIncomingDate } from "@/lib/date-utils";
 import { sendReviewRequestEmail } from "@/lib/email";
 import { env } from "@/env";
 import { createCalComBooking, cancelCalComBooking, rescheduleCalComBooking } from "@/lib/calcom";
@@ -35,7 +36,7 @@ export async function updateAppointmentStatusAction(
     if (!parsed.success) {
       return { errors: { _form: ["Estado inválido"] } };
     }
-    
+
     // Obtener la cita actual para verificar calComUid
     const appointment = await prisma.appointment.findUnique({
       where: { id }
@@ -200,7 +201,7 @@ export async function toggleWhatsappSentAction(
 const ManualAppointmentSchema = z.object({
   dogId: z.string().min(1, "Selecciona una mascota"),
   serviceId: z.string().min(1, "Selecciona un servicio"),
-  date: z.coerce.date(),
+  date: z.preprocess((val) => parseIncomingDate(val), z.date()),
   status: z.enum(["PENDING", "CONFIRMED", "DONE", "CANCELLED"]),
   notes: z.string().max(1000).optional().nullable(),
   newOwnerName: z.string().optional(),
@@ -254,7 +255,7 @@ export async function createManualAppointmentAction(
 
     if (dogId === "new") {
       if (!parsed.data.newOwnerName || !parsed.data.newOwnerPhone || !parsed.data.newDogName || !parsed.data.newDogBreed) {
-         return { errors: { _form: ["Faltan datos del nuevo cliente o mascota."] } };
+        return { errors: { _form: ["Faltan datos del nuevo cliente o mascota."] } };
       }
       const newOwner = await prisma.owner.create({
         data: {
@@ -262,10 +263,10 @@ export async function createManualAppointmentAction(
           phone: parsed.data.newOwnerPhone,
           email: parsed.data.newOwnerEmail || null,
           dogs: {
-             create: {
-                name: parsed.data.newDogName,
-                breed: parsed.data.newDogBreed,
-             }
+            create: {
+              name: parsed.data.newDogName,
+              breed: parsed.data.newDogBreed,
+            }
           }
         },
         include: { dogs: true }
@@ -277,9 +278,9 @@ export async function createManualAppointmentAction(
     } else {
       const dog = await prisma.dog.findUnique({ where: { id: dogId }, include: { owner: true } });
       if (dog) {
-         ownerPhone = dog.owner.phone;
-         ownerName = dog.owner.name;
-         dogName = dog.name;
+        ownerPhone = dog.owner.phone;
+        ownerName = dog.owner.name;
+        dogName = dog.name;
       }
     }
 
@@ -331,38 +332,38 @@ export async function createManualAppointmentAction(
               dog_notes: parsed.data.notes || dog?.notes || "",
             };
 
-              // Formatear el teléfono de manera segura para Cal.com (formato chileno)
-              const rawPhone = dog?.owner.phone ?? "";
-              let formattedPhone = "";
-              if (rawPhone) {
-                const clean = rawPhone.replace(/[^\d]/g, ""); // Extraer solo dígitos
-                if (clean.length === 8) {
-                  // Ej: 12345678 -> +56912345678
-                  formattedPhone = `+569${clean}`;
-                } else if (clean.length === 9 && clean.startsWith("9")) {
-                  // Ej: 912345678 -> +56912345678
-                  formattedPhone = `+56${clean}`;
-                } else if (clean.length === 11 && clean.startsWith("56")) {
-                  // Ej: 56912345678 -> +56912345678
-                  formattedPhone = `+${clean}`;
-                } else {
-                  // Fallback: agregar '+' si no lo tiene
-                  formattedPhone = rawPhone.startsWith("+") ? rawPhone : `+${rawPhone}`;
-                }
-                
-                // Actualizar el número en la base de datos si logramos corregirlo
-                if (dog?.owner && formattedPhone !== rawPhone && formattedPhone.startsWith("+569") && formattedPhone.length === 12) {
-                  try {
-                    await prisma.owner.updateMany({
-                      where: { email: dog.owner.email, name: dog.owner.name },
-                      data: { phone: formattedPhone },
-                    });
-                    console.info(`[admin] Teléfono de cliente corregido en DB de ${rawPhone} a ${formattedPhone}`);
-                  } catch (e) {
-                    console.error("[admin] No se pudo actualizar el teléfono corregido en DB:", e);
-                  }
+            // Formatear el teléfono de manera segura para Cal.com (formato chileno)
+            const rawPhone = dog?.owner.phone ?? "";
+            let formattedPhone = "";
+            if (rawPhone) {
+              const clean = rawPhone.replace(/[^\d]/g, ""); // Extraer solo dígitos
+              if (clean.length === 8) {
+                // Ej: 12345678 -> +56912345678
+                formattedPhone = `+569${clean}`;
+              } else if (clean.length === 9 && clean.startsWith("9")) {
+                // Ej: 912345678 -> +56912345678
+                formattedPhone = `+56${clean}`;
+              } else if (clean.length === 11 && clean.startsWith("56")) {
+                // Ej: 56912345678 -> +56912345678
+                formattedPhone = `+${clean}`;
+              } else {
+                // Fallback: agregar '+' si no lo tiene
+                formattedPhone = rawPhone.startsWith("+") ? rawPhone : `+${rawPhone}`;
+              }
+
+              // Actualizar el número en la base de datos si logramos corregirlo
+              if (dog?.owner && formattedPhone !== rawPhone && formattedPhone.startsWith("+569") && formattedPhone.length === 12) {
+                try {
+                  await prisma.owner.updateMany({
+                    where: { email: dog.owner.email, name: dog.owner.name },
+                    data: { phone: formattedPhone },
+                  });
+                  console.info(`[admin] Teléfono de cliente corregido en DB de ${rawPhone} a ${formattedPhone}`);
+                } catch (e) {
+                  console.error("[admin] No se pudo actualizar el teléfono corregido en DB:", e);
                 }
               }
+            }
 
             let calRes = null;
             const useFallbackDirectly = allowOverbooking && !!service.calComOverbookingEventTypeId;
@@ -509,7 +510,7 @@ export async function rescheduleAppointmentAction(
       return { errors: { _form: ["Cita no encontrada."] } };
     }
 
-    const newDate = new Date(newDateIso);
+    const newDate = parseIncomingDate(newDateIso);
     if (isNaN(newDate.getTime())) {
       return { errors: { _form: ["Fecha inválida."] } };
     }
@@ -524,11 +525,11 @@ export async function rescheduleAppointmentAction(
       } catch (calError: any) {
         console.error(`[admin] Error reagendando cita ${id} en Cal.com:`, calError);
         let errorMsg = calError instanceof Error ? calError.message : "Error de conexión con Cal.com al reagendar.";
-        
+
         if (errorMsg === "User either already has booking at this time or is not available") {
           errorMsg = "Horario no disponible. Ya existe una reserva o el horario está bloqueado en Cal.com.";
         }
-        
+
         return { errors: { _form: [errorMsg] } };
       }
     }

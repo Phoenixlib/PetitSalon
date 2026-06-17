@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { parseIncomingDate } from "@/lib/date-utils";
 import {
   createCalComScheduleOverride,
   deleteCalComScheduleOverride,
@@ -22,8 +23,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Missing start or end parameters" }, { status: 400 });
     }
 
-    const startDate = new Date(startStr);
-    const endDate = new Date(endStr);
+    const startDate = parseIncomingDate(startStr);
+    const endDate = parseIncomingDate(endStr);
 
     const localBlocks = await prisma.blockedSlot.findMany({
       where: {
@@ -85,8 +86,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing startAt or endAt parameters" }, { status: 400 });
     }
 
-    const startDate = new Date(startAt);
-    const endDate = new Date(endAt);
+    const startDate = parseIncomingDate(startAt);
+    const endDate = parseIncomingDate(endAt);
 
     let calComOverrideId: number | null = null;
     let warning: string | null = null;
@@ -137,7 +138,7 @@ export async function DELETE(request: Request) {
       const parts = id.split("_");
       let warning: string | null = null;
       const scheduleIdStr = process.env.CALCOM_SCHEDULE_ID;
-      
+
       if (parts.length === 3 && scheduleIdStr) {
         const startAt = new Date(parseInt(parts[1]!, 10));
         const endAt = new Date(parseInt(parts[2]!, 10));

@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { parseIncomingDate } from "@/lib/date-utils";
 
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -17,8 +18,8 @@ export async function GET(request: NextRequest) {
 
   if (from || to) {
     where.date = {};
-    if (from) (where.date as Record<string, unknown>).gte = new Date(from);
-    if (to) (where.date as Record<string, unknown>).lte = new Date(to);
+    if (from) (where.date as Record<string, unknown>).gte = parseIncomingDate(from);
+    if (to) (where.date as Record<string, unknown>).lte = parseIncomingDate(to);
   }
 
   if (

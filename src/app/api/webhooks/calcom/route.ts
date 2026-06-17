@@ -1,13 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import crypto from "crypto";
+import { parseIncomingDate } from "@/lib/date-utils";
 
 export async function POST(req: Request) {
   try {
     const body = await req.text();
     const headersList = await headers();
     const signature = headersList.get("x-cal-signature-256");
-    
+
     const webhookSecret = process.env.CALCOM_WEBHOOK_SECRET;
 
     const payload = JSON.parse(body);
@@ -17,29 +18,29 @@ export async function POST(req: Request) {
       headers: Object.fromEntries(headersList.entries()),
       bodyPreview: body.substring(0, 200),
     });
-    
+
     if (webhookSecret) {
       const expectedSig = crypto
         .createHmac("sha256", webhookSecret.trim())
         .update(body)
         .digest("hex");
-      
+
       if (signature !== expectedSig) {
         console.error("[Cal.com Webhook] Signature mismatch! Check CALCOM_WEBHOOK_SECRET");
         return new Response("Invalid signature", { status: 401 });
       }
     }
-    
+
     if (payload.triggerEvent === "BOOKING_CREATED" || payload.triggerEvent === "BOOKING_RESCHEDULED") {
       const booking = payload.payload;
-      
+
       if (payload.triggerEvent === "BOOKING_RESCHEDULED") {
-        const newDate = new Date(booking.startTime);
-        
+        const newDate = parseIncomingDate(booking.startTime);
+
         const existingAppt = await prisma.appointment.findUnique({
           where: { calComUid: String(booking.uid) }
         });
-        
+
         if (existingAppt && Math.abs(existingAppt.date.getTime() - newDate.getTime()) < 60000) {
           console.log("[Cal.com Webhook] Reschedule already reflected locally, skipping DB update");
           return new Response("Already synced", { status: 200 });
@@ -47,7 +48,7 @@ export async function POST(req: Request) {
       }
 
       const attendee = booking.attendees?.[0];
-      
+
       if (!attendee) {
         return new Response("Missing attendee", { status: 400 });
       }
@@ -70,7 +71,7 @@ export async function POST(req: Request) {
       const ownerPhone = rawPhone ? cleanPhone(String(rawPhone)) : "+56900000000";
       const ownerName = attendee.name || "Dueño sin nombre";
 
-      let owner = attendee.email 
+      let owner = attendee.email
         ? await prisma.owner.findUnique({ where: { email: attendee.email } })
         : null;
 
@@ -172,7 +173,7 @@ export async function POST(req: Request) {
           await prisma.appointment.update({
             where: { id: existingAppt.id },
             data: {
-              date: new Date(booking.startTime),
+              date: parseIncomingDate(booking.startTime),
               notes: booking.responses?.notes?.value || booking.responses?.dog_notes?.value || existingAppt.notes,
               serviceId,
               dogId: dog.id
@@ -182,7 +183,7 @@ export async function POST(req: Request) {
           await prisma.appointment.create({
             data: {
               calComUid: String(booking.uid),
-              date: new Date(booking.startTime),
+              date: parseIncomingDate(booking.startTime),
               status: "CONFIRMED",
               serviceId,
               dogId: dog.id,
@@ -196,7 +197,7 @@ export async function POST(req: Request) {
       }
     } else if (payload.triggerEvent === "BOOKING_CANCELLED") {
       const booking = payload.payload;
-      
+
       try {
         await prisma.appointment.update({
           where: { calComUid: String(booking.uid) },

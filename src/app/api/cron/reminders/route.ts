@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendWhatsAppReminder, sendWhatsAppTodayReminder } from "@/lib/twilio";
 import { env } from "@/env";
+import { getSantiagoDayBounds, formatInSantiago, formatSantiagoLocale } from "@/lib/date-utils";
 
 // Exportamos dynamic para asegurarnos de que no se cachee
 export const dynamic = "force-dynamic";
@@ -20,27 +21,15 @@ export async function GET(request: Request) {
   }
 
   try {
-    const now = new Date();
-    
-    // Rango HOY
-    const todayStart = new Date(now);
-    todayStart.setHours(0, 0, 0, 0);
-    const todayEnd = new Date(now);
-    todayEnd.setHours(23, 59, 59, 999);
-
-    // Rango MAÑANA
-    const tomorrowStart = new Date(now);
-    tomorrowStart.setDate(now.getDate() + 1);
-    tomorrowStart.setHours(0, 0, 0, 0);
-    const tomorrowEnd = new Date(tomorrowStart);
-    tomorrowEnd.setHours(23, 59, 59, 999);
+    const todayBounds = getSantiagoDayBounds(0);
+    const tomorrowBounds = getSantiagoDayBounds(1);
 
     // Buscar citas para HOY que no tengan recordatorio de hoy
     const todayAppointments = await prisma.appointment.findMany({
       where: {
         status: "CONFIRMED",
         todayReminderSentAt: null,
-        date: { gte: todayStart, lte: todayEnd },
+        date: { gte: todayBounds.start, lte: todayBounds.end },
       },
       include: { dog: { include: { owner: true } } },
     });
@@ -50,7 +39,7 @@ export async function GET(request: Request) {
       where: {
         status: "CONFIRMED",
         reminderSentAt: null,
-        date: { gte: tomorrowStart, lte: tomorrowEnd },
+        date: { gte: tomorrowBounds.start, lte: tomorrowBounds.end },
       },
       include: { dog: { include: { owner: true } } },
     });
@@ -65,9 +54,7 @@ export async function GET(request: Request) {
     // --- PROCESAR CITAS DE HOY ---
     for (const app of todayAppointments) {
       const owner = app.dog.owner;
-      const timeStr = app.date.toLocaleTimeString("es-ES", {
-        hour: "2-digit", minute: "2-digit", hour12: false,
-      });
+      const timeStr = formatInSantiago(app.date, "HH:mm");
 
       const response = await sendWhatsAppTodayReminder(owner.phone, {
         ownerName: owner.name,
@@ -92,12 +79,10 @@ export async function GET(request: Request) {
     // --- PROCESAR CITAS DE MAÑANA ---
     for (const app of tomorrowAppointments) {
       const owner = app.dog.owner;
-      const dateStr = app.date.toLocaleDateString("es-ES", {
+      const dateStr = formatSantiagoLocale(app.date, {
         weekday: "long", day: "numeric", month: "long",
       });
-      const timeStr = app.date.toLocaleTimeString("es-ES", {
-        hour: "2-digit", minute: "2-digit", hour12: false,
-      });
+      const timeStr = formatInSantiago(app.date, "HH:mm");
 
       const response = await sendWhatsAppReminder(owner.phone, {
         ownerName: owner.name,

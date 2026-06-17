@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { env } from "@/env";
+import { parseIncomingDate, parseSantiagoDate, formatInSantiago } from "@/lib/date-utils";
 
 const WORK_START = 8;
 const WORK_END = 19;
@@ -34,8 +35,8 @@ async function getLocalSlots(
   dateStr: string,
   durationMs: number,
 ): Promise<SlotResult[]> {
-  const dayStart = new Date(`${dateStr}T00:00:00`);
-  const dayEnd = new Date(`${dateStr}T23:59:59`);
+  const dayStart = parseSantiagoDate(`${dateStr}T00:00:00`);
+  const dayEnd = parseSantiagoDate(`${dateStr}T23:59:59`);
 
   const existingAppointments = await prisma.appointment.findMany({
     where: {
@@ -49,26 +50,25 @@ async function getLocalSlots(
   });
 
   const slots: SlotResult[] = [];
-  const workEnd = new Date(
+  const workEnd = parseSantiagoDate(
     `${dateStr}T${String(WORK_END).padStart(2, "0")}:00:00`,
   );
-  const current = new Date(
+  const current = parseSantiagoDate(
     `${dateStr}T${String(WORK_START).padStart(2, "0")}:00:00`,
   );
 
   while (current.getTime() + durationMs <= workEnd.getTime()) {
     const slotEnd = new Date(current.getTime() + durationMs);
     const hasConflict = existingAppointments.some((appt) => {
-      const apptStart = new Date(appt.date);
+      const apptStart = appt.date;
       const apptEnd = new Date(
         apptStart.getTime() + appt.service.duration * 60 * 1000,
       );
       return current < apptEnd && slotEnd > apptStart;
     });
 
-    const hours = String(current.getHours()).padStart(2, "0");
-    const minutes = String(current.getMinutes()).padStart(2, "0");
-    slots.push({ time: `${hours}:${minutes}`, available: !hasConflict });
+    const time = formatInSantiago(current, "HH:mm");
+    slots.push({ time, available: !hasConflict });
     current.setTime(current.getTime() + durationMs);
   }
 
@@ -99,9 +99,8 @@ async function getCalComSlots(
   const eventTypeSlug = parts.slice(1).join("/"); // soportar slugs con "/"
 
   // Convertir dateStr a rango UTC que cubra el día completo en America/Santiago
-  // Santiago UTC-4 en verano, UTC-3 en invierno. Para ser seguro: tomamos ±12h
-  const startUTC = new Date(`${dateStr}T00:00:00-04:00`).toISOString();
-  const endUTC = new Date(`${dateStr}T23:59:59-03:00`).toISOString();
+  const startUTC = parseSantiagoDate(`${dateStr}T00:00:00`).toISOString();
+  const endUTC = parseSantiagoDate(`${dateStr}T23:59:59`).toISOString();
 
   const params = new URLSearchParams({
     username,
@@ -157,13 +156,8 @@ async function getCalComSlots(
     const slotTime = slot.start || slot.time;
     if (!slotTime) return { time: "00:00", available: false };
 
-    const date = new Date(slotTime);
-    const time = date.toLocaleTimeString("es-CL", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-      timeZone: "America/Santiago",
-    });
+    const date = parseIncomingDate(slotTime);
+    const time = formatInSantiago(date, "HH:mm");
     return {
       time,        // "HH:MM"
       available: true,  // Cal.com SOLO retorna slots disponibles

@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { parseIncomingDate } from "@/lib/date-utils";
 
 
 async function requireAdmin() {
@@ -78,7 +79,7 @@ export async function updateDogAction(
 
 const AttendanceSchema = z.object({
   service: z.string().min(1, "El servicio es obligatorio").max(200),
-  date: z.coerce.date(),
+  date: z.preprocess((val) => parseIncomingDate(val), z.date()),
   notes: z.string().max(2000).optional().nullable(),
 });
 
@@ -139,7 +140,7 @@ export async function createAttendanceAction(
 
 const AppointmentSchema = z.object({
   serviceId: z.string().min(1, "Selecciona un servicio"),
-  date: z.coerce.date(),
+  date: z.preprocess((val) => parseIncomingDate(val), z.date()),
   notes: z.string().max(1000).optional().nullable(),
 });
 
