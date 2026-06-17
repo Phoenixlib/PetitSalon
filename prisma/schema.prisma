@@ -28,6 +28,7 @@ model Dog {
   createdAt    DateTime      @default(now())
   age          String?
   weight       String?
+  isActive     Boolean       @default(true)
   appointments Appointment[]
   attendances  Attendance[]
   owner        Owner         @relation(fields: [ownerId], references: [id])

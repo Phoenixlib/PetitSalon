@@ -188,3 +188,34 @@ export async function createAppointmentAction(
     return { errors: { _form: ["Error al agendar la cita"] } };
   }
 }
+
+export async function deleteDogAction(dogId: string): Promise<{ success?: boolean; error?: string }> {
+  try {
+    await requireAdmin();
+    
+    const dog = await prisma.dog.findUnique({
+      where: { id: dogId },
+      select: { ownerId: true }
+    });
+
+    if (!dog) {
+      return { error: "Mascota no encontrada" };
+    }
+
+    await prisma.dog.update({
+      where: { id: dogId },
+      data: { isActive: false }
+    });
+
+    // Cancelar citas pendientes si es necesario
+    await prisma.appointment.updateMany({
+      where: { dogId: dogId, status: "PENDING" },
+      data: { status: "CANCELLED" }
+    });
+
+    revalidatePath(`/admin/clientes/${dog.ownerId}`);
+    return { success: true };
+  } catch (error) {
+    return { error: "Error al archivar la mascota." };
+  }
+}

@@ -8,7 +8,7 @@ export default async function ClientDetailPage(props: {
   const params = await props.params;
   const owner = await prisma.owner.findUnique({
     where: { id: params.id },
-    include: { dogs: true },
+    include: { dogs: { where: { isActive: true } } },
   });
 
   if (!owner) notFound();

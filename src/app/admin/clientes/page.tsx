@@ -27,7 +27,7 @@ export default async function ClientesPage(props: { searchParams: Promise<Search
   const owners = await prisma.owner.findMany({
     where,
     include: {
-      dogs: true,
+      dogs: { where: { isActive: true } },
     },
     orderBy: { createdAt: "desc" },
     skip,

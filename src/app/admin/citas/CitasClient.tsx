@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import type { AppointmentWithRelations, AppointmentStatus } from "@/types";
 import { updateAppointmentStatusAction } from "./actions";
 import AppointmentDetailModal from "@/components/admin/AppointmentDetailModal";
+import CancelCitaModal from "@/components/admin/CancelCitaModal";
 import { AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 
@@ -74,6 +75,7 @@ export default function CitasClient({
   const [modalStep, setModalStep] = useState<
     "detail" | "done-form" | "review-prompt"
   >("detail");
+  const [citaToCancel, setCitaToCancel] = useState<string | null>(null);
 
   // Sincronizar el estado local cuando las props cambian (Next.js server-side pagination)
   useEffect(() => {
@@ -138,8 +140,14 @@ export default function CitasClient({
             app.id === id ? { ...app, status: newStatus } : app,
           ),
         );
+        if (newStatus === "CANCELLED") {
+          setCitaToCancel(null);
+        }
       } else {
         alert(result.errors?._form?.[0] || "Error al actualizar estado");
+        if (newStatus === "CANCELLED") {
+          setCitaToCancel(null);
+        }
       }
     });
   };
@@ -342,10 +350,9 @@ export default function CitasClient({
                                 Confirmar
                               </button>
                               <button
-                                onClick={() => {
-                                  if (window.confirm("¿Seguro que deseas cancelar esta cita?")) {
-                                    handleStatusChange(app.id, "CANCELLED");
-                                  }
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCitaToCancel(app.id);
                                 }}
                                 disabled={isPending}
                                 className="text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
@@ -377,10 +384,9 @@ export default function CitasClient({
                                 ⟲ Revertir
                               </button>
                               <button
-                                onClick={() => {
-                                  if (window.confirm("¿Seguro que deseas cancelar esta cita?")) {
-                                    handleStatusChange(app.id, "CANCELLED");
-                                  }
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCitaToCancel(app.id);
                                 }}
                                 disabled={isPending}
                                 className="text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
@@ -507,10 +513,9 @@ export default function CitasClient({
                           Confirmar
                         </button>
                         <button
-                          onClick={() => {
-                            if (window.confirm("¿Seguro que deseas cancelar esta cita?")) {
-                              handleStatusChange(app.id, "CANCELLED");
-                            }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCitaToCancel(app.id);
                           }}
                           disabled={isPending}
                           className="flex-1 text-sm font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 py-2.5 rounded-lg transition-colors disabled:opacity-50"
@@ -539,10 +544,9 @@ export default function CitasClient({
                           ⟲ Revertir
                         </button>
                         <button
-                          onClick={() => {
-                            if (window.confirm("¿Seguro que deseas cancelar esta cita?")) {
-                              handleStatusChange(app.id, "CANCELLED");
-                            }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCitaToCancel(app.id);
                           }}
                           disabled={isPending}
                           className="flex-1 text-sm font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 py-2.5 rounded-lg transition-colors disabled:opacity-50"
@@ -698,6 +702,17 @@ export default function CitasClient({
           availabilityRules={availabilityRules}
         />
       )}
+
+      <AnimatePresence>
+        {citaToCancel && (
+          <CancelCitaModal
+            isOpen={!!citaToCancel}
+            onClose={() => setCitaToCancel(null)}
+            onConfirm={() => handleStatusChange(citaToCancel, "CANCELLED")}
+            isPending={isPending}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import OwnerModal from "@/components/admin/OwnerModal";
 import AddDogModal from "@/components/admin/AddDogModal";
+import DeleteDogModal from "@/components/admin/DeleteDogModal";
 import { Dog } from "@prisma/client";
 import { AnimatePresence } from "framer-motion";
 
@@ -22,6 +23,7 @@ export default function ClientDetailClient({
 }) {
   const [isOwnerOpen, setIsOwnerOpen] = useState(false);
   const [isAddDogOpen, setIsAddDogOpen] = useState(false);
+  const [dogToDelete, setDogToDelete] = useState<{ id: string; name: string } | null>(null);
 
   return (
     <>
@@ -126,12 +128,21 @@ export default function ClientDetailClient({
                       <h3 className="text-xl font-bold">{dog.name}</h3>
                       <p className="text-neutral-600">{dog.breed}</p>
                     </div>
-                    <Link
-                      href={`/admin/perros/${dog.id}`}
-                      className="text-sm font-medium bg-neutral-100 hover:bg-neutral-200 px-3 py-1.5 rounded-lg transition-colors border border-neutral-200"
-                    >
-                      Ver Ficha
-                    </Link>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setDogToDelete({ id: dog.id, name: dog.name })}
+                        className="text-sm font-medium bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors border border-red-200"
+                        title="Ocultar de la lista y evitar nuevas citas"
+                      >
+                        Archivar
+                      </button>
+                      <Link
+                        href={`/admin/perros/${dog.id}`}
+                        className="text-sm font-medium bg-neutral-100 hover:bg-neutral-200 px-3 py-1.5 rounded-lg transition-colors border border-neutral-200"
+                      >
+                        Ver Ficha
+                      </Link>
+                    </div>
                   </div>
 
                   <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
@@ -185,6 +196,16 @@ export default function ClientDetailClient({
             ownerId={owner.id}
             isOpen={isAddDogOpen}
             onClose={() => setIsAddDogOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {dogToDelete && (
+          <DeleteDogModal
+            dogId={dogToDelete.id}
+            dogName={dogToDelete.name}
+            isOpen={!!dogToDelete}
+            onClose={() => setDogToDelete(null)}
           />
         )}
       </AnimatePresence>

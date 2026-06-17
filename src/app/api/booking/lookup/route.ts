@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
       },
       include: {
         dogs: {
+          where: { isActive: true },
           select: { id: true, name: true, breed: true, age: true, weight: true },
         },
       },
