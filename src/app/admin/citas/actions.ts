@@ -517,12 +517,14 @@ export async function rescheduleAppointmentAction(
     }
 
     // Si tiene un UID de Cal.com, reagendar externamente
+    let newCalComUid: string | undefined = undefined;
     if (appointment.calComUid) {
       try {
         const calRes = await rescheduleCalComBooking(appointment.calComUid, newDate);
         if (!calRes || calRes.status !== "success") {
           return { errors: { _form: ["No se pudo reagendar en Cal.com."] } };
         }
+        newCalComUid = calRes.data.uid;
       } catch (calError: any) {
         console.error(`[admin] Error reagendando cita ${id} en Cal.com:`, calError);
         let errorMsg = calError instanceof Error ? calError.message : "Error de conexión con Cal.com al reagendar.";
@@ -535,10 +537,22 @@ export async function rescheduleAppointmentAction(
       }
     }
 
-    await prisma.appointment.update({
-      where: { id },
-      data: { date: newDate },
-    });
+    try {
+      await prisma.appointment.update({
+        where: { id },
+        data: { 
+          date: newDate,
+          ...(newCalComUid ? { calComUid: newCalComUid } : {})
+        },
+      });
+    } catch (e: any) {
+      if (e.code === 'P2002' && newCalComUid) {
+        console.warn(`[admin] Condición de carrera: El webhook ya creó la cita con UID ${newCalComUid}. Eliminando la antigua ${id} para evitar duplicados.`);
+        await prisma.appointment.delete({ where: { id } });
+      } else {
+        throw e;
+      }
+    }
 
     revalidatePath("/admin/agenda");
     revalidatePath("/admin/citas");
