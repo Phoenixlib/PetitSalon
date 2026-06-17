@@ -71,11 +71,15 @@ export async function POST(req: Request) {
       const ownerPhone = rawPhone ? cleanPhone(String(rawPhone)) : "+56900000000";
       const ownerName = attendee.name || "Dueño sin nombre";
 
-      let owner = attendee.email
-        ? await prisma.owner.findUnique({ where: { email: attendee.email } })
+      const fallbackEmail = "petitsalon.contacto@gmail.com";
+      const incomingEmail = attendee.email;
+      const isFallbackEmail = incomingEmail === fallbackEmail;
+
+      let owner = incomingEmail && !isFallbackEmail
+        ? await prisma.owner.findUnique({ where: { email: incomingEmail } })
         : null;
 
-      if (!owner && attendee.phone) {
+      if (!owner && ownerPhone !== "+56900000000") {
         owner = await prisma.owner.findUnique({ where: { phone: ownerPhone } });
       }
 
@@ -84,7 +88,7 @@ export async function POST(req: Request) {
           owner = await prisma.owner.create({
             data: {
               name: ownerName,
-              email: attendee.email || null,
+              email: isFallbackEmail ? null : (incomingEmail || null),
               phone: ownerPhone,
             },
           });
@@ -93,7 +97,7 @@ export async function POST(req: Request) {
             owner = await prisma.owner.findFirst({
               where: {
                 OR: [
-                  { email: attendee.email || undefined },
+                  ...(isFallbackEmail || !incomingEmail ? [] : [{ email: incomingEmail }]),
                   { phone: ownerPhone },
                 ],
               },
@@ -107,7 +111,7 @@ export async function POST(req: Request) {
         await prisma.owner.update({
           where: { id: owner.id },
           data: {
-            ...(owner.email ? {} : { email: attendee.email || null }),
+            ...(owner.email || isFallbackEmail ? {} : { email: incomingEmail || null }),
             name: owner.name === "Dueño sin nombre" ? ownerName : owner.name
           },
         });
