@@ -46,13 +46,14 @@ export async function updateAppointmentStatusAction(
       return { errors: { _form: ["Cita no encontrada"] } };
     }
 
-    // Si se está cancelando y tiene un UID de Cal.com, cancelar en Cal.com primero
+    // Si se está cancelando y tiene un UID de Cal.com, intentar cancelar en Cal.com
     if (parsed.data === "CANCELLED" && appointment.calComUid) {
       try {
         await cancelCalComBooking(appointment.calComUid, "Cancelada desde el panel de administración");
       } catch (calError) {
-        console.error("[admin] Error cancelando en Cal.com:", calError);
-        return { errors: { _form: ["No se pudo cancelar la cita en Cal.com. Intenta de nuevo."] } };
+        // En lugar de retornar error y bloquear la cancelación local, 
+        // simplemente registramos el error y permitimos que la DB local se actualice.
+        console.warn("[admin] Advertencia: Error cancelando en Cal.com (forzando cancelación local):", calError);
       }
     }
 
