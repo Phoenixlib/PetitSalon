@@ -8,6 +8,7 @@ import {
   reorderCategoriesAction,
   reorderServicesAction,
 } from "./actions";
+import { useRouter } from "next/navigation";
 import ServiceModal from "@/components/admin/ServiceModal";
 import CategoryModal from "@/components/admin/CategoryModal";
 type Service = {
@@ -51,6 +52,7 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -117,7 +119,11 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
 
     startTransition(async () => {
       const result = await reorderCategoriesAction(categoryIds);
-      if (!result.success && result.error) setErrorMsg(result.error);
+      if (!result.success && result.error) {
+        setErrorMsg(result.error);
+      } else {
+        router.refresh();
+      }
     });
   };
 
@@ -143,7 +149,11 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
 
     startTransition(async () => {
       const result = await reorderServicesAction(serviceIds);
-      if (!result.success && result.error) setErrorMsg(result.error);
+      if (!result.success && result.error) {
+        setErrorMsg(result.error);
+      } else {
+        router.refresh();
+      }
     });
   };
 
@@ -226,7 +236,8 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
                   </h2>
                   <div className="flex items-center gap-1 lg:hidden">
                     <button
-                      onClick={() => handleMoveCategory(index, "up")}
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMoveCategory(index, "up"); }}
                       disabled={isPending || index === 0}
                       className="rounded-lg p-1.5 text-xs font-medium bg-white border border-neutral-200 hover:bg-neutral-50 disabled:opacity-30 shadow-sm"
                       title="Mover Arriba"
@@ -234,7 +245,8 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
                       ▲
                     </button>
                     <button
-                      onClick={() => handleMoveCategory(index, "down")}
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMoveCategory(index, "down"); }}
                       disabled={isPending || index === categories.length - 1}
                       className="rounded-lg p-1.5 text-xs font-medium bg-white border border-neutral-200 hover:bg-neutral-50 disabled:opacity-30 shadow-sm mr-2"
                       title="Mover Abajo"
@@ -268,7 +280,8 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
               <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
                 <div className="flex items-center border-r border-neutral-300 pr-2 mr-1">
                   <button
-                    onClick={() => handleMoveCategory(index, "up")}
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMoveCategory(index, "up"); }}
                     disabled={isPending || index === 0}
                     className="rounded-lg p-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-200 disabled:opacity-30 transition-colors"
                     title="Mover Arriba"
@@ -276,7 +289,8 @@ export default function ServiciosClient({ categories, uncategorized }: Props) {
                     ▲
                   </button>
                   <button
-                    onClick={() => handleMoveCategory(index, "down")}
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMoveCategory(index, "down"); }}
                     disabled={isPending || index === categories.length - 1}
                     className="rounded-lg p-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-200 disabled:opacity-30 transition-colors"
                     title="Mover Abajo"
@@ -487,7 +501,8 @@ function ServiceRow({
         {/* Flechas de orden */}
         <div className="flex flex-col gap-0.5 mr-1">
           <button
-            onClick={onMoveUp}
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onMoveUp(); }}
             disabled={isPending || serviceIndex === 0}
             className="rounded p-0.5 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 disabled:opacity-25 transition-colors leading-none text-[10px]"
             title="Mover arriba"
@@ -495,7 +510,8 @@ function ServiceRow({
             ▲
           </button>
           <button
-            onClick={onMoveDown}
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onMoveDown(); }}
             disabled={isPending || serviceIndex === totalServices - 1}
             className="rounded p-0.5 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 disabled:opacity-25 transition-colors leading-none text-[10px]"
             title="Mover abajo"

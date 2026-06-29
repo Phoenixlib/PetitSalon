@@ -487,15 +487,15 @@ export async function reorderCategoriesAction(
   try {
     await requireAdmin();
     
-    // Run all updates in a transaction
-    await prisma.$transaction(
-      categoryIds.map((id, index) => 
-        prisma.serviceCategory.update({
-          where: { id },
-          data: { order: index }
-        })
-      )
-    );
+    // Run all updates in an interactive transaction
+    await prisma.$transaction(async (tx) => {
+      for (let i = 0; i < categoryIds.length; i++) {
+        await tx.serviceCategory.update({
+          where: { id: categoryIds[i] },
+          data: { order: i },
+        });
+      }
+    });
     
     revalidatePath("/admin/servicios");
     revalidatePath("/");
@@ -537,19 +537,20 @@ export async function reorderServicesAction(
   try {
     await requireAdmin();
 
-    await prisma.$transaction(
-      serviceIds.map((id, index) =>
-        prisma.service.update({
-          where: { id },
-          data: { order: index },
-        }),
-      ),
-    );
+    await prisma.$transaction(async (tx) => {
+      for (let i = 0; i < serviceIds.length; i++) {
+        await tx.service.update({
+          where: { id: serviceIds[i] },
+          data: { order: i },
+        });
+      }
+    });
 
     revalidatePath("/admin/servicios");
     revalidatePath("/");
     return { success: true };
-  } catch {
+  } catch (error) {
+    console.error("Error reordering services:", error);
     return { success: false, error: "Error al reordenar los servicios" };
   }
 }
