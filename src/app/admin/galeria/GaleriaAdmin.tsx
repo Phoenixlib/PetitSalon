@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useActionState, useState, useTransition, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { compressImageClient } from "@/lib/image-utils";
 import {
   createGalleryPhotoAction,
   deleteGalleryPhotoAction,
@@ -159,7 +160,8 @@ export default function GaleriaAdmin({
     setUploading(true);
     setUploadError(null);
     try {
-      const url = await uploadToCloudinary(file);
+      const compressedFile = await compressImageClient(file, 1200, 1200, 0.80);
+      const url = await uploadToCloudinary(compressedFile);
       setPhotoUrl(url);
     } catch (e) {
       setUploadError(e instanceof Error ? e.message : "Error al subir foto");

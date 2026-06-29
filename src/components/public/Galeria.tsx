@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getOptimizedCloudinaryUrl } from "@/lib/image-utils";
 
 interface GalleryPhotoPublic {
   id: string;
@@ -202,7 +203,7 @@ export default function Galeria({ photos }: Props) {
                   {/* Image Wrap */}
                   <div className="relative w-full h-full">
                     <img
-                      src={photo.photoUrl}
+                      src={getOptimizedCloudinaryUrl(photo.photoUrl, 800)}
                       alt={photo.caption ?? "Foto de peluquería canina"}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 pointer-events-none"
                       loading="lazy"
@@ -323,7 +324,7 @@ export default function Galeria({ photos }: Props) {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.97 }}
                     transition={{ duration: 0.22, ease: "easeInOut" }}
-                    src={selectedPhoto.photoUrl}
+                    src={getOptimizedCloudinaryUrl(selectedPhoto.photoUrl, 1600)}
                     alt={selectedPhoto.caption ?? "Resultado"}
                     className="max-h-[68vh] max-w-full object-contain pointer-events-none"
                   />
